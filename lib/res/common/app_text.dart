@@ -1,4 +1,7 @@
+import 'package:alo_ride_app/res/constant/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppText extends StatelessWidget {
   final String text;
@@ -8,16 +11,20 @@ class AppText extends StatelessWidget {
   final TextAlign textAlign;
   final int? maxLines;
   final TextOverflow overflow;
+  final double? letterSpacing;
+  final double? height;
 
   const AppText({
     super.key,
     required this.text,
     this.fontSize = 14,
     this.fontWeight = FontWeight.normal,
-    this.color = Colors.black,
+    this.color = AppColors.black,
     this.textAlign = TextAlign.start,
     this.maxLines,
     this.overflow = TextOverflow.ellipsis,
+    this.letterSpacing,
+    this.height,
   });
 
   @override
@@ -27,10 +34,12 @@ class AppText extends StatelessWidget {
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
-      style: TextStyle(
-        fontSize: fontSize,
+      style: GoogleFonts.poppins(
+        fontSize: fontSize.sp,     // ✅ responsive text
         fontWeight: fontWeight,
         color: color,
+        letterSpacing: letterSpacing,
+        height: height,
       ),
     );
   }

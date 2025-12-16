@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+enum ImageType { network, asset, svgNetwork, svgAsset }
 
 class AppImage extends StatelessWidget {
   final String image;
   final double? height;
   final double? width;
   final BoxFit fit;
-  final bool isNetwork;
+  final ImageType imageType;
+  final Color? color;
 
   const AppImage({
     super.key,
@@ -13,30 +18,68 @@ class AppImage extends StatelessWidget {
     this.height,
     this.width,
     this.fit = BoxFit.cover,
-    this.isNetwork = true,
+    this.imageType = ImageType.network,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
-    return isNetwork
-        ? Image.network(
-      image,
-      height: height,
-      width: width,
-      fit: fit,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        return const Center(child: CircularProgressIndicator());
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return const Icon(Icons.image_not_supported);
-      },
-    )
-        : Image.asset(
-      image,
-      height: height,
-      width: width,
-      fit: fit,
-    );
+    final h = height?.h;
+    final w = width?.w;
+
+    switch (imageType) {
+    /// 🔹 Network Image (PNG/JPG)
+      case ImageType.network:
+        return Image.network(
+          image,
+          height: h,
+          width: w,
+          fit: fit,
+          color: color,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return const Center(child: CircularProgressIndicator());
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return const Icon(Icons.image_not_supported);
+          },
+        );
+
+    /// 🔹 Asset Image (PNG/JPG)
+      case ImageType.asset:
+        return Image.asset(
+          image,
+          height: h,
+          width: w,
+          fit: fit,
+          color: color,
+        );
+
+    /// 🔹 SVG Asset
+      case ImageType.svgAsset:
+        return SvgPicture.asset(
+          image,
+          height: h,
+          width: w,
+          fit: fit,
+          colorFilter:
+          color != null ? ColorFilter.mode(color!, BlendMode.srcIn) : null,
+          placeholderBuilder: (context) =>
+          const Center(child: CircularProgressIndicator()),
+        );
+
+    /// 🔹 SVG Network
+      case ImageType.svgNetwork:
+        return SvgPicture.network(
+          image,
+          height: h,
+          width: w,
+          fit: fit,
+          colorFilter:
+          color != null ? ColorFilter.mode(color!, BlendMode.srcIn) : null,
+          placeholderBuilder: (context) =>
+          const Center(child: CircularProgressIndicator()),
+        );
+    }
   }
 }
