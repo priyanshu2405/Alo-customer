@@ -71,7 +71,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (controller.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
                 }
-
                 return Stack(
                   children: [
                     GoogleMap(
@@ -169,6 +168,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ],
                         ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 10,right: 10,
+                      child: AppImage(
+                        height: 55,width: 55,
+                        image: AppImages.sosButton,
+                        imageType: ImageType.asset,
                       ),
                     ),
                   ],

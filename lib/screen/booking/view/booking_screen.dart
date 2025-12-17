@@ -1,9 +1,12 @@
 import 'package:alo_ride_app/res/common/app_appbar.dart';
 import 'package:alo_ride_app/res/common/app_button.dart';
+import 'package:alo_ride_app/res/common/app_image.dart';
 import 'package:alo_ride_app/res/common/app_text.dart';
 import 'package:alo_ride_app/res/constant/app_colors.dart';
+import 'package:alo_ride_app/res/constant/app_images.dart';
 import 'package:alo_ride_app/screen/booking/controller/booking_controller.dart';
 import 'package:alo_ride_app/screen/booking/view/ride_confirmed_widget.dart';
+import 'package:alo_ride_app/screen/booking/view/ride_tracking_screen.dart';
 import 'package:alo_ride_app/screen/home/controller/location_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -85,7 +88,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       onTap: controller.onMapTap,
                     ),
                     Positioned(
-                      top: 90.h,
+                      top: 80.h,
                       left: 16,
                       right: 16,
                       child: Column(
@@ -112,7 +115,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 Gap(10),
                                 _buildLocationRow(
                                   icon: Icons.circle,
-                                  iconColor: Colors.red,
+                                  iconColor: AppColors.pinkColor,
                                   title: 'From',
                                   subtitle: '341-205 Barrinou Rd, Moncton,',
                                   showDivider: true,
@@ -121,7 +124,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                 // Drop off location
                                 _buildLocationRow(
                                   icon: Icons.location_on,
-                                  iconColor: Colors.red,
+                                  iconColor: AppColors.pinkColor,
                                   title: 'Drop off Location',
                                   subtitle: '100 Holland Dr, Moncton, NB E1...',
                                   showDivider: false,
@@ -215,6 +218,14 @@ class _BookingScreenState extends State<BookingScreen> {
                         ],
                       ),
                     ),
+                    Positioned(
+                      bottom: 10,right: 10,
+                      child: AppImage(
+                        height: 55,width: 55,
+                        image: AppImages.sosButton,
+                        imageType: ImageType.asset,
+                      ),
+                    ),
                   ],
                 );
               }),
@@ -270,7 +281,10 @@ class _BookingScreenState extends State<BookingScreen> {
             /// BOOK NOW BUTTON
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0.w),
-              child: AppButton(text: "Book Now", onTap: () {}),
+              child: AppButton(text: "Book Now", onTap: () {
+                // showRideConfirmed(context);
+                Get.to(()=>RideTrackingScreen());
+              }),
             ),
             Gap(30.h),
           ],

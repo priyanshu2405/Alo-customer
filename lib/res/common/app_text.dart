@@ -13,6 +13,7 @@ class AppText extends StatelessWidget {
   final TextOverflow overflow;
   final double? letterSpacing;
   final double? height;
+  final bool? softWrap;
 
   const AppText({
     super.key,
@@ -24,7 +25,7 @@ class AppText extends StatelessWidget {
     this.maxLines,
     this.overflow = TextOverflow.ellipsis,
     this.letterSpacing,
-    this.height,
+    this.height, this.softWrap,
   });
 
   @override
@@ -34,6 +35,7 @@ class AppText extends StatelessWidget {
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
+      softWrap: softWrap,
       style: GoogleFonts.poppins(
         fontSize: fontSize.sp,     // ✅ responsive text
         fontWeight: fontWeight,

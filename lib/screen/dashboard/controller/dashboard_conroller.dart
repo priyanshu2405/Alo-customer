@@ -1,5 +1,7 @@
 
 import 'package:alo_ride_app/screen/home/view/home_screen.dart';
+import 'package:alo_ride_app/screen/my_rides/view/my_rides_screen.dart';
+import 'package:alo_ride_app/screen/profile/view/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -21,8 +23,8 @@ class DashBoardController extends GetxController {
     super.onInit();
     pages = [
       HomeScreen(),
-      Text("My Rides"),
-      Text("My Rides"),
+      MyRidesScreen(),
+      ProfileScreen(),
     ];
   }
 

@@ -1,3 +1,4 @@
+import 'package:alo_ride_app/screen/ride/view/ride_completed_screen.dart';
 import 'package:alo_ride_app/screen/splash/view/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -22,8 +23,8 @@ class MyApp extends StatelessWidget {
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Flutter Demo',
-          // home: const SplashScreen(),
-          home: const DashboardScreen(),
+          home: const SplashScreen(),
+          // home: const DashboardScreen(),
         );
       },
     );

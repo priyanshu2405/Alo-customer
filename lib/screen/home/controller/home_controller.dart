@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 class HomeController extends GetxController{
 
-  RxInt selectedVehicle = 2.obs;
+  RxInt selectedVehicle = 0.obs;
   final formKey = GlobalKey<FormState>();
 
   final TextEditingController nameController = TextEditingController();
