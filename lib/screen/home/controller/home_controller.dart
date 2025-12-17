@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 class HomeController extends GetxController{
 
-  RxInt selectedVehicle = 0.obs;
+
   final formKey = GlobalKey<FormState>();
 
   final TextEditingController nameController = TextEditingController();
@@ -13,7 +13,7 @@ class HomeController extends GetxController{
 
 
 
-  RxInt selectedVehicleIndex = 2.obs; // SUV selected by default
+  RxInt selectedVehicleIndex = 0.obs; // SUV selected by default
 
   final List<Map<String, dynamic>> vehicles = [
     {'name': 'Mini', 'capacity': 'Capacity: 1 - 4', 'icon': Icons.directions_car},

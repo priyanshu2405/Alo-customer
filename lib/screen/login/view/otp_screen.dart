@@ -189,8 +189,9 @@ class _OtpScreenState extends State<OtpScreen> {
         child: TextField(
           controller: otpControllers[index],
           keyboardType: TextInputType.number,
+          textInputAction: index == 3 ? TextInputAction.done : TextInputAction.next,
           textAlign: TextAlign.center,
-          textAlignVertical: TextAlignVertical.center, // ✅ vertical center
+          textAlignVertical: TextAlignVertical.center,
           maxLength: 1,
           style: TextStyle(
             fontSize: 18.sp,
@@ -198,8 +199,7 @@ class _OtpScreenState extends State<OtpScreen> {
           ),
           decoration: InputDecoration(
             counterText: "",
-            isDense: true, // ✅ remove extra padding
-            // contentPadding: EdgeInsets.zero, // ✅ important
+            isDense: true,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r),
               borderSide: BorderSide(color: AppColors.borderColor),
@@ -209,14 +209,26 @@ class _OtpScreenState extends State<OtpScreen> {
               borderSide: BorderSide(color: AppColors.borderColor),
             ),
           ),
+
+          /// 🔹 AUTO MOVE + CLOSE KEYBOARD
           onChanged: (value) {
-            if (value.isNotEmpty && index < 3) {
-              FocusScope.of(context).nextFocus();
+            if (value.isNotEmpty) {
+              if (index < 3) {
+                FocusScope.of(context).nextFocus();
+              } else {
+                FocusScope.of(context).unfocus(); // ✅ close keyboard
+              }
             }
+          },
+
+          /// 🔹 DONE BUTTON ACTION (iOS)
+          onSubmitted: (_) {
+            FocusScope.of(context).unfocus(); // ✅ close keyboard
           },
         ),
       ),
     );
   }
+
 
 }

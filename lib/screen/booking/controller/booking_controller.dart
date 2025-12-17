@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 
 class BookingController extends GetxController {
@@ -7,6 +8,12 @@ class BookingController extends GetxController {
 
   Rxn<DateTime> selectedDate = Rxn<DateTime>();
   Rxn<DateTime> selectedTime = Rxn<DateTime>();
+
+  // Add these for locations
+  RxString fromLocation = "".obs;
+  RxString dropOffLocation = "".obs;
+  Rx<LatLng?> fromLatLng = Rx<LatLng?>(null);
+  Rx<LatLng?> dropOffLatLng = Rx<LatLng?>(null);
 
   String get formattedDate => selectedDate.value == null
       ? "Select Date"

@@ -1,5 +1,6 @@
 import 'package:alo_ride_app/res/common/app_appbar.dart';
 import 'package:alo_ride_app/res/common/app_button.dart';
+import 'package:alo_ride_app/res/common/app_call_helper.dart';
 import 'package:alo_ride_app/res/common/app_image.dart';
 import 'package:alo_ride_app/res/common/app_text.dart';
 import 'package:alo_ride_app/res/constant/app_colors.dart';
@@ -147,10 +148,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
-      floatingActionButton: AppImage(
-        height: 55,width: 55,
-        image: AppImages.sosButton,
-        imageType: ImageType.asset,
+      floatingActionButton: InkWell(
+        onTap: () => AppCallHelper.callSOS(),
+        child: AppImage(
+          height: 55,width: 55,
+          image: AppImages.sosButton,
+          imageType: ImageType.asset,
+        ),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),

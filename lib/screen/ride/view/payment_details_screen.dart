@@ -1,12 +1,16 @@
 import 'package:alo_ride_app/res/common/app_appbar.dart';
 import 'package:alo_ride_app/res/common/app_button.dart';
+import 'package:alo_ride_app/res/common/app_call_helper.dart';
 import 'package:alo_ride_app/res/common/app_image.dart';
 import 'package:alo_ride_app/res/common/app_text.dart';
 import 'package:alo_ride_app/res/constant/app_colors.dart';
 import 'package:alo_ride_app/res/constant/app_images.dart';
+import 'package:alo_ride_app/screen/dashboard/controller/dashboard_conroller.dart';
+import 'package:alo_ride_app/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 
 
 class PaymentDetailsScreen extends StatelessWidget {
@@ -76,17 +80,24 @@ class PaymentDetailsScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: AppImage(
-        height: 55,width: 55,
-        image: AppImages.sosButton,
-        imageType: ImageType.asset,
+      floatingActionButton: InkWell(
+        onTap: () => AppCallHelper.callSOS(),
+        child: AppImage(
+          height: 55,width: 55,
+          image: AppImages.sosButton,
+          imageType: ImageType.asset,
+        ),
       ),
 
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: AppButton(
           text: "Proceed to pay",
-          onTap: () {},
+          onTap: () {
+            final controller = Get.put(DashBoardController());
+            controller.changeIndex(1);
+            Get.to(() => DashboardScreen());
+          },
         ),
       ),
     );

@@ -39,6 +39,24 @@
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>This app needs location access.</string>
 
+
+    <!-- ================= PHONE CALL ================= -->
+
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>tel</string>
+        <string>sms</string>
+    </array>
+
+    <!-- ================= INTERNET ================= -->
+
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+
+
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

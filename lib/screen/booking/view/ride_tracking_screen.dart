@@ -1,6 +1,7 @@
 import 'package:alo_ride_app/demo.dart';
 import 'package:alo_ride_app/res/common/app_appbar.dart';
 import 'package:alo_ride_app/res/common/app_button.dart';
+import 'package:alo_ride_app/res/common/app_call_helper.dart';
 import 'package:alo_ride_app/res/common/app_image.dart';
 import 'package:alo_ride_app/res/common/app_text.dart';
 import 'package:alo_ride_app/res/constant/app_colors.dart';
@@ -146,10 +147,13 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                   ),
                   Positioned(
                     bottom: 10,right: 10,
-                    child: AppImage(
-                      height: 55,width: 55,
-                      image: AppImages.sosButton,
-                      imageType: ImageType.asset,
+                    child: InkWell(
+                      onTap: () => AppCallHelper.callSOS(),
+                      child: AppImage(
+                        height: 55,width: 55,
+                        image: AppImages.sosButton,
+                        imageType: ImageType.asset,
+                      ),
                     ),
                   ),
                 ],
@@ -333,4 +337,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
       ],
     );
   }
+
+
+
 }

@@ -1,5 +1,6 @@
 import 'package:alo_ride_app/res/common/app_appbar.dart';
 import 'package:alo_ride_app/res/common/app_button.dart';
+import 'package:alo_ride_app/res/common/app_call_helper.dart';
 import 'package:alo_ride_app/res/common/app_image.dart';
 import 'package:alo_ride_app/res/common/app_text.dart';
 import 'package:alo_ride_app/res/constant/app_colors.dart';
@@ -12,6 +13,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class BookingScreen extends StatefulWidget {
@@ -93,6 +96,46 @@ class _BookingScreenState extends State<BookingScreen> {
                       right: 16,
                       child: Column(
                         children: [
+                          // Container(
+                          //   decoration: BoxDecoration(
+                          //     color: Colors.white,
+                          //     borderRadius: BorderRadius.circular(6),
+                          //     border: Border.all(
+                          //       color: AppColors.lightGray,
+                          //       width: 2,
+                          //     ),
+                          //     boxShadow: [
+                          //       BoxShadow(
+                          //         color: Colors.black.withOpacity(0.1),
+                          //         blurRadius: 10,
+                          //         offset: const Offset(0, 4),
+                          //       ),
+                          //     ],
+                          //   ),
+                          //   child: Column(
+                          //     children: [
+                          //       // From location
+                          //       Gap(10),
+                          //       _buildLocationRow(
+                          //         icon: Icons.circle,
+                          //         iconColor: AppColors.pinkColor,
+                          //         title: 'From',
+                          //         subtitle: '341-205 Barrinou Rd, Moncton,',
+                          //         showDivider: true,
+                          //       ),
+                          //
+                          //       // Drop off location
+                          //       _buildLocationRow(
+                          //         icon: Icons.location_on,
+                          //         iconColor: AppColors.pinkColor,
+                          //         title: 'Drop off Location',
+                          //         subtitle: '100 Holland Dr, Moncton, NB E1...',
+                          //         showDivider: false,
+                          //       ),
+                          //       Gap(10),
+                          //     ],
+                          //   ),
+                          // ),
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -111,14 +154,20 @@ class _BookingScreenState extends State<BookingScreen> {
                             ),
                             child: Column(
                               children: [
-                                // From location
                                 Gap(10),
+                                // From location
                                 _buildLocationRow(
                                   icon: Icons.circle,
                                   iconColor: AppColors.pinkColor,
                                   title: 'From',
-                                  subtitle: '341-205 Barrinou Rd, Moncton,',
+                                  subtitle: bookingController.fromLocation.value.isEmpty
+                                      ? controller.currentAddress.value
+                                      : bookingController.fromLocation.value,
                                   showDivider: true,
+                                  onTap: () => _showLocationSearchSheet(
+                                    context,
+                                    isPickup: true,
+                                  ),
                                 ),
 
                                 // Drop off location
@@ -126,8 +175,14 @@ class _BookingScreenState extends State<BookingScreen> {
                                   icon: Icons.location_on,
                                   iconColor: AppColors.pinkColor,
                                   title: 'Drop off Location',
-                                  subtitle: '100 Holland Dr, Moncton, NB E1...',
+                                  subtitle: bookingController.dropOffLocation.value.isEmpty
+                                      ? 'Select drop off location'
+                                      : bookingController.dropOffLocation.value,
                                   showDivider: false,
+                                  onTap: () => _showLocationSearchSheet(
+                                    context,
+                                    isPickup: false,
+                                  ),
                                 ),
                                 Gap(10),
                               ],
@@ -215,15 +270,19 @@ class _BookingScreenState extends State<BookingScreen> {
                               ),
                             ),
                           ),
+
                         ],
                       ),
                     ),
                     Positioned(
                       bottom: 10,right: 10,
-                      child: AppImage(
-                        height: 55,width: 55,
-                        image: AppImages.sosButton,
-                        imageType: ImageType.asset,
+                      child: InkWell(
+                        onTap: () => AppCallHelper.callSOS(),
+                        child: AppImage(
+                          height: 55,width: 55,
+                          image: AppImages.sosButton,
+                          imageType: ImageType.asset,
+                        ),
                       ),
                     ),
                   ],
@@ -282,8 +341,8 @@ class _BookingScreenState extends State<BookingScreen> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0.w),
               child: AppButton(text: "Book Now", onTap: () {
-                // showRideConfirmed(context);
-                Get.to(()=>RideTrackingScreen());
+                showRideConfirmed(context);
+                // Get.to(()=>RideTrackingScreen());
               }),
             ),
             Gap(30.h),
@@ -293,81 +352,81 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  Widget _buildLocationRow({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required bool showDivider,
-  }) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10.0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Icon with connecting line
-              Column(
-                children: [
-                  Icon(icon, color: iconColor, size: 20),
-                  if (showDivider)
-                    Column(
-                      children: List.generate(10, (index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 2.0),
-                          child: Container(
-                            height: 2,
-                            width: 2,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.black,
-                            ),
-                          ),
-                        );
-                      }),
-                    ),
-                ],
-              ),
-
-              const SizedBox(width: 12),
-
-              // Text content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-
-              // Favorite icon
-              IconButton(
-                icon: const Icon(Icons.favorite_border),
-                color: Colors.grey[400],
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildLocationRow({
+  //   required IconData icon,
+  //   required Color iconColor,
+  //   required String title,
+  //   required String subtitle,
+  //   required bool showDivider,
+  // }) {
+  //   return Column(
+  //     children: [
+  //       Padding(
+  //         padding: const EdgeInsets.symmetric(horizontal: 10.0),
+  //         child: Row(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             // Icon with connecting line
+  //             Column(
+  //               children: [
+  //                 Icon(icon, color: iconColor, size: 20),
+  //                 if (showDivider)
+  //                   Column(
+  //                     children: List.generate(10, (index) {
+  //                       return Padding(
+  //                         padding: const EdgeInsets.only(bottom: 2.0),
+  //                         child: Container(
+  //                           height: 2,
+  //                           width: 2,
+  //                           decoration: BoxDecoration(
+  //                             shape: BoxShape.circle,
+  //                             color: AppColors.black,
+  //                           ),
+  //                         ),
+  //                       );
+  //                     }),
+  //                   ),
+  //               ],
+  //             ),
+  //
+  //             const SizedBox(width: 12),
+  //
+  //             // Text content
+  //             Expanded(
+  //               child: Column(
+  //                 crossAxisAlignment: CrossAxisAlignment.start,
+  //                 children: [
+  //                   Text(
+  //                     title,
+  //                     style: const TextStyle(
+  //                       fontSize: 14,
+  //                       fontWeight: FontWeight.w500,
+  //                       color: Colors.black87,
+  //                     ),
+  //                   ),
+  //                   const SizedBox(height: 4),
+  //                   Text(
+  //                     subtitle,
+  //                     style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+  //                     maxLines: 1,
+  //                     overflow: TextOverflow.ellipsis,
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //
+  //             // Favorite icon
+  //             IconButton(
+  //               icon: const Icon(Icons.favorite_border),
+  //               color: Colors.grey[400],
+  //               onPressed: () {},
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   /// ================= RADIO OPTION =================
   Widget _radioOption(String text, int value) {
@@ -459,6 +518,342 @@ class _BookingScreenState extends State<BookingScreen> {
         );
       },
     );
+  }
+
+  Widget _buildLocationRow({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required bool showDivider,
+    required VoidCallback onTap,
+  }) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon with connecting line
+                Column(
+                  children: [
+                    Icon(icon, color: iconColor, size: 20),
+                    if (showDivider)
+                      Column(
+                        children: List.generate(10, (index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 2.0),
+                            child: Container(
+                              height: 2,
+                              width: 2,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: AppColors.black,
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                  ],
+                ),
+
+                const SizedBox(width: 12),
+
+                // Text content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: subtitle.contains('Select')
+                            ? Colors.grey[400]
+                            : Colors.grey[600],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    ],
+                  ),
+                ),
+
+                // Favorite icon
+                IconButton(
+                  icon: const Icon(Icons.favorite_border),
+                  color: Colors.grey[400],
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showLocationSearchSheet(BuildContext context, {required bool isPickup}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Header
+            Container(
+              padding: EdgeInsets.all(16.w),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 4,
+                    color: Colors.black.withOpacity(0.05),
+                    offset: Offset(0, 2),
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Handle bar
+                  Container(
+                    width: 40.w,
+                    height: 4.h,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Gap(16.h),
+                  // Title
+                  Row(
+                    children: [
+                      Icon(
+                        isPickup ? Icons.circle : Icons.location_on,
+                        color: AppColors.pinkColor,
+                        size: 20,
+                      ),
+                      Gap(8.w),
+                      AppText(
+                        text: isPickup ? "Select Pickup Location" : "Select Drop-off Location",
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ],
+                  ),
+                  Gap(12.h),
+                  // Search Field
+                  TextField(
+                    controller: controller.searchController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: 'Search location...',
+                      prefixIcon: Icon(Icons.search),
+                      suffixIcon: IconButton(
+                        icon: Icon(Icons.clear),
+                        onPressed: () {
+                          controller.clearSearch();
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: AppColors.lightGray),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: AppColors.pinkColor,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      controller.getPlaces(value);
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            // Current Location Button (only for pickup)
+            if (isPickup)
+              ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.pinkColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.my_location,
+                    color: AppColors.pinkColor,
+                    size: 20,
+                  ),
+                ),
+                title: AppText(
+                  text: "Use Current Location",
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+                subtitle: Obx(() => AppText(
+                  text: controller.currentAddress.value,
+                  fontSize: 12,
+                  color: AppColors.greyColor,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )),
+                onTap: () {
+                  if (controller.currentLatLng.value != null) {
+                    bookingController.fromLocation.value =
+                        controller.currentAddress.value;
+                    bookingController.fromLatLng.value =
+                        controller.currentLatLng.value;
+
+                    // Update map
+                    controller.setMarker(controller.currentLatLng.value!);
+                    controller.moveCameraTo(controller.currentLatLng.value!);
+                  }
+                  Navigator.pop(context);
+                },
+              ),
+
+            Divider(height: 1),
+
+            // Search Results
+            Expanded(
+              child: Obx(() {
+                if (!controller.showPredictions.value ||
+                    controller.predictions.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 64,
+                          color: Colors.grey[300],
+                        ),
+                        Gap(16.h),
+                        AppText(
+                          text: "Search for a location",
+                          fontSize: 16,
+                          color: AppColors.greyColor,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  padding: EdgeInsets.zero,
+                  itemCount: controller.predictions.length,
+                  separatorBuilder: (context, index) => Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final prediction = controller.predictions[index];
+                    return ListTile(
+                      leading: Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.location_on,
+                          color: Colors.grey[600],
+                          size: 20,
+                        ),
+                      ),
+                      title: AppText(
+                        text: prediction['structured_formatting']
+                        ['main_text'] ?? '',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: AppText(
+                        text: prediction['description'] ?? '',
+                        fontSize: 12,
+                        color: AppColors.greyColor,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () async {
+                        final placeId = prediction['place_id'];
+                        final description = prediction['description'] ?? '';
+
+                        // Get place details
+                        await _selectLocation(
+                          placeId,
+                          description,
+                          isPickup,
+                        );
+
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                );
+              }),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  Future<void> _selectLocation(
+      String placeId,
+      String address,
+      bool isPickup,
+      ) async {
+    final url = Uri.parse(
+      'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs',
+    );
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        final result = body['result'];
+        final geometry = result['geometry']['location'];
+        final position = LatLng(geometry['lat'], geometry['lng']);
+
+        if (isPickup) {
+          bookingController.fromLocation.value = address;
+          bookingController.fromLatLng.value = position;
+        } else {
+          bookingController.dropOffLocation.value = address;
+          bookingController.dropOffLatLng.value = position;
+        }
+
+        // Update map marker and camera
+        controller.setMarker(position);
+        controller.moveCameraTo(position);
+        controller.searchController.clear();
+      }
+    } catch (e) {
+      debugPrint("Error fetching place details: $e");
+      Get.snackbar("Error", "Failed to load location details");
+    }
   }
 
 }

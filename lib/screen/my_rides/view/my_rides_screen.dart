@@ -1,8 +1,10 @@
 import 'package:alo_ride_app/res/common/app_appbar.dart';
+import 'package:alo_ride_app/res/common/app_call_helper.dart';
 import 'package:alo_ride_app/res/common/app_image.dart';
 import 'package:alo_ride_app/res/common/app_text.dart';
 import 'package:alo_ride_app/res/constant/app_colors.dart';
 import 'package:alo_ride_app/res/constant/app_images.dart';
+import 'package:alo_ride_app/screen/booking/view/ride_tracking_screen.dart';
 import 'package:alo_ride_app/screen/my_rides/controller/my_ride_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -63,10 +65,13 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
           }),
         ],
       ),
-      floatingActionButton: AppImage(
-        height: 55,width: 55,
-        image: AppImages.sosButton,
-        imageType: ImageType.asset,
+      floatingActionButton: InkWell(
+        onTap: () => AppCallHelper.callSOS(),
+        child: AppImage(
+          height: 55,width: 55,
+          image: AppImages.sosButton,
+          imageType: ImageType.asset,
+        ),
       ),
     );
   }
@@ -122,7 +127,9 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
           Gap(10),
           Column(
             children: List.generate(2,  (index) {
-              return _rideCard(status: "Pending", statusColor: AppColors.secondary);
+              return InkWell(onTap: () {
+                Get.to(()=>RideTrackingScreen());
+              },child: _rideCard(status: "Pending", statusColor: AppColors.secondary));
             },),
           ),
 
@@ -139,7 +146,9 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
 
           Column(
             children: List.generate(6,  (index) {
-              return _rideCard(status: "Completed", statusColor: AppColors.greenColor, price: "\$50.00",);
+              return InkWell(onTap: () {
+                Get.to(()=>RideTrackingScreen());
+              },child: _rideCard(status: "Completed", statusColor: AppColors.greenColor, price: "\$50.00",));
             },),
           ),
 

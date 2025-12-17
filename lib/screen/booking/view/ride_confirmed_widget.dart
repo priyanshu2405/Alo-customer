@@ -1,16 +1,17 @@
+import 'package:alo_ride_app/res/common/app_button.dart';
+import 'package:alo_ride_app/screen/dashboard/controller/dashboard_conroller.dart';
+import 'package:alo_ride_app/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:alo_ride_app/res/common/app_text.dart';
 import 'package:alo_ride_app/res/constant/app_colors.dart';
 import 'package:gap/gap.dart';
+import 'package:get/get.dart';
 
 class RideConfirmedWidget extends StatelessWidget {
   final String dateTimeText;
 
-  const RideConfirmedWidget({
-    super.key,
-    required this.dateTimeText,
-  });
+  const RideConfirmedWidget({super.key, required this.dateTimeText});
 
   @override
   Widget build(BuildContext context) {
@@ -23,16 +24,14 @@ class RideConfirmedWidget extends StatelessWidget {
         //   top: Radius.circular(20.r),
         // ),
         boxShadow: [
-          BoxShadow(
-            blurRadius: 10,
-            color: Colors.black.withOpacity(0.1),
-          ),
+          BoxShadow(blurRadius: 10, color: Colors.black.withOpacity(0.1)),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Gap(10),
+
           /// 🔹 Title
           AppText(
             text: "Ride Confirmed",
@@ -45,8 +44,7 @@ class RideConfirmedWidget extends StatelessWidget {
 
           /// 🔹 Description
           AppText(
-            text:
-            "Your Booking for $dateTimeText\nhas been confirmed.",
+            text: "Your Booking for $dateTimeText\nhas been confirmed.",
             fontSize: 14,
             textAlign: TextAlign.center,
             fontWeight: FontWeight.w500,
@@ -57,8 +55,7 @@ class RideConfirmedWidget extends StatelessWidget {
 
           /// 🔹 Info
           AppText(
-            text:
-            "You will be notified when the Driver is on the way",
+            text: "You will be notified when the Driver is on the way",
             fontSize: 14,
             textAlign: TextAlign.center,
             maxLines: 2,
@@ -66,6 +63,21 @@ class RideConfirmedWidget extends StatelessWidget {
             color: AppColors.lightBlackColor,
           ),
           Gap(22.h),
+          // AppButton(
+          //   text: "Go To Home",
+          //   onTap: () {
+          //     Get.to(() => DashboardScreen());
+          //   },
+          // ),
+          AppButton(
+              text: "Go To Home",
+              onTap: () {
+                final controller = Get.put(DashBoardController());
+                controller.changeIndex(1);
+                Get.to(() => DashboardScreen());
+              }
+          ),
+          Gap(10.h),
         ],
       ),
     );

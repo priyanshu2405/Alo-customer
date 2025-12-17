@@ -131,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Expanded(
                       child: TextFormField(
                         controller: loginController.phoneNumberCtrl,
+                        textInputAction: TextInputAction.done,
                         keyboardType: TextInputType.phone,
                         maxLength: 13,
                         onChanged: (_) => loginController.validatePhone(),
