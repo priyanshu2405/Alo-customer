@@ -13,7 +13,7 @@
 
 
     <application
-        android:label="Alo Drive"
+        android:label="Alo Ride"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
