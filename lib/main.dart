@@ -1,12 +1,20 @@
-import 'package:alo_ride_app/screen/ride/view/ride_completed_screen.dart';
-import 'package:alo_ride_app/screen/splash/view/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
-import 'screen/dashboard/screen/dashboard_screen.dart';
+import 'package:alo_ride_app/api_app_folder/screen/splash/view/splash_screen.dart';
+import 'package:alo_ride_app/api_app_folder/services/token_store.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 🔥 REQUIRED: Initialize GetStorage
+  await GetStorage.init();
+
+  // 🔥 REQUIRED: Register AuthController once
+  Get.put(AuthController(), permanent: true);
+
   runApp(const MyApp());
 }
 
@@ -16,15 +24,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: const Size(390, 844), // Your Figma screen
+      designSize: const Size(390, 844),
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
-          title: 'Flutter Demo',
+          title: 'Alo Ride',
           home: const SplashScreen(),
-          // home: const DashboardScreen(),
         );
       },
     );
