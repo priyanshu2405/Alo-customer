@@ -6,7 +6,9 @@ import 'package:alo_ride_app/res/common/app_text.dart';
 import 'package:alo_ride_app/res/constant/app_colors.dart';
 import 'package:alo_ride_app/res/constant/app_images.dart';
 import 'package:alo_ride_app/screen/dashboard/screen/dashboard_screen.dart';
+import 'package:alo_ride_app/screen/home/controller/home_controller.dart';
 import 'package:alo_ride_app/screen/home/view/home_screen.dart';
+import 'package:alo_ride_app/screen/home/view/welcome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -24,8 +26,7 @@ class OtpScreen extends StatefulWidget {
 }
 
 class _OtpScreenState extends State<OtpScreen> {
-  final List<TextEditingController> otpControllers =
-  List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> otpControllers = List.generate(4, (_) => TextEditingController());
 
   int secondsRemaining = 30;
   Timer? timer;
@@ -170,6 +171,7 @@ class _OtpScreenState extends State<OtpScreen> {
             if (otp.length == 4) {
               debugPrint("OTP Entered: $otp");
               Get.to(()=>DashboardScreen());
+              _showWelcomeDialog();
               // call verify OTP API here
             } else {
               Get.snackbar("Error", "Please enter valid OTP",backgroundColor: AppColors.secondary.withOpacity(0.5));
@@ -229,6 +231,17 @@ class _OtpScreenState extends State<OtpScreen> {
       ),
     );
   }
-
+  void _showWelcomeDialog() {
+    final HomeController homeController = Get.put(HomeController());
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return WelcomeDialog(
+          controller: homeController,
+        );
+      },
+    );
+  }
 
 }

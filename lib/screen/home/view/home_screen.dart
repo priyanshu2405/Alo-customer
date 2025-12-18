@@ -33,9 +33,9 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     /// ✅ Show dialog AFTER first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showWelcomeDialog();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _showWelcomeDialog();
+    // });
   }
 
   void _showWelcomeDialog() {
