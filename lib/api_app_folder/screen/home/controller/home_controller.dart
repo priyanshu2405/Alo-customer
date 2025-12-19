@@ -13,6 +13,7 @@ class HomeController extends GetxController{
 
 
   RxInt selectedVehicleIndex = (-1).obs; // SUV selected by default
+  RxString selectedVehicleName = ''.obs;
 
   final List<Map<String, dynamic>> vehicles = [
     {'name': 'Mini', 'capacity': 'Capacity: 1 - 4', 'icon': Icons.directions_car},

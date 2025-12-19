@@ -225,14 +225,18 @@ class _HomeScreenState extends State<HomeScreen> {
                               itemBuilder: (context, index) {
                                 final vehicle = homeController.getVehicleTypesModel.value.data![index];
 
-                                bool isSelected =
-                                    homeController.selectedVehicleIndex.value == vehicle.id;
+                                bool isSelected = homeController.selectedVehicleIndex.value == vehicle.id;
 
                                 return GestureDetector(
                                   onTap: () {
                                     if (vehicle.id != null) {
                                      setState(() {
                                        homeController.selectedVehicleIndex.value = vehicle.id!;
+                                       homeController.selectedVehicleName.value = vehicle.name ?? '';
+
+
+                                       debugPrint("Selected Vehicle ID: ${vehicle.id}");
+                                       debugPrint("Selected Vehicle Name: ${vehicle.name}");
                                      });
                                     }
                                   },
@@ -290,13 +294,53 @@ class _HomeScreenState extends State<HomeScreen> {
                         Gap(16.h),
 
                         // Book Now Button
+                        // Padding(
+                        //   padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        //   child: ElevatedButton(
+                        //     onPressed: () {
+                        //       // Get.to(()=>BookingScreen());
+                        //       debugPrint("vehicleTypeId : ${homeController.selectedVehicleIndex.value}");
+                        //       Get.to(() => BookingScreen(vehicleTypeId: homeController.selectedVehicleIndex.value));
+                        //     },
+                        //     style: ElevatedButton.styleFrom(
+                        //       backgroundColor: Colors.orange,
+                        //       minimumSize: Size(double.infinity, 50.h),
+                        //       shape: RoundedRectangleBorder(
+                        //         borderRadius: BorderRadius.circular(12),
+                        //       ),
+                        //     ),
+                        //     child: AppText(
+                        //       text: "BOOK NOW",
+                        //       color: Colors.white,
+                        //       fontSize: 16,
+                        //       fontWeight: FontWeight.bold,
+                        //     ),
+                        //   ),
+                        // ),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16.w),
                           child: ElevatedButton(
                             onPressed: () {
-                              // Get.to(()=>BookingScreen());
-                              debugPrint("vehicleTypeId : ${homeController.selectedVehicleIndex.value}");
-                              Get.to(() => BookingScreen(vehicleTypeId: homeController.selectedVehicleIndex.value));
+                              if (homeController.selectedVehicleIndex.value == -1) {
+                                Get.snackbar(
+                                  "Selection Required",
+                                  "Please select a vehicle first",
+                                  snackPosition: SnackPosition.TOP,
+                                  backgroundColor: Colors.red.withOpacity(0.8),
+                                  colorText: Colors.white,
+                                );
+                                return;
+                              }
+
+                              debugPrint(
+                                "vehicleTypeId : ${homeController.selectedVehicleIndex.value}",
+                              );
+
+                              Get.to(() => BookingScreen(
+                                  vehicleTypeId: homeController.selectedVehicleIndex.value,
+                                vehicleTypeName: homeController.selectedVehicleName.value,
+                                ),
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.orange,

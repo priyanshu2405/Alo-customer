@@ -12,19 +12,25 @@ class BookingController extends GetxController {
   Rxn<DateTime> selectedDate = Rxn<DateTime>();
   Rxn<DateTime> selectedTime = Rxn<DateTime>();
 
+  RxDouble totalFare = 0.0.obs;
+
   // Add these for locations
   RxString fromLocation = "".obs;
   RxString dropOffLocation = "".obs;
   Rx<LatLng?> fromLatLng = Rx<LatLng?>(null);
   Rx<LatLng?> dropOffLatLng = Rx<LatLng?>(null);
 
-  String get formattedDate => selectedDate.value == null
-      ? "Select Date"
-      : DateFormat("dd MMM yyyy").format(selectedDate.value!);
+  // String get formattedDate => selectedDate.value == null
+  //     ? "Select Date"
+  //     : DateFormat("dd MMM yyyy").format(selectedDate.value!);
+  //
+  // String get formattedTime => selectedTime.value == null
+  //     ? "Select Time"
+  //     : DateFormat("hh:mm a").format(selectedTime.value!);
 
-  String get formattedTime => selectedTime.value == null
-      ? "Select Time"
-      : DateFormat("hh:mm a").format(selectedTime.value!);
+  String get formattedDate => DateFormat("dd MMM yyyy").format(selectedDate.value!);
+
+  String get formattedTime => DateFormat("hh:mm a").format(selectedTime.value!);
 
   Future<void> pickDate(BuildContext context) async {
     final DateTime? date = await showDatePicker(
@@ -58,50 +64,7 @@ class BookingController extends GetxController {
   }
 
 
-  // Future<void> estimateFare() async {
-  //   isEstimateFare.value = true; // Start loading
-  //
-  //   var body = {
-  //     "pickup_latitude": 40.7128,
-  //     "pickup_longitude": -74.0060,
-  //     "drop_latitude": 40.7589,
-  //     "drop_longitude": -73.9851,
-  //     "vehicle_type_id": 1,
-  //     "trip_type": "one_way"
-  //   };
-  //   debugPrint("body : $body");
-  //
-  //   try {
-  //     final response = await ApiService.post(
-  //       endpoint: 'estimate-fare',
-  //       body: body,
-  //     );
-  //     print("id: ${response["otp"]}");
-  //
-  //     debugPrint("totalFare =====>${response["data"]["total_fare"]}");
-  //     if (response['success'] == true) {
-  //     } else{
-  //       Get.snackbar(
-  //         "Error",
-  //         "${response["errors"]["mobile"]}",
-  //         snackPosition: SnackPosition.TOP,
-  //         backgroundColor: Colors.red.withOpacity(0.8),
-  //         colorText: Colors.white,
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print("Error in createUser: $e");
-  //     Get.snackbar(
-  //       "Error",
-  //       "$e",
-  //       snackPosition: SnackPosition.TOP,
-  //       backgroundColor: AppColors.red.withOpacity(0.5),
-  //       colorText: Colors.white,
-  //     );
-  //   } finally {
-  //     isEstimateFare.value = false; // Stop loading in all cases
-  //   }
-  // }
+
   Future<void> estimateFare({required int vehicleTypeId}) async {
     // ✅ ADD DEBUG PRINTS AT THE START
     debugPrint("=== ESTIMATE FARE CALLED ===");
@@ -148,16 +111,6 @@ class BookingController extends GetxController {
       "trip_type": tripType,
     };
 
-    if (selectedDate.value != null && selectedTime.value != null) {
-      final DateTime scheduledDateTime = DateTime(
-        selectedDate.value!.year,
-        selectedDate.value!.month,
-        selectedDate.value!.day,
-        selectedTime.value!.hour,
-        selectedTime.value!.minute,
-      );
-      body["scheduled_time"] = scheduledDateTime.toIso8601String();
-    }
 
     debugPrint("📤 API Request Body: $body");
 
@@ -171,6 +124,7 @@ class BookingController extends GetxController {
 
       if (response['success'] == true) {
         debugPrint("✅ Total Fare: ${response["data"]["total_fare"]}");
+        totalFare.value = response["data"]["total_fare"];
 
         Get.snackbar(
           "Success",

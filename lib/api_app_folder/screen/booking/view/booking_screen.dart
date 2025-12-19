@@ -15,10 +15,12 @@ import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 
 class BookingScreen extends StatefulWidget {
   final int vehicleTypeId;
-  const BookingScreen({super.key, required this.vehicleTypeId});
+  final String vehicleTypeName;
+  const BookingScreen({super.key, required this.vehicleTypeId, required this.vehicleTypeName});
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -308,20 +310,26 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             Gap(20),
             Obx(() {
-              return      AppText(
-                text: "Ride on ${bookingController.formattedDate} ${bookingController.formattedTime} ",
+              final date = bookingController.selectedDate.value ?? DateTime.now();
+              final time = bookingController.selectedTime.value ?? DateTime.now();
+
+              return AppText(
+                text:
+                "Ride on ${DateFormat("dd MMM yyyy").format(date)} at ${DateFormat("hh:mm a").format(time)}",
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               );
-            },),
+            }),
             Gap(8.h),
             Divider(color: AppColors.darkTextColor),
             Gap(8.h),
-            AppText(
-              text: "Selected car : SUV     Fare estimate : \$ 20",
-              fontSize: 12,
-              color: AppColors.lightBlackColor,
-            ),
+            Obx(() {
+              return AppText(
+                text: "Selected car : ${widget.vehicleTypeName}     Fare estimate : \$${bookingController.totalFare.value}",
+                fontSize: 12,
+                color: AppColors.lightBlackColor,
+              );
+            },),
             Gap(8.h),
             Divider(color: AppColors.darkTextColor),
             Gap(8.h),
@@ -439,8 +447,8 @@ class _BookingScreenState extends State<BookingScreen> {
                     child: Obx(() {
                       return AppText(
                         text: type == "date"
-                            ? bookingController.formattedDate
-                            : bookingController.formattedTime,
+                            ? (bookingController.selectedDate.value == null?"Select Date":bookingController.formattedDate)
+                            : (bookingController.selectedTime.value == null ? "Select Time" : bookingController.formattedTime),
                         fontSize: 12,
                         color: AppColors.greyColor,
                       );
