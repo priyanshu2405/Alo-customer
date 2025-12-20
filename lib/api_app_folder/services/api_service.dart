@@ -115,7 +115,7 @@ class ApiService {
     try {
       // Use provided token or get from controller
       final authToken = token ?? _getToken();
-
+      print("token : $authToken");
       final response = await http
           .post(
             Uri.parse('$baseUrl$endpoint'),

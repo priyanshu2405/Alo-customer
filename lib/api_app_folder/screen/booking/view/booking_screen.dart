@@ -20,7 +20,12 @@ import 'package:intl/intl.dart';
 class BookingScreen extends StatefulWidget {
   final int vehicleTypeId;
   final String vehicleTypeName;
-  const BookingScreen({super.key, required this.vehicleTypeId, required this.vehicleTypeName});
+
+  const BookingScreen({
+    super.key,
+    required this.vehicleTypeId,
+    required this.vehicleTypeName,
+  });
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -67,12 +72,16 @@ class _BookingScreenState extends State<BookingScreen> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
+                if (bookingController.isEstimateFare.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
                 return Stack(
                   children: [
                     GoogleMap(
                       initialCameraPosition: CameraPosition(
                         target:
-                            controller.currentLatLng.value ??
+                        controller.currentLatLng.value ??
                             const LatLng(0, 0),
                         zoom: 14,
                       ),
@@ -95,18 +104,18 @@ class _BookingScreenState extends State<BookingScreen> {
                       circles: controller.currentLatLng.value == null
                           ? {}
                           : {
-                              Circle(
-                                circleId: const CircleId('radius'),
-                                center: controller.currentLatLng.value!,
-                                radius:
-                                    controller.selectedDistance.value * 1000,
-                                strokeColor: AppColors.secondary.withOpacity(
-                                  0.5,
-                                ),
-                                fillColor: AppColors.secondary.withOpacity(0.2),
-                                strokeWidth: 1,
-                              ),
-                            },
+                        Circle(
+                          circleId: const CircleId('radius'),
+                          center: controller.currentLatLng.value!,
+                          radius:
+                          controller.selectedDistance.value * 1000,
+                          strokeColor: AppColors.secondary.withOpacity(
+                            0.5,
+                          ),
+                          fillColor: AppColors.secondary.withOpacity(0.2),
+                          strokeWidth: 1,
+                        ),
+                      },
                       onTap: controller.onMapTap,
                     ),
                     Positioned(
@@ -179,14 +188,19 @@ class _BookingScreenState extends State<BookingScreen> {
                                   icon: Icons.circle,
                                   iconColor: AppColors.pinkColor,
                                   title: 'From',
-                                  subtitle: bookingController.fromLocation.value.isEmpty
+                                  subtitle:
+                                  bookingController
+                                      .fromLocation
+                                      .value
+                                      .isEmpty
                                       ? controller.currentAddress.value
                                       : bookingController.fromLocation.value,
                                   showDivider: true,
-                                  onTap: () => _showLocationSearchSheet(
-                                    context,
-                                    isPickup: true,
-                                  ),
+                                  onTap: () =>
+                                      _showLocationSearchSheet(
+                                        context,
+                                        isPickup: true,
+                                      ),
                                 ),
 
                                 // Drop off location
@@ -194,14 +208,19 @@ class _BookingScreenState extends State<BookingScreen> {
                                   icon: Icons.location_on,
                                   iconColor: AppColors.pinkColor,
                                   title: 'Drop off Location',
-                                  subtitle: bookingController.dropOffLocation.value.isEmpty
+                                  subtitle:
+                                  bookingController
+                                      .dropOffLocation
+                                      .value
+                                      .isEmpty
                                       ? 'Select drop off location'
                                       : bookingController.dropOffLocation.value,
                                   showDivider: false,
-                                  onTap: () => _showLocationSearchSheet(
-                                    context,
-                                    isPickup: false,
-                                  ),
+                                  onTap: () =>
+                                      _showLocationSearchSheet(
+                                        context,
+                                        isPickup: false,
+                                      ),
                                 ),
                                 Gap(10),
                               ],
@@ -289,16 +308,17 @@ class _BookingScreenState extends State<BookingScreen> {
                               ),
                             ),
                           ),
-
                         ],
                       ),
                     ),
                     Positioned(
-                      bottom: 10,right: 10,
+                      bottom: 10,
+                      right: 10,
                       child: InkWell(
                         onTap: () => AppCallHelper.callSOS(),
                         child: AppImage(
-                          height: 55,width: 55,
+                          height: 55,
+                          width: 55,
                           image: AppImages.sosButton,
                           imageType: ImageType.asset,
                         ),
@@ -310,12 +330,15 @@ class _BookingScreenState extends State<BookingScreen> {
             ),
             Gap(20),
             Obx(() {
-              final date = bookingController.selectedDate.value ?? DateTime.now();
-              final time = bookingController.selectedTime.value ?? DateTime.now();
+              final date =
+                  bookingController.selectedDate.value ?? DateTime.now();
+              final time =
+                  bookingController.selectedTime.value ?? DateTime.now();
 
               return AppText(
                 text:
-                "Ride on ${DateFormat("dd MMM yyyy").format(date)} at ${DateFormat("hh:mm a").format(time)}",
+                "Ride on ${DateFormat("dd MMM yyyy").format(
+                    date)} at ${DateFormat("hh:mm a").format(time)}",
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               );
@@ -325,11 +348,14 @@ class _BookingScreenState extends State<BookingScreen> {
             Gap(8.h),
             Obx(() {
               return AppText(
-                text: "Selected car : ${widget.vehicleTypeName}     Fare estimate : \$${bookingController.totalFare.value}",
+                text:
+                "Selected car : ${widget
+                    .vehicleTypeName}     Fare estimate : \$${bookingController
+                    .totalFare.value}",
                 fontSize: 12,
                 color: AppColors.lightBlackColor,
               );
-            },),
+            }),
             Gap(8.h),
             Divider(color: AppColors.darkTextColor),
             Gap(8.h),
@@ -349,12 +375,12 @@ class _BookingScreenState extends State<BookingScreen> {
                     ),
                     TextSpan(
                       text:
-                          "This is an approximate estimate. Actual cost may be different due to traffic and waiting time.",
+                      "This is an approximate estimate. Actual cost may be different due to traffic and waiting time.",
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.normal,
                         color: AppColors.lightBlackColor,
-                          height: 1.4,
+                        height: 1.4,
                       ),
                     ),
                   ],
@@ -365,14 +391,30 @@ class _BookingScreenState extends State<BookingScreen> {
             Gap(20.h),
 
             /// BOOK NOW BUTTON
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0.w),
-              child: AppButton(text: "Book Now", onTap: () {
-                // bookingController.estimateFare(vehicleTypeId: widget.vehicleTypeId);
-                // showRideConfirmed(context);
-                // Get.to(()=>RideTrackingScreen());
-              }),
-            ),
+            Obx(() {
+              return bookingController.totalFare.value != 0.0
+                  ? Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.0.w),
+                child: AppButton(
+                  text: "Book Now",
+                  onTap: () async {
+                    print(" ${bookingController.selectedTime.value}");
+                    await bookingController.bookApi(
+                      vehicleTypeId: widget.vehicleTypeId,
+                    );
+                    if (bookingController.isBookRide.value == true) {
+                      showRideConfirmed(context);
+                    }
+
+                    // bookingController.estimateFare(vehicleTypeId: widget.vehicleTypeId);
+
+                    // Get.to(()=>RideTrackingScreen());
+                  },
+                ),
+              )
+                  : SizedBox.shrink();
+            }),
+
             Gap(30.h),
           ],
         ),
@@ -411,7 +453,8 @@ class _BookingScreenState extends State<BookingScreen> {
   }) {
     return Expanded(
       child: InkWell(
-        onTap: () async {  // ✅ Make it async
+        onTap: () async {
+          // ✅ Make it async
           if (type == "date") {
             await bookingController.pickDate(context);
           } else {
@@ -420,7 +463,9 @@ class _BookingScreenState extends State<BookingScreen> {
 
             // ✅ Then call estimateFare only if time was selected
             if (bookingController.selectedTime.value != null) {
-              bookingController.estimateFare(vehicleTypeId: widget.vehicleTypeId);
+              bookingController.estimateFare(
+                vehicleTypeId: widget.vehicleTypeId,
+              );
             }
           }
         },
@@ -447,8 +492,12 @@ class _BookingScreenState extends State<BookingScreen> {
                     child: Obx(() {
                       return AppText(
                         text: type == "date"
-                            ? (bookingController.selectedDate.value == null?"Select Date":bookingController.formattedDate)
-                            : (bookingController.selectedTime.value == null ? "Select Time" : bookingController.formattedTime),
+                            ? (bookingController.selectedDate.value == null
+                            ? "Select Date"
+                            : bookingController.formattedDate)
+                            : (bookingController.selectedTime.value == null
+                            ? "Select Time"
+                            : bookingController.formattedTime),
                         fontSize: 12,
                         color: AppColors.greyColor,
                       );
@@ -464,16 +513,16 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-
   void showRideConfirmed(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) {
-        return RideConfirmedWidget(
-          dateTimeText: "10 Dec at 07:30 AM",
-        );
+        return Obx(() {
+          return RideConfirmedWidget(
+              dateTimeText: bookingController.rideBookingMessage.value);
+        });
       },
     );
   }
@@ -491,7 +540,10 @@ class _BookingScreenState extends State<BookingScreen> {
         InkWell(
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 10.0,
+              vertical: 8.0,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -534,17 +586,17 @@ class _BookingScreenState extends State<BookingScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: subtitle.contains('Select')
-                            ? Colors.grey[400]
-                            : Colors.grey[600],
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: subtitle.contains('Select')
+                              ? Colors.grey[400]
+                              : Colors.grey[600],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
                     ],
                   ),
                 ),
@@ -563,275 +615,285 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  void _showLocationSearchSheet(BuildContext context, {required bool isPickup}) {
+  void _showLocationSearchSheet(BuildContext context, {
+    required bool isPickup,
+  }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.9,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 4,
-                    color: Colors.black.withOpacity(0.05),
-                    offset: Offset(0, 2),
-                  )
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Handle bar
-                  Container(
-                    width: 40.w,
-                    height: 4.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Gap(16.h),
-                  // Title
-                  Row(
-                    children: [
-                      Icon(
-                        isPickup ? Icons.circle : Icons.location_on,
-                        color: AppColors.pinkColor,
-                        size: 20,
-                      ),
-                      Gap(8.w),
-                      AppText(
-                        text: isPickup ? "Select Pickup Location" : "Select Drop-off Location",
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+      builder: (context) =>
+          Container(
+            height: MediaQuery
+                .of(context)
+                .size
+                .height * 0.9,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                // Header
+                Container(
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20)),
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 4,
+                        color: Colors.black.withOpacity(0.05),
+                        offset: Offset(0, 2),
                       ),
                     ],
                   ),
-                  Gap(12.h),
-                  // Search Field
-                  TextField(
-                    controller: controller.searchController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: 'Search location...',
-                      prefixIcon: Icon(Icons.search),
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.clear),
-                        onPressed: () {
-                          controller.clearSearch();
+                  child: Column(
+                    children: [
+                      // Handle bar
+                      Container(
+                        width: 40.w,
+                        height: 4.h,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Gap(16.h),
+                      // Title
+                      Row(
+                        children: [
+                          Icon(
+                            isPickup ? Icons.circle : Icons.location_on,
+                            color: AppColors.pinkColor,
+                            size: 20,
+                          ),
+                          Gap(8.w),
+                          AppText(
+                            text: isPickup
+                                ? "Select Pickup Location"
+                                : "Select Drop-off Location",
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ],
+                      ),
+                      Gap(12.h),
+                      // Search Field
+                      TextField(
+                        controller: controller.searchController,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          hintText: 'Search location...',
+                          prefixIcon: Icon(Icons.search),
+                          suffixIcon: IconButton(
+                            icon: Icon(Icons.clear),
+                            onPressed: () {
+                              controller.clearSearch();
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: AppColors.lightGray),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: AppColors.pinkColor,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                        onChanged: (value) {
+                          controller.getPlaces(value);
                         },
                       ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(color: AppColors.lightGray),
+                    ],
+                  ),
+                ),
+
+                // Current Location Button (only for pickup)
+                // if (isPickup)
+                //   ListTile(
+                //     leading: Container(
+                //       padding: EdgeInsets.all(8),
+                //       decoration: BoxDecoration(
+                //         color: AppColors.pinkColor.withOpacity(0.1),
+                //         shape: BoxShape.circle,
+                //       ),
+                //       child: Icon(
+                //         Icons.my_location,
+                //         color: AppColors.pinkColor,
+                //         size: 20,
+                //       ),
+                //     ),
+                //     title: AppText(
+                //       text: "Use Current Location",
+                //       fontSize: 15,
+                //       fontWeight: FontWeight.w500,
+                //     ),
+                //     subtitle: Obx(() => AppText(
+                //       text: controller.currentAddress.value,
+                //       fontSize: 12,
+                //       color: AppColors.greyColor,
+                //       maxLines: 1,
+                //       overflow: TextOverflow.ellipsis,
+                //     )),
+                //     onTap: () {
+                //       if (controller.currentLatLng.value != null) {
+                //         bookingController.fromLocation.value =
+                //             controller.currentAddress.value;
+                //         bookingController.fromLatLng.value =
+                //             controller.currentLatLng.value;
+                //
+                //         // Update map
+                //         controller.setMarker(controller.currentLatLng.value!);
+                //         controller.moveCameraTo(controller.currentLatLng.value!);
+                //       }
+                //       Navigator.pop(context);
+                //     },
+                //   ),
+                // Current Location Button (only for pickup)
+                if (isPickup)
+                  ListTile(
+                    leading: Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.pinkColor.withOpacity(0.1),
+                        shape: BoxShape.circle,
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: BorderSide(
-                          color: AppColors.pinkColor,
-                          width: 2,
-                        ),
+                      child: Icon(
+                        Icons.my_location,
+                        color: AppColors.pinkColor,
+                        size: 20,
                       ),
                     ),
-                    onChanged: (value) {
-                      controller.getPlaces(value);
+                    title: AppText(
+                      text: "Use Current Location",
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    subtitle: Obx(
+                          () =>
+                          AppText(
+                            text: controller.currentAddress.value,
+                            fontSize: 12,
+                            color: AppColors.greyColor,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                    ),
+                    onTap: () {
+                      if (controller.currentLatLng.value != null) {
+                        bookingController.fromLocation.value =
+                            controller.currentAddress.value;
+                        bookingController.fromLatLng.value =
+                            controller.currentLatLng.value;
+
+                        // Update map
+                        controller.setMarker(controller.currentLatLng.value!);
+                        controller.moveCameraTo(
+                            controller.currentLatLng.value!);
+
+                        // ✅ ADD THIS DEBUG PRINT TO VERIFY
+                        debugPrint("✅ From Location Set:");
+                        debugPrint(
+                          "Address: ${bookingController.fromLocation.value}",
+                        );
+                        debugPrint(
+                            "LatLng: ${bookingController.fromLatLng.value}");
+                      }
+                      Navigator.pop(context);
                     },
                   ),
-                ],
-              ),
-            ),
 
-            // Current Location Button (only for pickup)
-            // if (isPickup)
-            //   ListTile(
-            //     leading: Container(
-            //       padding: EdgeInsets.all(8),
-            //       decoration: BoxDecoration(
-            //         color: AppColors.pinkColor.withOpacity(0.1),
-            //         shape: BoxShape.circle,
-            //       ),
-            //       child: Icon(
-            //         Icons.my_location,
-            //         color: AppColors.pinkColor,
-            //         size: 20,
-            //       ),
-            //     ),
-            //     title: AppText(
-            //       text: "Use Current Location",
-            //       fontSize: 15,
-            //       fontWeight: FontWeight.w500,
-            //     ),
-            //     subtitle: Obx(() => AppText(
-            //       text: controller.currentAddress.value,
-            //       fontSize: 12,
-            //       color: AppColors.greyColor,
-            //       maxLines: 1,
-            //       overflow: TextOverflow.ellipsis,
-            //     )),
-            //     onTap: () {
-            //       if (controller.currentLatLng.value != null) {
-            //         bookingController.fromLocation.value =
-            //             controller.currentAddress.value;
-            //         bookingController.fromLatLng.value =
-            //             controller.currentLatLng.value;
-            //
-            //         // Update map
-            //         controller.setMarker(controller.currentLatLng.value!);
-            //         controller.moveCameraTo(controller.currentLatLng.value!);
-            //       }
-            //       Navigator.pop(context);
-            //     },
-            //   ),
-            // Current Location Button (only for pickup)
-            if (isPickup)
-              ListTile(
-                leading: Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.pinkColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.my_location,
-                    color: AppColors.pinkColor,
-                    size: 20,
-                  ),
-                ),
-                title: AppText(
-                  text: "Use Current Location",
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                ),
-                subtitle: Obx(() => AppText(
-                  text: controller.currentAddress.value,
-                  fontSize: 12,
-                  color: AppColors.greyColor,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                )),
-                onTap: () {
-                  if (controller.currentLatLng.value != null) {
-                    bookingController.fromLocation.value =
-                        controller.currentAddress.value;
-                    bookingController.fromLatLng.value =
-                        controller.currentLatLng.value;
+                Divider(height: 1),
 
-                    // Update map
-                    controller.setMarker(controller.currentLatLng.value!);
-                    controller.moveCameraTo(controller.currentLatLng.value!);
-
-                    // ✅ ADD THIS DEBUG PRINT TO VERIFY
-                    debugPrint("✅ From Location Set:");
-                    debugPrint("Address: ${bookingController.fromLocation.value}");
-                    debugPrint("LatLng: ${bookingController.fromLatLng.value}");
-                  }
-                  Navigator.pop(context);
-                },
-              ),
-
-            Divider(height: 1),
-
-            // Search Results
-            Expanded(
-              child: Obx(() {
-                if (!controller.showPredictions.value ||
-                    controller.predictions.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.location_on_outlined,
-                          size: 64,
-                          color: Colors.grey[300],
+                // Search Results
+                Expanded(
+                  child: Obx(() {
+                    if (!controller.showPredictions.value ||
+                        controller.predictions.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.location_on_outlined,
+                              size: 64,
+                              color: Colors.grey[300],
+                            ),
+                            Gap(16.h),
+                            AppText(
+                              text: "Search for a location",
+                              fontSize: 16,
+                              color: AppColors.greyColor,
+                            ),
+                          ],
                         ),
-                        Gap(16.h),
-                        AppText(
-                          text: "Search for a location",
-                          fontSize: 16,
-                          color: AppColors.greyColor,
-                        ),
-                      ],
-                    ),
-                  );
-                }
+                      );
+                    }
 
-                return ListView.separated(
-                  padding: EdgeInsets.zero,
-                  itemCount: controller.predictions.length,
-                  separatorBuilder: (context, index) => Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final prediction = controller.predictions[index];
-                    return ListTile(
-                      leading: Container(
-                        padding: EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[100],
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.location_on,
-                          color: Colors.grey[600],
-                          size: 20,
-                        ),
-                      ),
-                      title: AppText(
-                        text: prediction['structured_formatting']
-                        ['main_text'] ?? '',
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: AppText(
-                        text: prediction['description'] ?? '',
-                        fontSize: 12,
-                        color: AppColors.greyColor,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      onTap: () async {
-                        final placeId = prediction['place_id'];
-                        final description = prediction['description'] ?? '';
+                    return ListView.separated(
+                      padding: EdgeInsets.zero,
+                      itemCount: controller.predictions.length,
+                      separatorBuilder: (context, index) => Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final prediction = controller.predictions[index];
+                        return ListTile(
+                          leading: Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.location_on,
+                              color: Colors.grey[600],
+                              size: 20,
+                            ),
+                          ),
+                          title: AppText(
+                            text:
+                            prediction['structured_formatting']['main_text'] ??
+                                '',
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: AppText(
+                            text: prediction['description'] ?? '',
+                            fontSize: 12,
+                            color: AppColors.greyColor,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () async {
+                            final placeId = prediction['place_id'];
+                            final description = prediction['description'] ?? '';
 
-                        // Get place details
-                        await _selectLocation(
-                          placeId,
-                          description,
-                          isPickup,
+                            // Get place details
+                            await _selectLocation(
+                                placeId, description, isPickup);
+
+                            Navigator.pop(context);
+                          },
                         );
-
-                        Navigator.pop(context);
                       },
                     );
-                  },
-                );
-              }),
+                  }),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
-
-
-  Future<void> _selectLocation(
-      String placeId,
+  Future<void> _selectLocation(String placeId,
       String address,
-      bool isPickup,
-      ) async {
+      bool isPickup,) async {
     final url = Uri.parse(
       'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs',
     );
