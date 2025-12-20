@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppAppBar(
         backgroundColor: Colors.transparent,
         leading: Icon(Icons.menu),
-        title: "Home",
+        title: "",
       ),
       body: Obx(() {
         return homeController.isVehicleTypes.value

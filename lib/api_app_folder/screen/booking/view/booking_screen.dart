@@ -55,7 +55,7 @@ class _BookingScreenState extends State<BookingScreen> {
       appBar: AppAppBar(
         backgroundColor: Colors.transparent,
         // leading: Icon(Icons.menu),
-        title: "Booking",
+        title: "",
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -239,10 +239,10 @@ class _BookingScreenState extends State<BookingScreen> {
                                     children: [
                                       _radioOption("Pickup & Drop", 0),
                                       Gap(20.w),
-                                      _radioOption(
-                                        "Round-Trip Pickup & Drop",
-                                        1,
-                                      ),
+                                      // _radioOption(
+                                      //   "Round-Trip Pickup & Drop",
+                                      //   1,
+                                      // ),
                                     ],
                                   ),
 

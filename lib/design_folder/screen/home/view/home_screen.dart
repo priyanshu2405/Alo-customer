@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppAppBar(
         backgroundColor: Colors.transparent,
         leading: Icon(Icons.menu),
-        title: "Home",
+        title: "",
       ),
       body: SingleChildScrollView(
         child: Column(

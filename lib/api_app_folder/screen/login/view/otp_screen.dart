@@ -207,16 +207,16 @@ class _OtpScreenState extends State<OtpScreen> {
 
   Widget _otpBox(int index) {
     return Padding(
-      padding: EdgeInsets.only(right: 15.w),
+      padding: EdgeInsets.only(right: 12.w),
       child: SizedBox(
         width: 48.w,
-        height: 48.h,
+        height: 56.h, // ✅ slightly bigger height
         child: TextField(
           controller: verifyOtpController.otpControllers[index],
           keyboardType: TextInputType.number,
-          textInputAction: index == 3 ? TextInputAction.done : TextInputAction.next,
+          textInputAction:
+          index == 3 ? TextInputAction.done : TextInputAction.next,
           textAlign: TextAlign.center,
-          textAlignVertical: TextAlignVertical.center,
           maxLength: 1,
           style: TextStyle(
             fontSize: 18.sp,
@@ -225,6 +225,12 @@ class _OtpScreenState extends State<OtpScreen> {
           decoration: InputDecoration(
             counterText: "",
             isDense: true,
+
+            // ✅ THIS FIXES TEXT NOT SHOWING
+            contentPadding: EdgeInsets.symmetric(
+              vertical: 16.h,
+            ),
+
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8.r),
               borderSide: BorderSide(color: AppColors.borderColor),
@@ -241,19 +247,20 @@ class _OtpScreenState extends State<OtpScreen> {
               if (index < 3) {
                 FocusScope.of(context).nextFocus();
               } else {
-                FocusScope.of(context).unfocus(); // ✅ close keyboard
+                FocusScope.of(context).unfocus(); // close keyboard
               }
             }
           },
 
-          /// 🔹 DONE BUTTON ACTION (iOS)
+          /// 🔹 DONE BUTTON (iOS)
           onSubmitted: (_) {
-            FocusScope.of(context).unfocus(); // ✅ close keyboard
+            FocusScope.of(context).unfocus();
           },
         ),
       ),
     );
   }
+
 
 
 }
