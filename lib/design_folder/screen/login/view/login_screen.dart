@@ -5,6 +5,7 @@ import 'package:alo_ride_app/design_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/design_folder/screen/login/controller/login_controller.dart';
 import 'package:alo_ride_app/design_folder/screen/login/view/otp_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:alo_ride_app/design_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/design_folder/res/common/app_image.dart';
@@ -134,6 +135,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         textInputAction: TextInputAction.done,
                         // keyboardType: TextInputType.phone,
                         maxLength: 13,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         onChanged: (_) => loginController.validatePhone(),
                         decoration: const InputDecoration(
                           counterText: '',
