@@ -33,22 +33,24 @@ class RideConfirmedWidget extends StatelessWidget {
           Gap(10),
 
           /// 🔹 Title
-          AppText(
-            text: "Ride Confirmed",
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: AppColors.secondary, // orange
-          ),
-
-          Gap(12.h),
+          // AppText(
+          //   text: "Ride Confirmed",
+          //   fontSize: 20,
+          //   fontWeight: FontWeight.w600,
+          //   color: AppColors.secondary, // orange
+          // ),
+          //
+          // Gap(12.h),
 
           /// 🔹 Description
           AppText(
-            text: "Your Booking for $dateTimeText\nhas been confirmed.",
+            text: dateTimeText,
+           // text: "Your Booking for $dateTimeText\nhas been confirmed.",
             fontSize: 14,
             textAlign: TextAlign.center,
             fontWeight: FontWeight.w500,
             color: AppColors.lightBlackColor,
+            overflow: TextOverflow.visible,
           ),
 
           Gap(22.h),
@@ -74,7 +76,7 @@ class RideConfirmedWidget extends StatelessWidget {
               onTap: () {
                 final controller = Get.put(DashBoardController());
                 controller.changeIndex(1);
-                Get.to(() => DashboardScreen());
+                Get.off(() => DashboardScreen());
               }
           ),
           Gap(10.h),

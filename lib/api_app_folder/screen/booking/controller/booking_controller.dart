@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 class BookingController extends GetxController {
   RxInt selectValue = 0.obs;
   RxBool isEstimateFare = false.obs;
+  RxBool isBookRide = false.obs;
 
   Rxn<DateTime> selectedDate = Rxn<DateTime>();
   Rxn<DateTime> selectedTime = Rxn<DateTime>();
@@ -19,6 +20,7 @@ class BookingController extends GetxController {
   RxString dropOffLocation = "".obs;
   Rx<LatLng?> fromLatLng = Rx<LatLng?>(null);
   Rx<LatLng?> dropOffLatLng = Rx<LatLng?>(null);
+  RxString rideBookingMessage = "".obs;
 
   // String get formattedDate => selectedDate.value == null
   //     ? "Select Date"
@@ -153,6 +155,105 @@ class BookingController extends GetxController {
       );
     } finally {
       isEstimateFare.value = false;
+    }
+  }
+
+
+  Future<void> bookApi({required int vehicleTypeId}) async {
+    // ✅ ADD DEBUG PRINTS AT THE START
+    debugPrint("=== ESTIMATE FARE CALLED ===");
+    debugPrint("From Location: ${fromLocation.value}");
+    debugPrint("From LatLng: ${fromLatLng.value}");
+    debugPrint("Drop-off Location: ${dropOffLocation.value}");
+    debugPrint("Drop-off LatLng: ${dropOffLatLng.value}");
+    debugPrint("Vehicle Type ID: $vehicleTypeId");
+    debugPrint("Trip Type: ${selectValue.value == 0 ? 'one_way' : 'round_trip'}");
+
+    // Validation before making API call
+    if (fromLatLng.value == null) {
+      Get.snackbar(
+        "Error",
+        "Please select pickup location",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    if (dropOffLatLng.value == null) {
+      Get.snackbar(
+        "Error",
+        "Please select drop-off location",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    isEstimateFare.value = true;
+
+    String tripType = selectValue.value == 0 ? "one_way" : "round_trip";
+
+    var body = {
+      "pickup_latitude": fromLatLng.value!.latitude,
+      "pickup_longitude": fromLatLng.value!.longitude,
+      "pickup_address" : fromLocation.value,
+      "drop_latitude": dropOffLatLng.value!.latitude,
+      "drop_longitude": dropOffLatLng.value!.longitude,
+      "drop_address": dropOffLocation.value,
+      "vehicle_type_id": vehicleTypeId,
+      "trip_type": tripType,
+      "pickup_datetime" :"$formattedDate $formattedTime",
+    };
+
+
+    debugPrint("📤 API Request Body: $body");
+
+    try {
+      final response = await ApiService.post(
+        endpoint: 'rides',
+        body: body,
+      );
+
+      debugPrint("📥 API Response: $response");
+
+      if (response['success'] == true) {
+       // debugPrint("✅ Total Fare: $response");
+        rideBookingMessage.value = response['message'];
+        isBookRide.value = true;
+        print(response['data']['ride']['pickup_datetime']);
+        /*totalFare.value = response["data"]["total_fare"];
+
+        Get.snackbar(
+          "Success",
+          "Fare estimated: \$${response["data"]["total_fare"]}",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green.withOpacity(0.8),
+          colorText: Colors.white,
+        );*/
+      } else {
+        Get.snackbar(
+          "Error",
+          "${response["message"] ?? response["errors"] ?? "Failed to estimate fare"}",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      debugPrint("❌ Error in estimateFare: $e");
+      Get.snackbar(
+        "Error",
+        "Failed to estimate fare. Please try again.",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.red.withOpacity(0.5),
+        colorText: Colors.white,
+      );
+    } finally {
+      isEstimateFare.value = false;
+    //  isBookRide.value = false;
     }
   }
 
