@@ -159,11 +159,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                             overflow: TextOverflow.ellipsis,
                                           )),
                                         ),
-                                        Gap(20.w),
-                                        const Icon(
-                                          Icons.favorite_border,
-                                          size: 20,
-                                        ),
+                                        // Gap(20.w),
+                                        // const Icon(
+                                        //   Icons.favorite_border,
+                                        //   size: 20,
+                                        // ),
                                       ],
                                     ),
                                   ],

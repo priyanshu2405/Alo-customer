@@ -5,6 +5,7 @@ import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/login/controller/login_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/login/view/otp_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
@@ -132,6 +133,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: TextFormField(
                         controller: loginController.phoneNumberCtrl,
                         textInputAction: TextInputAction.done,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly, // ✅ Only numbers
+                        ],
                         // keyboardType: TextInputType.phone,
                         maxLength: 13,
                         onChanged: (_) => loginController.validatePhone(),

@@ -396,15 +396,17 @@ class _BookingScreenState extends State<BookingScreen> {
                   ? Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0.w),
                 child: AppButton(
+                  isLoading: bookingController.isBookRide.value,
                   text: "Book Now",
                   onTap: () async {
                     print(" ${bookingController.selectedTime.value}");
                     await bookingController.bookApi(
+                      context,
                       vehicleTypeId: widget.vehicleTypeId,
                     );
-                    if (bookingController.isBookRide.value == true) {
-                      showRideConfirmed(context);
-                    }
+                    // if (bookingController.isBookRide.value == true) {
+                    //   showRideConfirmed(context);
+                    // }
 
                     // bookingController.estimateFare(vehicleTypeId: widget.vehicleTypeId);
 
@@ -513,19 +515,19 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  void showRideConfirmed(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) {
-        return Obx(() {
-          return RideConfirmedWidget(
-              dateTimeText: bookingController.rideBookingMessage.value);
-        });
-      },
-    );
-  }
+  // void showRideConfirmed(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.transparent,
+  //     builder: (_) {
+  //       return Obx(() {
+  //         return RideConfirmedWidget(
+  //             dateTimeText: bookingController.rideBookingMessage.value);
+  //       });
+  //     },
+  //   );
+  // }
 
   Widget _buildLocationRow({
     required IconData icon,
@@ -602,11 +604,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
 
                 // Favorite icon
-                IconButton(
-                  icon: const Icon(Icons.favorite_border),
-                  color: Colors.grey[400],
-                  onPressed: () {},
-                ),
+                // IconButton(
+                //   icon: const Icon(Icons.favorite_border),
+                //   color: Colors.grey[400],
+                //   onPressed: () {},
+                // ),
               ],
             ),
           ),

@@ -4,12 +4,13 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
-import 'package:alo_ride_app/api_app_folder/screen/booking/view/ride_tracking_screen.dart';
+import 'package:alo_ride_app/api_app_folder/screen/my_rides/view/ride_tracking_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class MyRidesScreen extends StatefulWidget {
   const MyRidesScreen({super.key});
@@ -34,6 +35,18 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      myRideController.getRideHistory();
+    });
+  }
+
+  Future<void> _onRefresh() async {
+    await myRideController.getRideHistory();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -42,33 +55,45 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
         leading: Icon(Icons.menu),
         title: "My Rides",
       ),
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            height: 2,
-            color: AppColors.darkTextColor,
-          ),
-          // Gap(10),
-          Container(
-            color: Color(0xffEDEDED),
-            child: Row(
-              children: [_tab("List View", 0), _tab("Calendar View", 1)],
-            ),
-          ),
-          Obx(() {
-            return Expanded(
-              child: myRideController.selectedTab.value == 0
-                  ? _listView()
-                  : _calendarView(),
-            );
-          }),
-        ],
-      ),
+      body: Obx(() {
+        return myRideController.isRideHistory.value
+            ? Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 2,
+                    color: AppColors.darkTextColor,
+                  ),
+                  // Gap(10),
+                  Container(
+                    color: Color(0xffEDEDED),
+                    child: Row(
+                      children: [
+                        _tab("List View", 0),
+                        _tab("Calendar View", 1),
+                      ],
+                    ),
+                  ),
+                  Obx(() {
+                    return Expanded(
+                      child: RefreshIndicator(
+                        color: Colors.transparent,
+                        onRefresh: _onRefresh,
+                        child: myRideController.selectedTab.value == 0
+                            ? _listView()
+                            : _calendarView(),
+                      ),
+                    );
+                  }),
+                ],
+              );
+      }),
       floatingActionButton: InkWell(
         onTap: () => AppCallHelper.callSOS(),
         child: AppImage(
-          height: 55,width: 55,
+          height: 55,
+          width: 55,
           image: AppImages.sosButton,
           imageType: ImageType.asset,
         ),
@@ -76,9 +101,6 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
     );
   }
 
-
-
-  /// ================= TAB =================
   Widget _tab(String title, int index) {
     return Obx(() {
       final bool selected = myRideController.selectedTab.value == index;
@@ -109,68 +131,120 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
     });
   }
 
-  /// ================= LIST VIEW =================
   Widget _listView() {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Gap(20),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.h),
-            child: AppText(
-              text: "Upcoming",
-              color: AppColors.secondary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Gap(10),
-          Column(
-            children: List.generate(2,  (index) {
-              return InkWell(onTap: () {
-                Get.to(()=>RideTrackingScreen());
-              },child: _rideCard(status: "Pending", statusColor: AppColors.secondary));
-            },),
-          ),
+    return Obx(() {
+      return SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// ====== PENDING ======
+            if (myRideController.pendingRides.isNotEmpty) ...[
+              Gap(20),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.h),
+                child: AppText(
+                  text: "Upcoming",
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Gap(10),
+              Column(
+                children: myRideController.pendingRides.map((ride) {
+                  return InkWell(
+                    onTap: () {
+                      /*       if (ride.status == 'pending') {
+                        // ❌ Do not navigate
+                        Get.snackbar(
+                          'Ride Pending',
+                          'Tracking is available once the driver accepts the ride.',
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: AppColors.secondary.withOpacity(0.8),
+                          colorText: Colors.white,
+                          margin: const EdgeInsets.all(12),
+                        );
+                      } else {*/
+                      // ✅ Navigate
+                      Get.to(
+                        () => RideTrackingScreen(
+                          bookingId: ride.id ?? 0, // optional
+                        ),
+                      );
+                      /* }*/
+                    },
 
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.h),
-            child: AppText(
-              text: "History",
-              color: AppColors.secondary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+                    child: _rideCard(
+                      // status: "pending",
+                      status: myRideController.getStatusText(ride.status),
+                      statusColor: AppColors.secondary,
+                      pickup: ride.pickupAddress ?? '',
+                      drop: ride.dropAddress ?? '',
+                      bookingId: ride.bookingId ?? '',
+                      // date: ride.pickupDatetime?.toString() ?? '',
+                      date: formatDateRange(
+                        start: ride.pickupDatetime?.toString(),
+                        end: ride.completedAt
+                            ?.toString(), // or dropDatetime if API gives
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
 
-          Gap(10.h),
+            /// ====== COMPLETED ======
+            if (myRideController.completedRides.isNotEmpty) ...[
+              Gap(20),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16.h),
+                child: AppText(
+                  text: "Completed",
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Gap(10),
+              Column(
+                children: myRideController.completedRides.map((ride) {
+                  return InkWell(
+                    onTap: () => Get.to(
+                      () => RideTrackingScreen(bookingId: ride.id ?? 0),
+                    ),
+                    child: _rideCard(
+                      status: "completed",
+                      statusColor: AppColors.greenColor,
+                      price: "\$${ride.totalFare}",
+                      pickup: ride.pickupAddress ?? '',
+                      drop: ride.dropAddress ?? '',
+                      bookingId: ride.bookingId ?? '',
+                      // date: ride.pickupDatetime?.toString() ?? '',
+                      date: formatDateRange(
+                        start: ride.pickupDatetime?.toString(),
+                        end: ride.completedAt
+                            ?.toString(), // or dropDatetime if API gives
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
 
-          Column(
-            children: List.generate(6,  (index) {
-              return InkWell(onTap: () {
-                Get.to(()=>RideTrackingScreen());
-              },child: _rideCard(status: "Completed", statusColor: AppColors.greenColor, price: "\$50.00",));
-            },),
-          ),
-
-          //
-          // _rideCard(
-          //   status: "Completed",
-          //   statusColor: Colors.green,
-          //   price: "\$50.00",
-          // ),
-          // _rideCard(
-          //   status: "Completed",
-          //   statusColor: Colors.green,
-          //   price: "\$50.00",
-          // ),
-          // _rideCard(
-          //   status: "Completed",
-          //   statusColor: Colors.green,
-          //   price: "\$50.00",
-          // ),
-        ],
-      ),
-    );
+            /// ====== EMPTY STATE ======
+            if (myRideController.pendingRides.isEmpty &&
+                myRideController.completedRides.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(40),
+                child: Center(
+                  child: AppText(
+                    text: "No rides found",
+                    color: AppColors.lightGrayText,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    });
   }
 
   /// ================= CALENDAR VIEW =================
@@ -184,6 +258,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
       ),
     );
   }
+
   Widget _calendarWidget() {
     return CalendarDatePicker(
       initialDate: selectedDate,
@@ -199,9 +274,104 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
   }
 
   /// ================= RIDE CARD =================
+  // Widget _rideCard({
+  //   required String status,
+  //   required Color statusColor,
+  //   String? price,
+  // }) {
+  //   return Column(
+  //     children: [
+  //       Padding(
+  //         padding: EdgeInsets.symmetric(horizontal: 16.h),
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Row(
+  //               children: [
+  //                 Expanded(
+  //                   child: AppText(
+  //                     text: "Booking ID: 23356",
+  //                     fontWeight: FontWeight.w600,
+  //                   ),
+  //                 ),
+  //                 if (price != null)
+  //                   AppText(text: price, fontWeight: FontWeight.bold),
+  //                 Gap(6.w),
+  //                 status == "Pending"
+  //                     ? AppText(
+  //                         text: status,
+  //                         color: statusColor,
+  //                         fontSize: 12,
+  //                         fontWeight: FontWeight.w500,
+  //                       )
+  //                     : SizedBox(),
+  //               ],
+  //             ),
+  //             Gap(6.h),
+  //             Row(
+  //               children: [
+  //                 Expanded(
+  //                   child: AppText(
+  //                     text: status == "Pending"
+  //                         ? "Date: 11/12/2025 10.30 AM to Date: 25/12/2025 09.00 AM"
+  //                         : "Date: 06/02/2025 10.30 AM",
+  //                     fontSize: 12,
+  //                     fontWeight: FontWeight.w500,
+  //                   ),
+  //                 ),
+  //                 status == "Pending"
+  //                     ? SizedBox()
+  //                     : AppText(
+  //                         text: status,
+  //                         color: statusColor,
+  //                         fontSize: 12,
+  //                         fontWeight: FontWeight.w500,
+  //                       ),
+  //               ],
+  //             ),
+  //             Gap(8.h),
+  //             _buildLocationRow(
+  //               icon: AppImage(
+  //                 height: 20.h,
+  //                 width: 20.w,
+  //                 image: AppImages.recordCircleFill,
+  //                 imageType: ImageType.svgAsset,
+  //               ),
+  //               iconColor: AppColors.pinkColor,
+  //               title: '241-205 Barrieau Rd, Moncton.',
+  //               showDivider: true,
+  //             ),
+  //             _buildLocationRow(
+  //               icon: Icon(
+  //                 Icons.location_on,
+  //                 color: AppColors.pinkColor,
+  //                 size: 20,
+  //               ),
+  //               iconColor: AppColors.pinkColor,
+  //               title: '100 Holland Dr, Moncton, NB E1...',
+  //               showDivider: false,
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //       Gap(20),
+  //       Container(
+  //         width: double.infinity,
+  //         height: 2,
+  //         color: AppColors.darkTextColor,
+  //       ),
+  //       Gap(20),
+  //     ],
+  //   );
+  // }
+
   Widget _rideCard({
     required String status,
     required Color statusColor,
+    required String pickup,
+    required String drop,
+    required String date,
+    required String bookingId,
     String? price,
   }) {
     return Column(
@@ -212,32 +382,33 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: AppText(
-                      text: "Booking ID: 23356",
+                      text: "Booking ID: $bookingId",
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  if (price != null)
-                    AppText(text: price, fontWeight: FontWeight.bold),
+
                   Gap(6.w),
-                  status == "Pending"?AppText(text: status, color: statusColor, fontSize: 12,fontWeight: FontWeight.w500,):SizedBox(),
+                  Column(
+                    children: [
+                      if (price != null)
+                        AppText(text: price, fontWeight: FontWeight.bold),
+                      AppText(
+                        text: status,
+                        color: statusColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      Gap(6.w),
+                    ],
+                  ),
                 ],
               ),
               Gap(6.h),
-              Row(
-                children: [
-                  Expanded(
-                    child: AppText(
-                      text: status == "Pending"?"Date: 11/12/2025 10.30 AM to Date: 25/12/2025 09.00 AM":"Date: 06/02/2025 10.30 AM",
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  status == "Pending"?SizedBox():AppText(text: status, color: statusColor, fontSize: 12,fontWeight: FontWeight.w500,),
-                ],
-              ),
+              AppText(text: date, fontSize: 12, fontWeight: FontWeight.w500),
               Gap(8.h),
               _buildLocationRow(
                 icon: AppImage(
@@ -247,7 +418,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
                   imageType: ImageType.svgAsset,
                 ),
                 iconColor: AppColors.pinkColor,
-                title: '241-205 Barrieau Rd, Moncton.',
+                title: pickup,
                 showDivider: true,
               ),
               _buildLocationRow(
@@ -257,19 +428,15 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
                   size: 20,
                 ),
                 iconColor: AppColors.pinkColor,
-                title: '100 Holland Dr, Moncton, NB E1...',
+                title: drop,
                 showDivider: false,
               ),
             ],
           ),
         ),
         Gap(20),
-        Container(
-          width: double.infinity,
-          height: 2,
-          color: AppColors.darkTextColor,
-        ),
-        Gap(20),
+        Divider(thickness: 1),
+        Gap(15),
       ],
     );
   }
@@ -295,7 +462,14 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
               if (price != null)
                 AppText(text: price, fontWeight: FontWeight.bold),
               Gap(6.w),
-              status == "Pending"?AppText(text: status, color: statusColor, fontSize: 12,fontWeight: FontWeight.w500,):SizedBox(),
+              status == "Pending"
+                  ? AppText(
+                      text: status,
+                      color: statusColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    )
+                  : SizedBox(),
             ],
           ),
           Gap(6.h),
@@ -303,12 +477,21 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
             children: [
               Expanded(
                 child: AppText(
-                  text: status == "Pending"?"Date: 11/12/2025 10.30 AM to Date: 25/12/2025 09.00 AM":"Date: 06/02/2025 10.30 AM",
+                  text: status == "Pending"
+                      ? "Date: 11/12/2025 10.30 AM to Date: 25/12/2025 09.00 AM"
+                      : "Date: 06/02/2025 10.30 AM",
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              status == "Pending"?SizedBox():AppText(text: status, color: statusColor, fontSize: 12,fontWeight: FontWeight.w500,),
+              status == "Pending"
+                  ? SizedBox()
+                  : AppText(
+                      text: status,
+                      color: statusColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
             ],
           ),
           Gap(8.h),
@@ -324,11 +507,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
             showDivider: true,
           ),
           _buildLocationRow(
-            icon: Icon(
-              Icons.location_on,
-              color: AppColors.pinkColor,
-              size: 20,
-            ),
+            icon: Icon(Icons.location_on, color: AppColors.pinkColor, size: 20),
             iconColor: AppColors.pinkColor,
             title: '100 Holland Dr, Moncton, NB E1...',
             showDivider: false,
@@ -338,7 +517,6 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
     );
   }
 
-
   Widget _buildLocationRow({
     required Widget icon,
     required Color iconColor,
@@ -346,6 +524,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
     required bool showDivider,
   }) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,5 +566,26 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
         ),
       ],
     );
+  }
+
+  String formatDateTime(String? dateTime) {
+    if (dateTime == null || dateTime.isEmpty) return '';
+
+    final dt = DateTime.parse(dateTime).toLocal();
+
+    return DateFormat('dd/MM/yyyy hh.mm a').format(dt);
+  }
+
+  String formatDateRange({required String? start, required String? end}) {
+    // ❌ No start date → show nothing
+    if (start == null || start.isEmpty) return '';
+
+    // ✅ Both start & end → show range
+    if (end != null && end.isNotEmpty) {
+      return 'Date: ${formatDateTime(start)} to Date: ${formatDateTime(end)}';
+    }
+
+    // ✅ Only start → show single date
+    return 'Date: ${formatDateTime(start)}';
   }
 }

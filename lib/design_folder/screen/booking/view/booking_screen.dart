@@ -591,11 +591,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
 
                 // Favorite icon
-                IconButton(
-                  icon: const Icon(Icons.favorite_border),
-                  color: Colors.grey[400],
-                  onPressed: () {},
-                ),
+                // IconButton(
+                //   icon: const Icon(Icons.favorite_border),
+                //   color: Colors.grey[400],
+                //   onPressed: () {},
+                // ),
               ],
             ),
           ),

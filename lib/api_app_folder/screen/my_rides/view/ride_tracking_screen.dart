@@ -1,0 +1,571 @@
+import 'package:alo_ride_app/api_app_folder/res/common/app_appbar.dart';
+import 'package:alo_ride_app/api_app_folder/res/common/app_button.dart';
+import 'package:alo_ride_app/api_app_folder/res/common/app_call_helper.dart';
+import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
+import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
+import 'package:alo_ride_app/api_app_folder/res/common/common_text_field.dart';
+import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
+import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
+import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
+import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:gap/gap.dart';
+import 'package:get/get.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+class RideTrackingScreen extends StatefulWidget {
+  final int bookingId;
+  const RideTrackingScreen({super.key, required this.bookingId});
+
+  @override
+  State<RideTrackingScreen> createState() => _RideTrackingScreenState();
+}
+
+class _RideTrackingScreenState extends State<RideTrackingScreen> {
+  final MyRideController myRideController = Get.put(MyRideController());
+  GoogleMapController? mapController;
+
+  // final LatLng pickupLocation = const LatLng(46.0878, -64.7782);
+  // final LatLng dropLocation = const LatLng(46.0915, -64.7500);
+
+  final Set<Marker> markers = {};
+  final Set<Polyline> polylines = {};
+
+  @override
+  void initState() {
+    myRideController.getRideDetails(id: widget.bookingId);
+    super.initState();
+
+    /// Pickup Marker
+    // markers.add(
+    //   Marker(
+    //     markerId: const MarkerId("pickup"),
+    //     position: myRideController.pickupLatLng,
+    //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+    //   ),
+    // );
+    //
+    // /// Drop Marker
+    // markers.add(
+    //   Marker(
+    //     markerId: const MarkerId("drop"),
+    //     position: dropLocation,
+    //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+    //   ),
+    // );
+    //
+    // /// Route Polyline (dummy example)
+    // polylines.add(
+    //   Polyline(
+    //     polylineId: const PolylineId("route"),
+    //     points: [pickupLocation, const LatLng(46.0895, -64.7700), dropLocation],
+    //     color: Colors.blue,
+    //     width: 5,
+    //   ),
+    // );
+  }
+
+  @override
+  void dispose() {
+    // Dispose the map controller before the widget is disposed
+    mapController?.dispose();
+    mapController = null;
+    super.dispose();
+  }
+
+  void _updateMap(LatLng pickup, LatLng drop) {
+    markers.clear();
+    polylines.clear();
+
+    markers.add(
+      Marker(
+        markerId: const MarkerId('pickup'),
+        position: pickup,
+        icon:
+        BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+      ),
+    );
+
+    markers.add(
+      Marker(
+        markerId: const MarkerId('drop'),
+        position: drop,
+        icon:
+        BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      ),
+    );
+
+    polylines.add(
+      Polyline(
+        polylineId: const PolylineId('route'),
+        points: [pickup, drop],
+        color: Colors.blue,
+        width: 5,
+      ),
+    );
+
+    try {
+      mapController?.animateCamera(
+        CameraUpdate.newLatLngZoom(pickup, 14),
+      );
+    } catch (e) {
+      debugPrint('Error animating camera: $e');
+    }
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      extendBodyBehindAppBar: true,
+      appBar: AppAppBar(
+        backgroundColor: Colors.transparent,
+        // leading: Icon(Icons.menu),
+        title: "",
+      ),
+      body: Obx(() {
+
+        final pickup = myRideController.pickupLatLng.value;
+        final drop = myRideController.dropLatLng.value;
+
+        if (pickup == null || drop == null) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (mounted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _updateMap(pickup, drop);
+          });
+        }
+        return myRideController.isGetRideDetails.value
+            ? Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Container(
+                      height: 620.h,
+                      child: Stack(
+                        children: [
+                          GoogleMap(
+                            // initialCameraPosition: CameraPosition(
+                            //   target: pickupLocation,
+                            //   zoom: 14,
+                            // ),
+                            initialCameraPosition: CameraPosition(
+                              target: pickup,
+                              zoom: 14,
+                            ),
+                            onMapCreated: (controller) {
+                              mapController = controller;
+                            },
+                            markers: markers,
+                            polylines: polylines,
+                            myLocationEnabled: true,
+                            myLocationButtonEnabled: false,
+                          ),
+                          Positioned(
+                            top: 80.h,
+                            left: 16,
+                            right: 16,
+                            child: Column(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: AppColors.lightGray,
+                                      width: 2,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      // From location
+                                      Gap(10),
+                                      _buildLocationRow(
+                                        icon: Icons.circle,
+                                        iconColor: AppColors.pinkColor,
+                                        title: 'From',
+                                        subtitle: '${myRideController.getRideDetailsModel.value.data?.ride?.pickupAddress}',
+                                        showDivider: true,
+                                      ),
+
+                                      // Drop off location
+                                      _buildLocationRow(
+                                        icon: Icons.location_on,
+                                        iconColor: AppColors.pinkColor,
+                                        title: 'Drop off Location',
+                                        subtitle: '${myRideController.getRideDetailsModel.value.data?.ride?.dropAddress}',
+                                        showDivider: false,
+                                      ),
+                                      Gap(10),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 10,
+                            right: 10,
+                            child: InkWell(
+                              onTap: () => AppCallHelper.callSOS(),
+                              child: AppImage(
+                                height: 55,
+                                width: 55,
+                                image: AppImages.sosButton,
+                                imageType: ImageType.asset,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Gap(20),
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        /// Driver Info
+                        myRideController.getRideDetailsModel.value.data?.ride?.driver == null?SizedBox(height: 90,):Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.h),
+                          child: InkWell(
+                            onTap: () {
+                              Get.to(() => RideCompletedScreen(bookingId: widget.bookingId,));
+                            },
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipOval(
+                                  child: SizedBox(
+                                    width: 60.r,
+                                    height: 60.r,
+                                    child: Image.network(
+                                      "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.profilePhoto}",
+                                      fit: BoxFit.cover,
+
+                                      // 🔄 Loader
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return Center(
+                                          child: SizedBox(
+                                            width: 22,
+                                            height: 22,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                        );
+                                      },
+
+                                      // ❌ Error image
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Container(
+                                          color: Colors.grey.shade300,
+                                          child: Icon(
+                                            Icons.person,
+                                            size: 32,
+                                            color: Colors.grey.shade700,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Gap(12.w),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      AppText(
+                                        text: "Driver: ${myRideController.getRideDetailsModel.value.data?.ride?.driver?.name}",
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      Gap(1),
+                                      AppText(
+                                        text: "2 mins away!",
+                                        fontSize: 12,
+                                        color: AppColors.lightBlackColor,
+                                      ),
+                                      Gap(12.h),
+
+                                      /// Vehicle Info
+                                      Row(
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 10.w,
+                                              vertical: 4.h,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(6.r),
+                                              border: Border.all(
+                                                color: AppColors.greyColor,
+                                              ),
+                                            ),
+                                            child: AppText(
+                                              text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          Gap(10.w),
+                                          AppText(
+                                            text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
+                                            fontSize: 12,
+                                            color: AppColors.lightBlackColor,
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                AppText(
+                                  text: "1.5 KM",
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.lightBlackColor,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        Gap(17.h),
+                        Divider(color: AppColors.darkTextColor),
+                        Gap(17.h),
+
+                        /// Buttons
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 16.h),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: AppButton(
+                                  text: "CALL DRIVER",
+                                  onTap: () => AppCallHelper.makeCall("${myRideController.getRideDetailsModel.value.data?.ride?.driver?.mobile}"),
+                                ),
+                              ),
+                              Gap(12.w),
+                              Expanded(
+                                child: AppButton(
+                                  text: "CANCEL RIDE",
+                                  onTap: () {
+                                    showCancelRideDialog(context);
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Gap(20.h),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+      }),
+    );
+  }
+
+  Widget _buildLocationRow({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required bool showDivider,
+  }) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon with connecting line
+              Column(
+                children: [
+                  Icon(icon, color: iconColor, size: 20),
+                  if (showDivider)
+                    Column(
+                      children: List.generate(10, (index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 2.0),
+                          child: Container(
+                            height: 2,
+                            width: 2,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.black,
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                ],
+              ),
+
+              const SizedBox(width: 12),
+
+              // Text content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+
+              // // Favorite icon
+              // IconButton(
+              //   icon: const Icon(Icons.favorite_border),
+              //   color: Colors.grey[400],
+              //   onPressed: () {},
+              // ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void showCancelRideDialog(BuildContext context) {
+
+
+    final double screenWidth = MediaQuery.of(context).size.width;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          // ✅ Responsive horizontal padding
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.06, // ~6% of screen width
+            vertical: 24,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                /// ❌ Title
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Cancel Ride",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () => Get.back(),
+                      child: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                /// 📄 Description
+                const Text(
+                  "Please tell us why you are cancelling this ride.",
+                  style: TextStyle(fontSize: 14),
+                ),
+
+                const SizedBox(height: 16),
+
+                /// ✏️ Reason Input
+                CommonTextField(
+                  controller: myRideController.reasonController,
+                  hintText: "Enter cancellation reason",
+                  maxLines: 3,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return "Reason is required";
+                    }
+                    return null;
+                  },
+                ),
+
+                const SizedBox(height: 24),
+
+                /// 🔘 Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppButton(
+                        text: "NO",
+                        backgroundColor: Colors.grey.shade300,
+                        textColor: Colors.black,
+                        onTap: () => Get.back(),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Obx(() {
+                        return AppButton(
+                          isLoading: myRideController.isCancelRide.value,
+                          text: "YES",
+                          onTap: () {
+                            if (myRideController.reasonController.text.trim().isEmpty) {
+                              Get.snackbar(
+                                "Error",
+                                "Please enter a reason",
+                                snackPosition: SnackPosition.TOP,
+                                backgroundColor: Colors.red.withOpacity(0.8),
+                                colorText: Colors.white,
+                              );
+                              return;
+                            }
+
+                            debugPrint(
+                              "Cancel reason: ${myRideController.reasonController.text}",
+                            );
+                            myRideController.cancelRide(id: widget.bookingId);
+                          },
+                        );
+                      },),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+}

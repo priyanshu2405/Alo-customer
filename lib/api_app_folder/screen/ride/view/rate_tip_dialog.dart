@@ -69,15 +69,15 @@ class _RateTipDialogState extends State<RateTipDialog> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _tip("\$1"),
-                        _tip("\$3"),
-                        _tip("\$5"),
+                        _tip(1),
+                        _tip(3),
+                        _tip(5),
                       ],
                     ),
 
                     Gap(12.h),
 
-                    CommonTextField(controller: rideCompletedController.amountCtrl, hintText: "Enter custom Amount",),
+                    CommonTextField(controller: rideCompletedController.amountCtrl, hintText: "Enter custom Amount",onChanged: rideCompletedController.onCustomAmountChanged,),
                   ],
                 ),
               ),
@@ -125,7 +125,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
 
               Gap(20.h),
               AppButton(text: "SUBMIT", onTap: () {
-                Get.to(()=>PaymentDetailsScreen());
+               Get.back();
               },),
               Gap(10.h),
 
@@ -136,10 +136,43 @@ class _RateTipDialogState extends State<RateTipDialog> {
     );
   }
 
-  Widget _tip(String value) {
+  // Widget _tip(String value) {
+  //   return Obx(() {
+  //     final bool isSelected =
+  //         rideCompletedController.selectedTip.value == value;
+  //
+  //     return GestureDetector(
+  //       onTap: () {
+  //         rideCompletedController.onTipSelected(value);
+  //       },
+  //       child: Container(
+  //         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+  //         decoration: BoxDecoration(
+  //           borderRadius: BorderRadius.circular(8.r),
+  //           border: Border.all(
+  //             color: isSelected
+  //                 ? Colors.orange
+  //                 : AppColors.borderColor,
+  //             width: 1.5,
+  //           ),
+  //           color: isSelected
+  //               ? Colors.orange.withOpacity(0.1)
+  //               : Colors.transparent,
+  //         ),
+  //         child: AppText(
+  //           text: value,
+  //           fontWeight: FontWeight.w600,
+  //           color: isSelected ? Colors.orange : AppColors.black,
+  //         ),
+  //       ),
+  //     );
+  //   });
+  // }
+
+  Widget _tip(double value) {
     return Obx(() {
       final bool isSelected =
-          rideCompletedController.selectedTip.value == value;
+          rideCompletedController.tipAmount.value == value;
 
       return GestureDetector(
         onTap: () {
@@ -150,9 +183,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8.r),
             border: Border.all(
-              color: isSelected
-                  ? Colors.orange
-                  : AppColors.borderColor,
+              color: isSelected ? Colors.orange : AppColors.borderColor,
               width: 1.5,
             ),
             color: isSelected
@@ -160,7 +191,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
                 : Colors.transparent,
           ),
           child: AppText(
-            text: value,
+            text: "\$${value.toInt()}",
             fontWeight: FontWeight.w600,
             color: isSelected ? Colors.orange : AppColors.black,
           ),
@@ -168,5 +199,6 @@ class _RateTipDialogState extends State<RateTipDialog> {
       );
     });
   }
+
 
 }

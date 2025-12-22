@@ -1,4 +1,5 @@
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
+import 'package:alo_ride_app/api_app_folder/screen/booking/view/ride_confirmed_widget.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -159,7 +160,7 @@ class BookingController extends GetxController {
   }
 
 
-  Future<void> bookApi({required int vehicleTypeId}) async {
+  Future<void> bookApi(BuildContext context,{required int vehicleTypeId,}) async {
     // ✅ ADD DEBUG PRINTS AT THE START
     debugPrint("=== ESTIMATE FARE CALLED ===");
     debugPrint("From Location: ${fromLocation.value}");
@@ -192,10 +193,21 @@ class BookingController extends GetxController {
       return;
     }
 
-    isEstimateFare.value = true;
+    isBookRide.value = true;
 
     String tripType = selectValue.value == 0 ? "one_way" : "round_trip";
 
+    // "pickup_latitude": 40.7128,
+    // "pickup_longitude": -74.0060,
+    // "pickup_address": "123 Main St, New York, NY",
+    // "drop_latitude": 40.7589,
+    // "drop_longitude": -73.9851,
+    // "drop_address": "456 Broadway, New York, NY",
+    // "vehicle_type_id": 1,
+    // "trip_type": "round_trip",
+    // // "trip_type": "one_way",
+    // "pickup_datetime": "2025-12-18 10:00:00",
+    // "tip_amount": 5.00
     var body = {
       "pickup_latitude": fromLatLng.value!.latitude,
       "pickup_longitude": fromLatLng.value!.longitude,
@@ -206,6 +218,7 @@ class BookingController extends GetxController {
       "vehicle_type_id": vehicleTypeId,
       "trip_type": tripType,
       "pickup_datetime" :"$formattedDate $formattedTime",
+      "tip_amount" : "0.0",
     };
 
 
@@ -222,8 +235,8 @@ class BookingController extends GetxController {
       if (response['success'] == true) {
        // debugPrint("✅ Total Fare: $response");
         rideBookingMessage.value = response['message'];
-        isBookRide.value = true;
         print(response['data']['ride']['pickup_datetime']);
+        showRideConfirmed(context);
         /*totalFare.value = response["data"]["total_fare"];
 
         Get.snackbar(
@@ -252,9 +265,23 @@ class BookingController extends GetxController {
         colorText: Colors.white,
       );
     } finally {
-      isEstimateFare.value = false;
+      isBookRide.value = false;
     //  isBookRide.value = false;
     }
   }
+  void showRideConfirmed(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return Obx(() {
+          return RideConfirmedWidget(
+              dateTimeText: rideBookingMessage.value);
+        });
+      },
+    );
+  }
+
 
 }
