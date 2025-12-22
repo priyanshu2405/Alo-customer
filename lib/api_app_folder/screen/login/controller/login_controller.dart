@@ -12,17 +12,19 @@ class LoginController extends GetxController {
   RxBool isLoading = false.obs;
 
   Rx<Country?> countryCode = Country(
-    phoneCode: "91",
-    countryCode: "IN",
-    name: "India",
-    displayName: "India (IN) [+91]",
-    displayNameNoCountryCode: "India (IN)",
-    e164Key: "91-IN-0",
+    phoneCode: "1",
+    countryCode: "CA",
+    name: "Canada",
+    displayName: "Canada (CA) [+1]",
+    displayNameNoCountryCode: "Canada (CA)",
+    e164Key: "1-CA-0",
     e164Sc: 0,
     geographic: true,
     level: 1,
-    example: "9123456789",
+    example: "2041234567",
   ).obs;
+
+
 
   /// 🔹 Validation states
   RxString phoneError = "".obs;
