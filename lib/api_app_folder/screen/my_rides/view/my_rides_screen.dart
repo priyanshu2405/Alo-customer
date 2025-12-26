@@ -6,6 +6,8 @@ import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/view/ride_tracking_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
+import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
+import 'package:alo_ride_app/core/extensions/date_time_extension.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
@@ -47,6 +49,12 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
   }
 
   @override
+  void dispose() {
+    myRideController.selectedTab.value = 0;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.white,
@@ -78,10 +86,10 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
                   Obx(() {
                     return Expanded(
                       child: RefreshIndicator(
-                        color: Colors.transparent,
+                        color:AppColors.secondary,
                         onRefresh: _onRefresh,
                         child: myRideController.selectedTab.value == 0
-                            ? _listView()
+                            ? SingleChildScrollView(child: _listView())
                             : _calendarView(),
                       ),
                     );
@@ -106,8 +114,16 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
       final bool selected = myRideController.selectedTab.value == index;
       return Expanded(
         child: InkWell(
-          onTap: () =>
-              setState(() => myRideController.selectedTab.value = index),
+          onTap:myRideController.selectedTab.value == index? null : () {
+            myRideController.startDate = null;
+            //myRideController.endDate = null;
+            setState(() => myRideController.selectedTab.value = index);
+            if(index == 1) {
+              myRideController.startDate = selectedDate.yyyymmdd;
+            }
+            myRideController.getRideHistory();
+          },
+
           child: Column(
             children: [
               Padding(
@@ -133,116 +149,168 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
 
   Widget _listView() {
     return Obx(() {
-      return SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// ====== PENDING ======
-            if (myRideController.pendingRides.isNotEmpty) ...[
-              Gap(20),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.h),
-                child: AppText(
-                  text: "Upcoming",
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.bold,
-                ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// ====== PENDING ======
+          if (myRideController.pendingRides.isNotEmpty) ...[
+            Gap(20),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              child: AppText(
+                text: "Upcoming",
+                color: AppColors.secondary,
+                fontWeight: FontWeight.bold,
               ),
-              Gap(10),
-              Column(
-                children: myRideController.pendingRides.map((ride) {
-                  return InkWell(
-                    onTap: () {
-                      /*       if (ride.status == 'pending') {
-                        // ❌ Do not navigate
-                        Get.snackbar(
-                          'Ride Pending',
-                          'Tracking is available once the driver accepts the ride.',
-                          snackPosition: SnackPosition.TOP,
-                          backgroundColor: AppColors.secondary.withOpacity(0.8),
-                          colorText: Colors.white,
-                          margin: const EdgeInsets.all(12),
-                        );
-                      } else {*/
-                      // ✅ Navigate
-                      Get.to(
-                        () => RideTrackingScreen(
-                          bookingId: ride.id ?? 0, // optional
-                        ),
+            ),
+            Gap(10),
+            Column(
+              children: myRideController.pendingRides.map((ride) {
+                return InkWell(
+                  onTap: () {
+                    /*       if (ride.status == 'pending') {
+                      // ❌ Do not navigate
+                      Get.snackbar(
+                        'Ride Pending',
+                        'Tracking is available once the driver accepts the ride.',
+                        snackPosition: SnackPosition.TOP,
+                        backgroundColor: AppColors.secondary.withOpacity(0.8),
+                        colorText: Colors.white,
+                        margin: const EdgeInsets.all(12),
                       );
-                      /* }*/
-                    },
-
-                    child: _rideCard(
-                      // status: "pending",
-                      status: myRideController.getStatusText(ride.status),
-                      statusColor: AppColors.secondary,
-                      pickup: ride.pickupAddress ?? '',
-                      drop: ride.dropAddress ?? '',
-                      bookingId: ride.bookingId ?? '',
-                      // date: ride.pickupDatetime?.toString() ?? '',
-                      date: formatDateRange(
-                        start: ride.pickupDatetime?.toString(),
-                        end: ride.completedAt
-                            ?.toString(), // or dropDatetime if API gives
+                    } else {*/
+                    // ✅ Navigate
+                    Get.to(
+                      () => RideTrackingScreen(
+                        bookingId: ride.id ?? 0, // optional
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
+                    );
+                    /* }*/
+                  },
 
-            /// ====== COMPLETED ======
-            if (myRideController.completedRides.isNotEmpty) ...[
-              Gap(20),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.h),
-                child: AppText(
-                  text: "Completed",
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Gap(10),
-              Column(
-                children: myRideController.completedRides.map((ride) {
-                  return InkWell(
-                    onTap: () => Get.to(
-                      () => RideTrackingScreen(bookingId: ride.id ?? 0),
+                  child: _rideCard(
+                    // status: "pending",
+                    status: myRideController.getStatusText(ride.status),
+                    statusColor: AppColors.secondary,
+                    pickup: ride.pickupAddress ?? '',
+                    drop: ride.dropAddress ?? '',
+                    bookingId: ride.bookingId ?? '',
+                    // date: ride.pickupDatetime?.toString() ?? '',
+                    date: formatDateRange(
+                      start: ride.pickupDatetime?.toString(),
+                      end: ride.completedAt
+                          ?.toString(), // or dropDatetime if API gives
                     ),
-                    child: _rideCard(
-                      status: "completed",
-                      statusColor: AppColors.greenColor,
-                      price: "\$${ride.totalFare}",
-                      pickup: ride.pickupAddress ?? '',
-                      drop: ride.dropAddress ?? '',
-                      bookingId: ride.bookingId ?? '',
-                      // date: ride.pickupDatetime?.toString() ?? '',
-                      date: formatDateRange(
-                        start: ride.pickupDatetime?.toString(),
-                        end: ride.completedAt
-                            ?.toString(), // or dropDatetime if API gives
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-
-            /// ====== EMPTY STATE ======
-            if (myRideController.pendingRides.isEmpty &&
-                myRideController.completedRides.isEmpty)
-              Padding(
-                padding: const EdgeInsets.all(40),
-                child: Center(
-                  child: AppText(
-                    text: "No rides found",
-                    color: AppColors.lightGrayText,
                   ),
+                );
+              }).toList(),
+            ),
+          ],
+
+          /// ====== COMPLETED ======
+          if (myRideController.completedRides.isNotEmpty) ...[
+            Gap(20),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              child: AppText(
+                text: "Completed",
+                color: AppColors.secondary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Gap(10),
+            Column(
+              children: myRideController.completedRides.map((ride) {
+                return InkWell(
+                  onTap: () => Get.to(
+                    () => RideCompletedScreen(bookingId: ride.id ?? 0,isShowDialog: false,),
+                  ),
+                  child: _rideCard(
+                    status: "completed",
+                    statusColor: AppColors.greenColor,
+                    price: "\$${ride.totalFare}",
+                    pickup: ride.pickupAddress ?? '',
+                    drop: ride.dropAddress ?? '',
+                    bookingId: ride.bookingId ?? '',
+                    // date: ride.pickupDatetime?.toString() ?? '',
+                    date: formatDateRange(
+                      start: ride.pickupDatetime?.toString(),
+                      end: ride.completedAt
+                          ?.toString(), // or dropDatetime if API gives
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+
+          /// ====== CANCELLED ======
+          if (myRideController.cancelRides.isNotEmpty) ...[
+            Gap(20),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              child: AppText(
+                text: "Cancelled",
+                color: AppColors.secondary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Gap(10),
+            Column(
+              children: myRideController.cancelRides.map((ride) {
+                return InkWell(
+                  onTap: () {
+                    /*       if (ride.status == 'pending') {
+                      // ❌ Do not navigate
+                      Get.snackbar(
+                        'Ride Pending',
+                        'Tracking is available once the driver accepts the ride.',
+                        snackPosition: SnackPosition.TOP,
+                        backgroundColor: AppColors.secondary.withOpacity(0.8),
+                        colorText: Colors.white,
+                        margin: const EdgeInsets.all(12),
+                      );
+                    } else {*/
+                    // ✅ Navigate
+                    Get.to(
+                          () => RideTrackingScreen(
+                        bookingId: ride.id ?? 0, // optional
+                      ),
+                    );
+                    /* }*/
+                  },
+
+                  child: _rideCard(
+                    // status: "pending",
+                    status: "Cancelled",
+                    statusColor: AppColors.secondary,
+                    pickup: ride.pickupAddress ?? '',
+                    drop: ride.dropAddress ?? '',
+                    bookingId: ride.bookingId ?? '',
+                    // date: ride.pickupDatetime?.toString() ?? '',
+                    date: formatDateRange(
+                      start: ride.pickupDatetime?.toString(),
+                      end: ride.completedAt
+                          ?.toString(), // or dropDatetime if API gives
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+          /// ====== EMPTY STATE ======
+          if (myRideController.pendingRides.isEmpty &&
+              myRideController.completedRides.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(40),
+              child: Center(
+                child: AppText(
+                  text: "No rides found",
+                  color: AppColors.lightGrayText,
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       );
     });
   }
@@ -253,7 +321,8 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
       child: Column(
         children: [
           _calendarWidget(),
-          _calendarViewRideCard(status: "Pending", statusColor: Colors.orange),
+          _listView(),
+         // _calendarViewRideCard(status: "Pending", statusColor: Colors.orange),
         ],
       ),
     );
@@ -265,8 +334,13 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       onDateChanged: (value) {
+        if(selectedDate == value) return;
         setState(() {
+          // print("value: $value");
           selectedDate = value;
+          myRideController.startDate = value.yyyymmdd;
+         // myRideController.endDate = value.yyyymmdd;
+          myRideController.getRideHistory();
           _validateTimeForToday();
         });
       },

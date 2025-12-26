@@ -34,9 +34,8 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
 
   @override
   void initState() {
-    myRideController.getRideDetails(id: widget.bookingId);
     super.initState();
-
+    myRideController.getRideDetails(id: widget.bookingId);
     /// Pickup Marker
     // markers.add(
     //   Marker(
@@ -140,239 +139,242 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
         }
         return myRideController.isGetRideDetails.value
             ? Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                child: Column(
-                  children: [
-                    Container(
-                      height: 620.h,
-                      child: Stack(
-                        children: [
-                          GoogleMap(
-                            // initialCameraPosition: CameraPosition(
-                            //   target: pickupLocation,
-                            //   zoom: 14,
-                            // ),
-                            initialCameraPosition: CameraPosition(
-                              target: pickup,
-                              zoom: 14,
-                            ),
-                            onMapCreated: (controller) {
-                              mapController = controller;
-                            },
-                            markers: markers,
-                            polylines: polylines,
-                            myLocationEnabled: true,
-                            myLocationButtonEnabled: false,
-                          ),
-                          Positioned(
-                            top: 80.h,
-                            left: 16,
-                            right: 16,
-                            child: Column(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(
-                                      color: AppColors.lightGray,
-                                      width: 2,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    children: [
-                                      // From location
-                                      Gap(10),
-                                      _buildLocationRow(
-                                        icon: Icons.circle,
-                                        iconColor: AppColors.pinkColor,
-                                        title: 'From',
-                                        subtitle: '${myRideController.getRideDetailsModel.value.data?.ride?.pickupAddress}',
-                                        showDivider: true,
-                                      ),
-
-                                      // Drop off location
-                                      _buildLocationRow(
-                                        icon: Icons.location_on,
-                                        iconColor: AppColors.pinkColor,
-                                        title: 'Drop off Location',
-                                        subtitle: '${myRideController.getRideDetailsModel.value.data?.ride?.dropAddress}',
-                                        showDivider: false,
-                                      ),
-                                      Gap(10),
-                                    ],
-                                  ),
+            : Column(
+              children: [
+                Expanded(
+                  child: Stack(
+                    children: [
+                      GoogleMap(
+                        // initialCameraPosition: CameraPosition(
+                        //   target: pickupLocation,
+                        //   zoom: 14,
+                        // ),
+                        initialCameraPosition: CameraPosition(
+                          target: pickup,
+                          zoom: 14,
+                        ),
+                        onMapCreated: (controller) {
+                          mapController = controller;
+                        },
+                        markers: markers,
+                        polylines: polylines,
+                        myLocationEnabled: true,
+                        myLocationButtonEnabled: false,
+                      ),
+                      Positioned(
+                        top: kToolbarHeight + 40,
+                        left: 16,
+                        right: 16,
+                        child: Column(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: AppColors.lightGray,
+                                  width: 2,
                                 ),
-                              ],
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                children: [
+                                  // From location
+                                  Gap(10),
+                                  _buildLocationRow(
+                                    icon: Icons.circle,
+                                    iconColor: AppColors.pinkColor,
+                                    title: 'From',
+                                    subtitle: '${myRideController.getRideDetailsModel.value.data?.ride?.pickupAddress}',
+                                    showDivider: true,
+                                  ),
+
+                                  // Drop off location
+                                  _buildLocationRow(
+                                    icon: Icons.location_on,
+                                    iconColor: AppColors.pinkColor,
+                                    title: 'Drop off Location',
+                                    subtitle: '${myRideController.getRideDetailsModel.value.data?.ride?.dropAddress}',
+                                    showDivider: false,
+                                  ),
+                                  Gap(10),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 10,
+                        right: 10,
+                        child: InkWell(
+                          onTap: () => AppCallHelper.callSOS(),
+                          child: AppImage(
+                            height: 55,
+                            width: 55,
+                            image: AppImages.sosButton,
+                            imageType: ImageType.asset,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Gap(20),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    /// Driver Info
+                    if(myRideController.getRideDetailsModel.value.data?.ride?.driver != null)...[
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.h),
+                      child: InkWell(
+                        onTap: () {
+                          Get.to(() => RideCompletedScreen(bookingId: widget.bookingId,));
+                        },
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ClipOval(
+                              child: SizedBox(
+                                width: 60.r,
+                                height: 60.r,
+                                child: Image.network(
+                                  "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.profilePhoto}",
+                                  fit: BoxFit.cover,
+
+                                  // 🔄 Loader
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    );
+                                  },
+
+                                  // ❌ Error image
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey.shade300,
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 32,
+                                        color: Colors.grey.shade700,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            Gap(12.w),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  AppText(
+                                    text: "Driver: ${myRideController.getRideDetailsModel.value.data?.ride?.driver?.name}",
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  Gap(1),
+                                  AppText(
+                                    text: "2 mins away!",
+                                    fontSize: 12,
+                                    color: AppColors.lightBlackColor,
+                                  ),
+                                  Gap(12.h),
+
+                                  /// Vehicle Info
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10.w,
+                                          vertical: 4.h,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(6.r),
+                                          border: Border.all(
+                                            color: AppColors.greyColor,
+                                          ),
+                                        ),
+                                        child: AppText(
+                                          text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      Gap(10.w),
+                                      AppText(
+                                        text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
+                                        fontSize: 12,
+                                        color: AppColors.lightBlackColor,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            AppText(
+                              text: "1.5 KM",
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.lightBlackColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    Gap(17.h),
+                    Divider(color: AppColors.darkTextColor),
+                    Gap(17.h),
+                    ],
+
+                    /// Buttons
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16.h),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: AppButton(
+                              text: "CALL DRIVER",
+                              onTap: () => AppCallHelper.makeCall("${myRideController.getRideDetailsModel.value.data?.ride?.driver?.mobile}"),
                             ),
                           ),
-                          Positioned(
-                            bottom: 10,
-                            right: 10,
-                            child: InkWell(
-                              onTap: () => AppCallHelper.callSOS(),
-                              child: AppImage(
-                                height: 55,
-                                width: 55,
-                                image: AppImages.sosButton,
-                                imageType: ImageType.asset,
-                              ),
+                          Gap(12.w),
+                          Expanded(
+                            child: AppButton(
+                              text: "CANCEL RIDE",
+                              onTap: () {
+                                showCancelRideDialog(context);
+                              },
                             ),
                           ),
                         ],
                       ),
                     ),
-                    Gap(20),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        /// Driver Info
-                        myRideController.getRideDetailsModel.value.data?.ride?.driver == null?SizedBox(height: 90,):Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.h),
-                          child: InkWell(
-                            onTap: () {
-                              Get.to(() => RideCompletedScreen(bookingId: widget.bookingId,));
-                            },
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipOval(
-                                  child: SizedBox(
-                                    width: 60.r,
-                                    height: 60.r,
-                                    child: Image.network(
-                                      "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.profilePhoto}",
-                                      fit: BoxFit.cover,
-
-                                      // 🔄 Loader
-                                      loadingBuilder: (context, child, loadingProgress) {
-                                        if (loadingProgress == null) return child;
-                                        return Center(
-                                          child: SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
-                                        );
-                                      },
-
-                                      // ❌ Error image
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Container(
-                                          color: Colors.grey.shade300,
-                                          child: Icon(
-                                            Icons.person,
-                                            size: 32,
-                                            color: Colors.grey.shade700,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                Gap(12.w),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      AppText(
-                                        text: "Driver: ${myRideController.getRideDetailsModel.value.data?.ride?.driver?.name}",
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                      Gap(1),
-                                      AppText(
-                                        text: "2 mins away!",
-                                        fontSize: 12,
-                                        color: AppColors.lightBlackColor,
-                                      ),
-                                      Gap(12.h),
-
-                                      /// Vehicle Info
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 10.w,
-                                              vertical: 4.h,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(6.r),
-                                              border: Border.all(
-                                                color: AppColors.greyColor,
-                                              ),
-                                            ),
-                                            child: AppText(
-                                              text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          Gap(10.w),
-                                          AppText(
-                                            text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
-                                            fontSize: 12,
-                                            color: AppColors.lightBlackColor,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                AppText(
-                                  text: "1.5 KM",
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.lightBlackColor,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        Gap(17.h),
-                        Divider(color: AppColors.darkTextColor),
-                        Gap(17.h),
-
-                        /// Buttons
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.h),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: AppButton(
-                                  text: "CALL DRIVER",
-                                  onTap: () => AppCallHelper.makeCall("${myRideController.getRideDetailsModel.value.data?.ride?.driver?.mobile}"),
-                                ),
-                              ),
-                              Gap(12.w),
-                              Expanded(
-                                child: AppButton(
-                                  text: "CANCEL RIDE",
-                                  onTap: () {
-                                    showCancelRideDialog(context);
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Gap(20.h),
-                      ],
-                    ),
+                    Gap(20.h),
                   ],
                 ),
-              );
+              ],
+            );
       }),
     );
   }

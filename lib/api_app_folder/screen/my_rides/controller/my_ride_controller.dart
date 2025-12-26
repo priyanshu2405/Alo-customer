@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/controller/dashboard_conroller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
@@ -72,6 +74,7 @@ class MyRideController extends GetxController {
   /// ✅ Filtered lists
   RxList<RideData> pendingRides = <RideData>[].obs;
   RxList<RideData> completedRides = <RideData>[].obs;
+  RxList<RideData> cancelRides = <RideData>[].obs;
 
   Rx<LatLng?> pickupLatLng = Rx<LatLng?>(null);
   Rx<LatLng?> dropLatLng = Rx<LatLng?>(null);
@@ -84,7 +87,7 @@ class MyRideController extends GetxController {
 
       String endpoint = 'rides/history';
 
-      if (startDate?.isNotEmpty == true &&
+      if (startDate?.isNotEmpty == true ||
           endDate?.isNotEmpty == true) {
         endpoint += '?start_date=$startDate&end_date=$endDate';
       }
@@ -99,6 +102,7 @@ class MyRideController extends GetxController {
       /// Clear old data
       pendingRides.clear();
       completedRides.clear();
+      cancelRides.clear();
 
       final rides = rideHistoryModel.value.data?.data ?? [];
 
@@ -107,11 +111,14 @@ class MyRideController extends GetxController {
           pendingRides.add(ride); // UPCOMING
         } else if (ride.status == 'completed') {
           completedRides.add(ride);
+        } else if (ride.status == 'cancelled') {
+          cancelRides.add(ride);
         }
       }
 
       debugPrint("Upcoming: ${pendingRides.length}");
       debugPrint("Completed: ${completedRides.length}");
+      debugPrint("Cancelled: ${cancelRides.length}");
     } catch (e) {
       debugPrint('Error fetching ride history: $e');
     } finally {
@@ -147,7 +154,7 @@ class MyRideController extends GetxController {
       );
 
       getRideDetailsModel.value = GetRideDetailsModel.fromJson(response);
-
+     log(getRideDetailsModel.value.toJson().toString());
       final ride = getRideDetailsModel.value.data?.ride;
 
       if (ride != null) {
