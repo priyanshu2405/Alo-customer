@@ -28,13 +28,56 @@ class RideCompletedController extends GetxController {
   }
 
 
-  Future<void> createPaymentIntent({required int id}) async {
-    isCreatePaymentIntent.value = true; // Start loading
+  // Future<void> createPaymentIntent({required int id}) async {
+  //   isCreatePaymentIntent.value = true; // Start loading
+  //
+  //   var body = {
+  //     "ride_id": id
+  //   };
+  //   debugPrint("body : $body");
+  //
+  //   try {
+  //     final response = await ApiService.post(
+  //       endpoint: 'payment/create-intent',
+  //       body: body,
+  //     );
+  //
+  //     // debugPrint("otp verify =====>${response["otp"]}");
+  //     if (response['success'] == true) {
+  //       debugPrint("payment intent id : ${response["data"]["payment_intent_id"]}");
+  //       debugPrint("client secret : ${response["data"]["client_secret"]}");
+  //       debugPrint("amount : ${response["data"]["amount"]}");
+  //       debugPrint("currency : ${response["data"]["currency"]}");
+  //       // Get.back();
+  //
+  //     } else{
+  //       Get.snackbar(
+  //         "Error",
+  //         "${response["errors"]["mobile"]}",
+  //         snackPosition: SnackPosition.TOP,
+  //         backgroundColor: Colors.red.withOpacity(0.8),
+  //         colorText: Colors.white,
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print("Error in createUser: $e");
+  //     Get.snackbar(
+  //       "Error",
+  //       "$e",
+  //       snackPosition: SnackPosition.TOP,
+  //       backgroundColor: AppColors.secondary.withOpacity(0.8),
+  //       colorText: Colors.white,
+  //     );
+  //   } finally {
+  //     isCreatePaymentIntent.value = false; // Stop loading in all cases
+  //   }
+  // }
 
-    var body = {
-      "ride_id": id
-    };
-    debugPrint("body : $body");
+  Future<Map<String, dynamic>?> createPaymentIntent({required int id}) async {
+    isCreatePaymentIntent.value = true;
+
+    var body = {"ride_id": id};
+    debugPrint("Creating payment intent with body: $body");
 
     try {
       final response = await ApiService.post(
@@ -42,38 +85,74 @@ class RideCompletedController extends GetxController {
         body: body,
       );
 
-      // debugPrint("otp verify =====>${response["otp"]}");
       if (response['success'] == true) {
-        debugPrint("payment intent id : ${response["data"]["payment_intent_id"]}");
-        debugPrint("client secret : ${response["data"]["client_secret"]}");
-        debugPrint("amount : ${response["data"]["amount"]}");
-        debugPrint("currency : ${response["data"]["currency"]}");
-        // Get.back();
+        debugPrint("✅ Payment intent created successfully");
+        debugPrint("Payment Intent ID: ${response["data"]["payment_intent_id"]}");
+        debugPrint("Client Secret: ${response["data"]["client_secret"]}");
+        debugPrint("Amount: ${response["data"]["amount"]}");
+        debugPrint("Currency: ${response["data"]["currency"]}");
 
-      } else{
+        // ✅ RETURN the payment intent data
+        return {
+          'id': response["data"]["payment_intent_id"],
+          'client_secret': response["data"]["client_secret"],
+          'amount': response["data"]["amount"],
+          'currency': response["data"]["currency"],
+        };
+      } else {
         Get.snackbar(
           "Error",
-          "${response["errors"]["mobile"]}",
+          response["message"] ?? "Failed to create payment intent",
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.red.withOpacity(0.8),
           colorText: Colors.white,
         );
+        return null;
       }
     } catch (e) {
-      print("Error in createUser: $e");
+      print("❌ Error in createPaymentIntent: $e");
       Get.snackbar(
         "Error",
-        "$e",
+        "Failed to create payment: $e",
         snackPosition: SnackPosition.TOP,
-        backgroundColor: AppColors.secondary.withOpacity(0.8),
+        backgroundColor: Colors.red.withOpacity(0.8),
         colorText: Colors.white,
       );
+      return null;
     } finally {
-      isCreatePaymentIntent.value = false; // Stop loading in all cases
+      isCreatePaymentIntent.value = false;
     }
   }
 
+  Future<Map<String, dynamic>> savePaymentDetails(Map<String, dynamic> body) async  {
+    isCreatePaymentIntent.value = true;
+    try {
+      debugPrint("body : ${body}");
+      final response = await ApiService.post(
+        endpoint: 'payment/confirm',
+        body: body,
+      );
 
+      print("message: ${response['message']}");
+      // clearAgreementForm();
+      return response;
+    } catch (e) {
+      print("Error in : $e");
+      Get.snackbar(
+        "Error",
+        "Error in : $e",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return {
+        'status': false,
+        'message': 'Exception occurred',
+      };
+    } finally {
+      isCreatePaymentIntent.value = false;
+    }
+  }
 
   @override
   void onClose() {

@@ -8,6 +8,7 @@ import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/controller/dashboard_conroller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/controller/ride_completed_controller.dart';
+import 'package:alo_ride_app/api_app_folder/utils/stripe_payment_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
@@ -25,6 +26,7 @@ class PaymentDetailsScreen extends StatefulWidget {
 
 class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
   final RideCompletedController rideCompletedController = Get.put(RideCompletedController());
+  final StripePaymentService _paymentService = Get.put(StripePaymentService());
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,11 +106,16 @@ class _PaymentDetailsScreenState extends State<PaymentDetailsScreen> {
           return AppButton(
             isLoading: rideCompletedController.isCreatePaymentIntent.value,
             text: "Proceed to pay",
-            onTap: () {
-              rideCompletedController.createPaymentIntent(id: widget.id);
+            onTap: () async {
+              // rideCompletedController.createPaymentIntent(id: widget.id);
               // final controller = Get.put(DashBoardController());
               // controller.changeIndex(1);
               // Get.to(() => DashboardScreen());
+              await _paymentService.buyNow(
+                context,
+                widget.totalFare.toString(), // amount
+                id: widget.id, // ride ID
+              );
             },
           );
         },),
