@@ -222,9 +222,19 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
             Column(
               children: myRideController.completedRides.map((ride) {
                 return InkWell(
-                  onTap: () => Get.to(
-                    () => RideCompletedScreen(bookingId: ride.id ?? 0,isShowDialog: false,),
-                  ),
+                  onTap: () {
+                    if(ride.payment == null){
+                      Get.to(
+                            () => RideTrackingScreen(
+                          bookingId: ride.id ?? 0, // optional
+                        ),
+                      );
+                    }else{
+                      Get.to(() => RideCompletedScreen(bookingId: ride.id ?? 0,isShowDialog: false,));
+                    }
+                  },
+                  // onTap: () => Get.to(() => RideCompletedScreen(bookingId: ride.id ?? 0,isShowDialog: false,),
+                  // ),
                   child: _rideCard(
                     status: "completed",
                     statusColor: AppColors.greenColor,
@@ -272,11 +282,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
                       );
                     } else {*/
                     // ✅ Navigate
-                    Get.to(
-                          () => RideTrackingScreen(
-                        bookingId: ride.id ?? 0, // optional
-                      ),
-                    );
+                    Get.to(() => RideCompletedScreen(bookingId: ride.id ?? 0,isShowDialog: false,));
                     /* }*/
                   },
 
