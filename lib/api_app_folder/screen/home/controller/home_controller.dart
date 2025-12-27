@@ -1,3 +1,4 @@
+import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/model/vehicle_types_model.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ class HomeController extends GetxController{
 
   final formKey = GlobalKey<FormState>();
   RxBool isVehicleTypes = false.obs;
+
 
   final TextEditingController nameController = TextEditingController();
 
@@ -30,7 +32,7 @@ class HomeController extends GetxController{
     try {
       isVehicleTypes.value = true;
 
-      final response = await ApiService.get(endpoint: 'vehicle-types', isShow: false);
+      final response = await ApiService.get1(endpoint: '${ApiService.baseUrl1}vehicle-types', isShow: false,useBaseUrl: false);
 
       // Convert the entire response to GetPackageModel (not each item)
       final vehicleTypes = GetVehicleTypesModel.fromJson(response);
@@ -44,4 +46,6 @@ class HomeController extends GetxController{
       isVehicleTypes.value = false;
     }
   }
+
+
 }

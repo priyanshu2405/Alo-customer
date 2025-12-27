@@ -195,6 +195,8 @@ class Driver {
   DateTime? lastLocationUpdate;
   DateTime? createdAt;
   DateTime? updatedAt;
+  List<Image>? images;
+  List<Document>? documents;
 
   Driver({
     this.id,
@@ -211,6 +213,8 @@ class Driver {
     this.lastLocationUpdate,
     this.createdAt,
     this.updatedAt,
+    this.images,
+    this.documents,
   });
 
   factory Driver.fromJson(Map<String, dynamic> json) => Driver(
@@ -228,6 +232,8 @@ class Driver {
     lastLocationUpdate: json["last_location_update"] == null ? null : DateTime.parse(json["last_location_update"]),
     createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    images: json["images"] == null ? [] : List<Image>.from(json["images"]!.map((x) => Image.fromJson(x))),
+    documents: json["documents"] == null ? [] : List<Document>.from(json["documents"]!.map((x) => Document.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -245,8 +251,79 @@ class Driver {
     "last_location_update": lastLocationUpdate?.toIso8601String(),
     "created_at": createdAt?.toIso8601String(),
     "updated_at": updatedAt?.toIso8601String(),
+    "images": images == null ? [] : List<dynamic>.from(images!.map((x) => x.toJson())),
+    "documents": documents == null ? [] : List<dynamic>.from(documents!.map((x) => x.toJson())),
   };
 }
+
+class Document {
+  int? id;
+  int? driverId;
+  String? documentType;
+  String? documentPath;
+  String? status;
+  dynamic rejectionReason;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+
+  Document({
+    this.id,
+    this.driverId,
+    this.documentType,
+    this.documentPath,
+    this.status,
+    this.rejectionReason,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory Document.fromJson(Map<String, dynamic> json) => Document(
+    id: json["id"],
+    driverId: json["driver_id"],
+    documentType: json["document_type"],
+    documentPath: json["document_path"],
+    status: json["status"],
+    rejectionReason: json["rejection_reason"],
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "driver_id": driverId,
+    "document_type": documentType,
+    "document_path": documentPath,
+    "status": status,
+    "rejection_reason": rejectionReason,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+  };
+}
+
+class Image {
+  String? type;
+  String? url;
+  String? status;
+
+  Image({
+    this.type,
+    this.url,
+    this.status,
+  });
+
+  factory Image.fromJson(Map<String, dynamic> json) => Image(
+    type: json["type"],
+    url: json["url"],
+    status: json["status"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "type": type,
+    "url": url,
+    "status": status,
+  };
+}
+
 
 class StatusLog {
   int? id;

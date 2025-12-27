@@ -122,7 +122,7 @@ class RideData {
   DateTime? updatedAt;
   dynamic driver;
   VehicleType? vehicleType;
-  dynamic payment;
+  Payment? payment;
 
   RideData({
     this.id,
@@ -187,7 +187,7 @@ class RideData {
     updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
     driver: json["driver"],
     vehicleType: json["vehicle_type"] == null ? null : VehicleType.fromJson(json["vehicle_type"]),
-    payment: json["payment"],
+    payment: json["payment"] == null ? null : Payment.fromJson(json["payment"]),
   );
 
   Map<String, dynamic> toJson() => {
@@ -220,7 +220,7 @@ class RideData {
     "updated_at": updatedAt?.toIso8601String(),
     "driver": driver,
     "vehicle_type": vehicleType?.toJson(),
-    "payment": payment,
+    "payment": payment?.toJson(),
   };
 }
 
@@ -295,3 +295,75 @@ class Link {
     "active": active,
   };
 }
+class Payment {
+  int? id;
+  int? rideId;
+  String? amount;
+  String? currency;
+  String? status;
+  dynamic paymentMethod;
+  dynamic transactionId;
+  dynamic stripePaymentIntentId;
+  dynamic stripeChargeId;
+  dynamic paidAt;
+  dynamic notes;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+  dynamic userId;
+  dynamic driverId;
+
+  Payment({
+    this.id,
+    this.rideId,
+    this.amount,
+    this.currency,
+    this.status,
+    this.paymentMethod,
+    this.transactionId,
+    this.stripePaymentIntentId,
+    this.stripeChargeId,
+    this.paidAt,
+    this.notes,
+    this.createdAt,
+    this.updatedAt,
+    this.userId,
+    this.driverId,
+  });
+
+  factory Payment.fromJson(Map<String, dynamic> json) => Payment(
+    id: json["id"],
+    rideId: json["ride_id"],
+    amount: json["amount"],
+    currency: json["currency"],
+    status: json["status"],
+    paymentMethod: json["payment_method"],
+    transactionId: json["transaction_id"],
+    stripePaymentIntentId: json["stripe_payment_intent_id"],
+    stripeChargeId: json["stripe_charge_id"],
+    paidAt: json["paid_at"],
+    notes: json["notes"],
+    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+    userId: json["user_id"],
+    driverId: json["driver_id"],
+  );
+
+  Map<String, dynamic> toJson() => {
+    "id": id,
+    "ride_id": rideId,
+    "amount": amount,
+    "currency": currency,
+    "status": status,
+    "payment_method": paymentMethod,
+    "transaction_id": transactionId,
+    "stripe_payment_intent_id": stripePaymentIntentId,
+    "stripe_charge_id": stripeChargeId,
+    "paid_at": paidAt,
+    "notes": notes,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "user_id": userId,
+    "driver_id": driverId,
+  };
+}
+

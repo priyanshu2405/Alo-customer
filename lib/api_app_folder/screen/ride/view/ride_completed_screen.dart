@@ -43,7 +43,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (_) => const RateTipDialog(),
+            builder: (_) =>  RateTipDialog(rideId: widget.bookingId),
           );
         }
         myRideController.getRideDetails(id: widget.bookingId);
@@ -225,7 +225,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                       "HST 15%",
                       "\$${myRideController.getRideDetailsModel.value.data?.ride?.taxAmount}",
                     ),
-                    if(widget.isShowDialog == true)...[
+                    // if(widget.isShowDialog == true)...[
                     Gap(17),
                     // _fareRow("Tip", "\$${myRideController.getRideDetailsModel.value.data?.ride?.tipAmount}"),
                     // _fareRow("Tip", "\$${rideCompletedController.amountCtrl.text}"),
@@ -239,19 +239,20 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                         showDialog(
                           context: context,
                           barrierDismissible: false,
-                          builder: (_) => const RateTipDialog(),
+                          builder: (_) =>  RateTipDialog(rideId: widget.bookingId),
                         );
                       },
                       child: Obx(
                         () => _fareRow(
                           "Tip",
-                          "\$${rideCompletedController.tipAmount.value.toStringAsFixed(2)}",
+                          // "\$${rideCompletedController.tipAmountValue.value.toStringAsFixed(2)}",
+                          "\$${myRideController.getRideDetailsModel.value.data?.ride?.tipAmount??0.0}",
                           trailing: "(Modify)",
                         ),
                       ),
                     ),
                       Gap(17),
-                    ],
+                    // ],
 
                     Divider(color: AppColors.darkTextColor),
                     Gap(10),
@@ -262,28 +263,29 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                     //   bold: true,
                     // ),
                     Obx(() {
-                      final double fare =
-                          double.tryParse(
-                            myRideController
-                                    .getRideDetailsModel
-                                    .value
-                                    .data
-                                    ?.ride
-                                    ?.totalFare ??
-                                '0',
-                          ) ??
-                          0.0;
-
-                      final double tip =
-                          rideCompletedController.tipAmount.value;
-
-                      rideCompletedController.finalTotal.value =
-                          fare + tip; // ➕ ADD
+                      // final double fare =
+                      //     double.tryParse(
+                      //       myRideController
+                      //               .getRideDetailsModel
+                      //               .value
+                      //               .data
+                      //               ?.ride
+                      //               ?.totalFare ??
+                      //           '0',
+                      //     ) ??
+                      //     0.0;
+                      //
+                      // final double tip =
+                      //     rideCompletedController.tipAmountValue.value;
+                      //
+                      // rideCompletedController.finalTotal.value =
+                      //     fare + tip; // ➕ ADD
                       // final double finalTotal = fare - tip; // ➖ SUBTRACT
 
                       return _fareRow(
                         "Total Trip Fare",
-                        "\$${rideCompletedController.finalTotal.value.toStringAsFixed(2)}",
+                        // "\$${rideCompletedController.finalTotal.value.toStringAsFixed(2)}",
+                        "\$${myRideController.getRideDetailsModel.value.data?.ride?.totalFare}",
                         fontSize: 16,
                         bold: true,
                       );

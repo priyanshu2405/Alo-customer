@@ -11,15 +11,17 @@ import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 
 class RateTipDialog extends StatefulWidget {
-  const RateTipDialog({super.key});
+  final int rideId;
+  const RateTipDialog({super.key, required this.rideId});
 
   @override
   State<RateTipDialog> createState() => _RateTipDialogState();
 }
 
 class _RateTipDialogState extends State<RateTipDialog> {
-
-  final RideCompletedController rideCompletedController = Get.put(RideCompletedController());
+  final RideCompletedController rideCompletedController = Get.put(
+    RideCompletedController(),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -61,30 +63,28 @@ class _RateTipDialogState extends State<RateTipDialog> {
               Gap(14.h),
 
               /// TIP BUTTONS
-
               Padding(
-                padding:  EdgeInsets.symmetric(horizontal: 40.h),
+                padding: EdgeInsets.symmetric(horizontal: 40.h),
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _tip(1),
-                        _tip(3),
-                        _tip(5),
-                      ],
+                      children: [_tip(1), _tip(3), _tip(5)],
                     ),
 
                     Gap(12.h),
 
-                    CommonTextField(controller: rideCompletedController.amountCtrl, hintText: "Enter custom Amount",onChanged: rideCompletedController.onCustomAmountChanged,),
+                    CommonTextField(
+                      controller: rideCompletedController.amountCtrl,
+                      hintText: "Enter custom Amount",
+                      onChanged: rideCompletedController.onCustomAmountChanged,
+                    ),
                   ],
                 ),
               ),
               Gap(20),
               Divider(color: AppColors.darkTextColor),
               Gap(10),
-
 
               AppText(
                 text: "Rate your trip",
@@ -112,23 +112,30 @@ class _RateTipDialogState extends State<RateTipDialog> {
                   itemCount: 5,
                   itemSize: 40,
                   itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  itemBuilder: (context, _) => const Icon(
-                    Icons.star,
-                    color: Color(0xffFBBC05),
-                  ),
+                  itemBuilder: (context, _) =>
+                      const Icon(Icons.star, color: Color(0xffFBBC05)),
                   onRatingUpdate: (value) {
                     rideCompletedController.selectedStars.value = value;
-
                   },
                 );
-              },),
+              }),
 
               Gap(20.h),
-              AppButton(text: "SUBMIT", onTap: () {
-               Get.back();
-              },),
-              Gap(10.h),
+              Obx(() {
+                return AppButton(
+                  isLoading: rideCompletedController.isTipAmount.value,
+                  text: "SUBMIT",
+                  onTap: () {
+                    final tip = rideCompletedController.tipAmountValue.value.toInt();
 
+                    rideCompletedController.tipAmountApi(
+                      tipAmount: tip,
+                      rideId: widget.rideId,
+                    );
+                  },
+                );
+              }),
+              Gap(10.h),
             ],
           ),
         ),
@@ -171,8 +178,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
 
   Widget _tip(double value) {
     return Obx(() {
-      final bool isSelected =
-          rideCompletedController.tipAmount.value == value;
+      final bool isSelected = rideCompletedController.tipAmountValue.value == value;
 
       return GestureDetector(
         onTap: () {
@@ -199,6 +205,4 @@ class _RateTipDialogState extends State<RateTipDialog> {
       );
     });
   }
-
-
 }

@@ -137,6 +137,17 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
             _updateMap(pickup, drop);
           });
         }
+        final numberPlateUrl = myRideController
+            .getRideDetailsModel
+            .value
+            .data
+            ?.ride
+            ?.driver
+            ?.images
+            ?.firstWhere(
+              (e) => e.type == "number_plate_photo",
+        ).url;
+
         return myRideController.isGetRideDetails.value
             ? Center(child: CircularProgressIndicator())
             : Column(
@@ -299,33 +310,83 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                   Gap(12.h),
 
                                   /// Vehicle Info
+                                  // Row(
+                                  //   children: [
+                                  //     Container(
+                                  //       padding: EdgeInsets.symmetric(
+                                  //         horizontal: 10.w,
+                                  //         vertical: 4.h,
+                                  //       ),
+                                  //       decoration: BoxDecoration(
+                                  //         borderRadius:
+                                  //             BorderRadius.circular(6.r),
+                                  //         border: Border.all(
+                                  //           color: AppColors.greyColor,
+                                  //         ),
+                                  //       ),
+                                  //       child: AppText(
+                                  //         text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
+                                  //         fontSize: 12,
+                                  //       ),
+                                  //     ),
+                                  //     Gap(10.w),
+                                  //     AppText(
+                                  //       text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
+                                  //       fontSize: 12,
+                                  //       color: AppColors.lightBlackColor,
+                                  //     ),
+                                  //   ],
+                                  // ),
                                   Row(
                                     children: [
                                       Container(
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 10.w,
-                                          vertical: 4.h,
-                                        ),
                                         decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(6.r),
+                                          borderRadius: BorderRadius.circular(6.r),
                                           border: Border.all(
                                             color: AppColors.greyColor,
                                           ),
                                         ),
-                                        child: AppText(
-                                          text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
-                                          fontSize: 12,
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(4.r),
+                                          child: numberPlateUrl != null && numberPlateUrl.isNotEmpty
+                                              ? Image.network(
+                                            numberPlateUrl,
+                                            height: 29.h,
+                                            width: 57.w,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder: (context, child, loadingProgress) {
+                                              if (loadingProgress == null) return child;
+                                              return SizedBox(
+                                                height: 20.h,
+                                                width: 40.w,
+                                                child: Center(
+                                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                                ),
+                                              );
+                                            },
+                                            errorBuilder: (_, __, ___) => Icon(
+                                              Icons.directions_car,
+                                              size: 20,
+                                              color: AppColors.greyColor,
+                                            ),
+                                          )
+                                              : Icon(
+                                            Icons.directions_car,
+                                            size: 20,
+                                            color: AppColors.greyColor,
+                                          ),
                                         ),
                                       ),
                                       Gap(10.w),
                                       AppText(
-                                        text: "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
+                                        text:
+                                        "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
                                         fontSize: 12,
                                         color: AppColors.lightBlackColor,
                                       ),
                                     ],
                                   ),
+
                                 ],
                               ),
                             ),
@@ -378,6 +439,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
       }),
     );
   }
+
 
   Widget _buildLocationRow({
     required IconData icon,

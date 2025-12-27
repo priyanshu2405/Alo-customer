@@ -223,7 +223,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
               children: myRideController.completedRides.map((ride) {
                 return InkWell(
                   onTap: () {
-                    if(ride.payment == null){
+                    if(ride.payment?.status == "pending"){
                       Get.to(
                             () => RideTrackingScreen(
                           bookingId: ride.id ?? 0, // optional

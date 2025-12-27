@@ -1,77 +1,254 @@
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
+import 'package:alo_ride_app/api_app_folder/screen/dashboard/controller/dashboard_conroller.dart';
+import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
+import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart' show ApiService;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 
 class RideCompletedController extends GetxController {
-  RxDouble selectedStars = 3.0.obs;
+  RxDouble selectedStars = 1.0.obs;
   RxBool  isCreatePaymentIntent = false.obs;
-
+  final MyRideController myRideController = Get.put(MyRideController());
   /// 🔥 SINGLE SOURCE OF TRUTH
-  RxDouble tipAmount = 0.0.obs;
+  RxDouble tipAmountValue = 0.0.obs;
 
    RxDouble finalTotal = 0.0.obs;
-
+  RxBool isTipAmount = false.obs;
   final TextEditingController amountCtrl = TextEditingController();
 
   /// When preset tip selected ($1, $3, $5)
   void onTipSelected(double value) {
-    tipAmount.value = value;
+    tipAmountValue.value = value;
     amountCtrl.text = value.toStringAsFixed(2);
   }
 
   /// When custom amount typed
   void onCustomAmountChanged(String value) {
     final parsed = double.tryParse(value) ?? 0.0;
-    tipAmount.value = parsed;
+    tipAmountValue.value = parsed;
   }
 
 
-  // Future<void> createPaymentIntent({required int id}) async {
-  //   isCreatePaymentIntent.value = true; // Start loading
+
+  // Future<void> tipAmountApi({required int tipAmount,required int rideId,}) async {
+  //   // ✅ ADD DEBUG PRINTS AT THE START
+  //   debugPrint("=== ESTIMATE FARE CALLED ===");
+  //   debugPrint("tipAmount: ${tipAmount}");
   //
+  //   isTipAmount.value = true;
   //   var body = {
-  //     "ride_id": id
+  //     "tip_amount": tipAmount
   //   };
-  //   debugPrint("body : $body");
+  //
+  //
+  //   debugPrint("📤 API Request Body: $body");
   //
   //   try {
   //     final response = await ApiService.post(
-  //       endpoint: 'payment/create-intent',
+  //       endpoint: 'rides/$rideId/add-tip',
   //       body: body,
   //     );
   //
-  //     // debugPrint("otp verify =====>${response["otp"]}");
-  //     if (response['success'] == true) {
-  //       debugPrint("payment intent id : ${response["data"]["payment_intent_id"]}");
-  //       debugPrint("client secret : ${response["data"]["client_secret"]}");
-  //       debugPrint("amount : ${response["data"]["amount"]}");
-  //       debugPrint("currency : ${response["data"]["currency"]}");
-  //       // Get.back();
+  //     debugPrint("📥 API Response: $response");
   //
-  //     } else{
+  //     if (response['success'] == true) {
+  //       tipAmountValue.value = response['data']['tip_amount'];
+  //       Get.back();
+  //       Get.snackbar(
+  //         "Success",
+  //         "Tip Amount: ",
+  //         snackPosition: SnackPosition.TOP,
+  //         backgroundColor: Colors.green.withOpacity(0.8),
+  //         colorText: Colors.white,
+  //       );
+  //     } else {
   //       Get.snackbar(
   //         "Error",
-  //         "${response["errors"]["mobile"]}",
+  //         "${response["message"] ?? response["errors"] ?? "Failed to estimate fare"}",
   //         snackPosition: SnackPosition.TOP,
   //         backgroundColor: Colors.red.withOpacity(0.8),
   //         colorText: Colors.white,
   //       );
   //     }
   //   } catch (e) {
-  //     print("Error in createUser: $e");
+  //     debugPrint("❌ Error in estimateFare: $e");
+  //     Get.back();
   //     Get.snackbar(
   //       "Error",
-  //       "$e",
+  //       "Failed to estimate fare. Please try again.",
   //       snackPosition: SnackPosition.TOP,
-  //       backgroundColor: AppColors.secondary.withOpacity(0.8),
+  //       backgroundColor: AppColors.red,
   //       colorText: Colors.white,
   //     );
   //   } finally {
-  //     isCreatePaymentIntent.value = false; // Stop loading in all cases
+  //     isTipAmount.value = false;
   //   }
   // }
+  Future<void> tipAmountApi1({
+    required int tipAmount,
+    required int rideId,
+  }) async {
+    debugPrint("=== TIP API CALLED ===");
+    debugPrint("tipAmount: $tipAmount");
+
+    isTipAmount.value = true;
+
+    final body = {
+      "tip_amount": tipAmount,
+      "rating":selectedStars.value
+    };
+
+    debugPrint("📤 API Request Body: $body");
+
+    try {
+      final response = await ApiService.post(
+        endpoint: 'rides/$rideId/add-tip',
+        body: body,
+      );
+
+      debugPrint("📥 API Response: $response");
+
+      if (response['success'] == true) {
+
+        /// ✅ SAFE READ
+        final rideData = response['data']?['ride'];
+
+        final double tipFromApi =
+            double.tryParse(rideData?['tip_amount']?.toString() ?? '0') ?? 0.0;
+
+        final double totalFareFromApi =
+            double.tryParse(rideData?['total_fare']?.toString() ?? '0') ?? 0.0;
+
+        /// ✅ UPDATE RX VALUES
+        tipAmountValue.value = tipFromApi;
+        finalTotal.value = totalFareFromApi;
+
+        Get.back();
+
+        Get.snackbar(
+          "Success",
+          "Tip added successfully",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green.withOpacity(0.85),
+          colorText: Colors.white,
+        );
+      } else {
+        debugPrint("response : ${response}");
+        Get.snackbar(
+          "Error",
+          response["message"] ?? "Failed to add tip",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red.withOpacity(0.85),
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      debugPrint("❌ Error in tipAmountApi: $e");
+      Get.back();
+      Get.snackbar(
+        "Error",
+        "Something went wrong. Please try again.",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isTipAmount.value = false;
+    }
+  }
+
+  Future<void> tipAmountApi({
+    required int tipAmount,
+    required int rideId,
+  }) async {
+    debugPrint("=== TIP API CALLED ===");
+    debugPrint("tipAmount: $tipAmount");
+
+    isTipAmount.value = true;
+
+    final body = {
+      "tip_amount": tipAmount,
+      "rating": selectedStars.value,
+    };
+
+    debugPrint("📤 API Request Body: $body");
+
+    try {
+      final response = await ApiService.post(
+        endpoint: 'rides/$rideId/add-tip',
+        body: body,
+      );
+
+      debugPrint("📥 API Response: $response");
+
+      if (response['success'] == true) {
+        final rideData = response['data']?['ride'];
+
+        if (rideData != null) {
+          tipAmountValue.value =
+              double.tryParse(rideData['tip_amount']?.toString() ?? '0') ?? 0.0;
+
+          finalTotal.value =
+              double.tryParse(rideData['total_fare']?.toString() ?? '0') ?? 0.0;
+        }
+
+
+        /// ✅ CLEAR TIP STATE
+        selectedStars.value = 1;
+        tipAmountValue.value = 0.0;
+        amountCtrl.clear(); // custom input field
+        myRideController.getRideDetails(id: rideId);
+        Get.back();
+
+        Get.snackbar(
+          "Success",
+          "Tip and rating added successfully",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green.withOpacity(0.85),
+          colorText: Colors.white,
+        );
+
+
+      } else {
+        Get.back();
+        debugPrint("❌ Error in response: $response");
+        // ❌ DO NOT update tip or total here
+        Get.snackbar(
+          "Error",
+          response["message"] ?? "Failed to submit tip",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red.withOpacity(0.85),
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      selectedStars.value = 1;
+      tipAmountValue.value = 0.0;
+      amountCtrl.clear(); // custom input field
+      Get.back();
+      debugPrint("❌ Error in tipAmountApi: $e");
+      Get.snackbar(
+        "Error",
+        "$e",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: AppColors.red,
+        colorText: Colors.white,
+      );
+
+      // final controller = Get.put(DashBoardController());
+      // controller.changeIndex(1);
+      // Get.to(() => DashboardScreen());
+    } finally {
+      isTipAmount.value = false;
+    }
+  }
+
+
+
+
+
 
   Future<Map<String, dynamic>?> createPaymentIntent({required int id}) async {
     isCreatePaymentIntent.value = true;
