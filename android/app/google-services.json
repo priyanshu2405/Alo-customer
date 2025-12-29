@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "217981683590",
+    "project_id": "alo-drive-6359e",
+    "storage_bucket": "alo-drive-6359e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:217981683590:android:e722643cd2312ce92a0e07",
+        "android_client_info": {
+          "package_name": "com.flutter.alo_ride_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXrfQ3EUIsrOYPTk8v5TjxQytB4LRiQH4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

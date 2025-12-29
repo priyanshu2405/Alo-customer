@@ -45,6 +45,9 @@
     <key>NSPhotoLibraryUsageDescription</key>
     <string>Allow gallery access to upload profile image</string>
 
+    <!-- Notifications -->
+    <key>NSUserNotificationUsageDescription</key>
+    <string>We send notifications for ride updates.</string>
 
 
     <!-- ================= PHONE CALL ================= -->
