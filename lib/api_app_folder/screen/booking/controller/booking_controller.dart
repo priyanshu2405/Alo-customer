@@ -247,6 +247,7 @@ class BookingController extends GetxController {
           colorText: Colors.white,
         );*/
       } else {
+        debugPrint("❌ Error in estimateFare: ${"${response["message"] ?? response["errors"] ?? "Failed to estimate fare"}"}");
         Get.snackbar(
           "Error",
           "${response["message"] ?? response["errors"] ?? "Failed to estimate fare"}",
@@ -256,10 +257,10 @@ class BookingController extends GetxController {
         );
       }
     } catch (e) {
-      debugPrint("❌ Error in estimateFare: $e");
+      debugPrint("❌ Error in booking: $e");
       Get.snackbar(
         "Error",
-        "Failed to estimate fare. Please try again.",
+        "$e",
         snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.red.withOpacity(0.5),
         colorText: Colors.white,
