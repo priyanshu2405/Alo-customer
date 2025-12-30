@@ -9,6 +9,7 @@ import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
@@ -24,45 +25,29 @@ class RideTrackingScreen extends StatefulWidget {
 
 class _RideTrackingScreenState extends State<RideTrackingScreen> {
   final MyRideController myRideController = Get.put(MyRideController());
-  GoogleMapController? mapController;
+  // GoogleMapController? mapController;
+  //
+  // final Set<Marker> markers = {};
+  // final Set<Polyline> polylines = {};
 
-  // final LatLng pickupLocation = const LatLng(46.0878, -64.7782);
-  // final LatLng dropLocation = const LatLng(46.0915, -64.7500);
+
+  GoogleMapController? mapController;
 
   final Set<Marker> markers = {};
   final Set<Polyline> polylines = {};
+
+  final PolylinePoints polylinePoints = PolylinePoints(
+    apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
+  );
+
+  final List<LatLng> routePoints = [];
+
+  bool _routeDrawn = false;
 
   @override
   void initState() {
     super.initState();
     myRideController.getRideDetails(id: widget.bookingId);
-    /// Pickup Marker
-    // markers.add(
-    //   Marker(
-    //     markerId: const MarkerId("pickup"),
-    //     position: myRideController.pickupLatLng,
-    //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-    //   ),
-    // );
-    //
-    // /// Drop Marker
-    // markers.add(
-    //   Marker(
-    //     markerId: const MarkerId("drop"),
-    //     position: dropLocation,
-    //     icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-    //   ),
-    // );
-    //
-    // /// Route Polyline (dummy example)
-    // polylines.add(
-    //   Polyline(
-    //     polylineId: const PolylineId("route"),
-    //     points: [pickupLocation, const LatLng(46.0895, -64.7700), dropLocation],
-    //     color: Colors.blue,
-    //     width: 5,
-    //   ),
-    // );
   }
 
   @override
@@ -73,16 +58,58 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
     super.dispose();
   }
 
-  void _updateMap(LatLng pickup, LatLng drop) {
+  // void _updateMap(LatLng pickup, LatLng drop) {
+  //   markers.clear();
+  //   polylines.clear();
+  //
+  //   markers.add(
+  //     Marker(
+  //       markerId: const MarkerId('pickup'),
+  //       position: pickup,
+  //       icon:
+  //       BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+  //     ),
+  //   );
+  //
+  //   markers.add(
+  //     Marker(
+  //       markerId: const MarkerId('drop'),
+  //       position: drop,
+  //       icon:
+  //       BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+  //     ),
+  //   );
+  //
+  //   polylines.add(
+  //     Polyline(
+  //       polylineId: const PolylineId('route'),
+  //       points: [pickup, drop],
+  //       color: Colors.blue,
+  //       width: 5,
+  //     ),
+  //   );
+  //
+  //   try {
+  //     mapController?.animateCamera(
+  //       CameraUpdate.newLatLngZoom(pickup, 14),
+  //     );
+  //   } catch (e) {
+  //     debugPrint('Error animating camera: $e');
+  //   }
+  // }
+
+
+  Future<void> _drawRoute(LatLng pickup, LatLng drop) async {
     markers.clear();
     polylines.clear();
+    routePoints.clear();
 
+    /// MARKERS
     markers.add(
       Marker(
         markerId: const MarkerId('pickup'),
         position: pickup,
-        icon:
-        BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
       ),
     );
 
@@ -90,27 +117,54 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
       Marker(
         markerId: const MarkerId('drop'),
         position: drop,
-        icon:
-        BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
       ),
     );
+
+    /// DIRECTIONS API
+    final result = await polylinePoints.getRouteBetweenCoordinates(
+      request: PolylineRequest(
+        origin: PointLatLng(pickup.latitude, pickup.longitude),
+        destination: PointLatLng(drop.latitude, drop.longitude),
+        mode: TravelMode.driving,
+      ),
+    );
+
+    if (result.points.isEmpty) {
+      debugPrint("❌ No route points received");
+      return;
+    }
+
+    for (final p in result.points) {
+      routePoints.add(LatLng(p.latitude, p.longitude));
+    }
 
     polylines.add(
       Polyline(
         polylineId: const PolylineId('route'),
-        points: [pickup, drop],
         color: Colors.blue,
         width: 5,
+        points: routePoints,
       ),
     );
 
-    try {
-      mapController?.animateCamera(
-        CameraUpdate.newLatLngZoom(pickup, 14),
-      );
-    } catch (e) {
-      debugPrint('Error animating camera: $e');
-    }
+    /// CAMERA FIT
+    final bounds = LatLngBounds(
+      southwest: LatLng(
+        pickup.latitude < drop.latitude ? pickup.latitude : drop.latitude,
+        pickup.longitude < drop.longitude ? pickup.longitude : drop.longitude,
+      ),
+      northeast: LatLng(
+        pickup.latitude > drop.latitude ? pickup.latitude : drop.latitude,
+        pickup.longitude > drop.longitude ? pickup.longitude : drop.longitude,
+      ),
+    );
+
+    mapController?.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 80),
+    );
+
+    if (mounted) setState(() {});
   }
 
 
@@ -126,16 +180,28 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
       ),
       body: Obx(() {
 
+        // final pickup = myRideController.pickupLatLng.value;
+        // final drop = myRideController.dropLatLng.value;
+        //
+        // if (pickup == null || drop == null) {
+        //   return Center(child: CircularProgressIndicator());
+        // }
+        // if (mounted) {
+        //   WidgetsBinding.instance.addPostFrameCallback((_) {
+        //     _updateMap(pickup, drop);
+        //   });
+        // }
+
         final pickup = myRideController.pickupLatLng.value;
         final drop = myRideController.dropLatLng.value;
 
         if (pickup == null || drop == null) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
-        if (mounted) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _updateMap(pickup, drop);
-          });
+
+        if (!_routeDrawn) {
+          _routeDrawn = true;
+          _drawRoute(pickup, drop);
         }
         final numberPlateUrl = myRideController
             .getRideDetailsModel
