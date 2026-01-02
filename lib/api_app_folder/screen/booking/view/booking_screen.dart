@@ -357,6 +357,16 @@ class _BookingScreenState extends State<BookingScreen> {
               );
             }),
             Gap(8.h),
+          Obx(() {
+            return AppText(
+              text: "Distance : ${bookingController.distanceKm.value.toStringAsFixed(2)} km",
+              fontSize: 13,
+              color: AppColors.lightBlackColor,
+            );
+          }),
+
+          Gap(8.h),
+
             Divider(color: AppColors.darkTextColor),
             Gap(8.h),
             Padding(
@@ -465,9 +475,9 @@ class _BookingScreenState extends State<BookingScreen> {
 
             // ✅ Then call estimateFare only if time was selected
             if (bookingController.selectedTime.value != null) {
-              bookingController.estimateFare(
-                vehicleTypeId: widget.vehicleTypeId,
-              );
+              // bookingController.estimateFare(
+              //   vehicleTypeId: widget.vehicleTypeId,
+              // );
             }
           }
         },
@@ -492,14 +502,14 @@ class _BookingScreenState extends State<BookingScreen> {
                 children: [
                   Expanded(
                     child: Obx(() {
+                      final isDate = type == "date";
+
+                      final text = isDate
+                          ? (bookingController.formattedDate ?? "Select Date")
+                          : (bookingController.formattedTime ?? "Select Time");
+
                       return AppText(
-                        text: type == "date"
-                            ? (bookingController.selectedDate.value == null
-                            ? "Select Date"
-                            : bookingController.formattedDate)
-                            : (bookingController.selectedTime.value == null
-                            ? "Select Time"
-                            : bookingController.formattedTime),
+                        text: text,
                         fontSize: 12,
                         color: AppColors.greyColor,
                       );
@@ -881,6 +891,9 @@ class _BookingScreenState extends State<BookingScreen> {
                                 placeId, description, isPickup);
 
                             Navigator.pop(context);
+                            bookingController.estimateFare(
+                              vehicleTypeId: widget.vehicleTypeId,
+                            );
                           },
                         );
                       },

@@ -15,6 +15,8 @@ class BookingController extends GetxController {
   Rxn<DateTime> selectedTime = Rxn<DateTime>();
 
   RxDouble totalFare = 0.0.obs;
+  RxDouble distanceKm = 0.0.obs;
+
 
   // Add these for locations
   RxString fromLocation = "".obs;
@@ -31,9 +33,16 @@ class BookingController extends GetxController {
   //     ? "Select Time"
   //     : DateFormat("hh:mm a").format(selectedTime.value!);
 
-  String get formattedDate => DateFormat("dd MMM yyyy").format(selectedDate.value!);
+  String? get formattedDate {
+    if (selectedDate.value == null) return null;
+    return DateFormat("dd MMM yyyy").format(selectedDate.value!);
+  }
 
-  String get formattedTime => DateFormat("hh:mm a").format(selectedTime.value!);
+  String? get formattedTime {
+    if (selectedTime.value == null) return null;
+    return DateFormat("hh:mm a").format(selectedTime.value!);
+  }
+
 
   Future<void> pickDate(BuildContext context) async {
     final DateTime? date = await showDatePicker(
@@ -128,6 +137,8 @@ class BookingController extends GetxController {
       if (response['success'] == true) {
         debugPrint("✅ Total Fare: ${response["data"]["total_fare"]}");
         totalFare.value = response["data"]["total_fare"];
+        distanceKm.value =
+            double.tryParse(response['data']['distance_km'].toString()) ?? 0.0;
 
         Get.snackbar(
           "Success",
@@ -158,6 +169,26 @@ class BookingController extends GetxController {
       isEstimateFare.value = false;
     }
   }
+  String? get pickupDateTimeForApi {
+    final date = selectedDate.value;
+    final time = selectedTime.value;
+
+    if (date == null || time == null) {
+      return null;
+    }
+
+    final combinedDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+
+    return DateFormat("yyyy-MM-dd HH:mm:ss").format(combinedDateTime);
+  }
+
+
 
 
   Future<void> bookApi(BuildContext context,{required int vehicleTypeId,}) async {
@@ -176,7 +207,7 @@ class BookingController extends GetxController {
         "Error",
         "Please select pickup location",
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red,
         colorText: Colors.white,
       );
       return;
@@ -187,27 +218,30 @@ class BookingController extends GetxController {
         "Error",
         "Please select drop-off location",
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red.withOpacity(0.8),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+    // ✅ Date & Time validation
+    if (pickupDateTimeForApi == null) {
+      Get.snackbar(
+        "Error",
+        "Please select pickup date & time",
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
         colorText: Colors.white,
       );
       return;
     }
 
+
     isBookRide.value = true;
+
 
     String tripType = selectValue.value == 0 ? "one_way" : "round_trip";
 
-    // "pickup_latitude": 40.7128,
-    // "pickup_longitude": -74.0060,
-    // "pickup_address": "123 Main St, New York, NY",
-    // "drop_latitude": 40.7589,
-    // "drop_longitude": -73.9851,
-    // "drop_address": "456 Broadway, New York, NY",
-    // "vehicle_type_id": 1,
-    // "trip_type": "round_trip",
-    // // "trip_type": "one_way",
-    // "pickup_datetime": "2025-12-18 10:00:00",
-    // "tip_amount": 5.00
+    debugPrint("time : $pickupDateTimeForApi");
     var body = {
       "pickup_latitude": fromLatLng.value!.latitude,
       "pickup_longitude": fromLatLng.value!.longitude,
@@ -217,7 +251,8 @@ class BookingController extends GetxController {
       "drop_address": dropOffLocation.value,
       "vehicle_type_id": vehicleTypeId,
       "trip_type": tripType,
-      "pickup_datetime" :"$formattedDate $formattedTime",
+      // "pickup_datetime" :"$formattedDate $formattedTime",
+      "pickup_datetime": pickupDateTimeForApi,
       "tip_amount" : "0.0",
     };
 
@@ -237,6 +272,9 @@ class BookingController extends GetxController {
         rideBookingMessage.value = response['message'];
         print(response['data']['ride']['pickup_datetime']);
         showRideConfirmed(context);
+
+        // ✅ CLEAR DATA AFTER SUCCESS
+        clearBookingData();
         /*totalFare.value = response["data"]["total_fare"];
 
         Get.snackbar(
@@ -252,7 +290,7 @@ class BookingController extends GetxController {
           "Error",
           "${response["message"] ?? response["errors"] ?? "Failed to estimate fare"}",
           snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.red.withOpacity(0.8),
+          backgroundColor: Colors.red,
           colorText: Colors.white,
         );
       }
@@ -262,7 +300,7 @@ class BookingController extends GetxController {
         "Error",
         "$e",
         snackPosition: SnackPosition.TOP,
-        backgroundColor: AppColors.red.withOpacity(0.5),
+        backgroundColor: AppColors.red,
         colorText: Colors.white,
       );
     } finally {
@@ -283,6 +321,32 @@ class BookingController extends GetxController {
       },
     );
   }
+
+
+  void clearBookingData() {
+    // Locations
+    fromLocation.value = "";
+    dropOffLocation.value = "";
+    fromLatLng.value = null;
+    dropOffLatLng.value = null;
+
+    // Date & Time (THIS FIXES THE ERROR)
+    selectedDate.value = null;
+    selectedTime.value = null;
+
+    // Trip & Fare
+    selectValue.value = 0; // one_way
+    totalFare.value = 0.0;
+    distanceKm.value = 0.0;
+
+    // Flags
+    isEstimateFare.value = false;
+    isBookRide.value = false;
+
+    debugPrint("🧹 Booking data cleared");
+  }
+
+
 
 
 }

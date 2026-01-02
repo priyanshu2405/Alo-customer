@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:alo_ride_app/api_app_folder/res/common/app_appbar.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_call_helper.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
@@ -35,24 +37,47 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
 
     if (!isToday) return;
   }
-
+  Timer? _refreshTimer;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       myRideController.getRideHistory();
     });
+    _startAutoRefresh();
   }
 
   Future<void> _onRefresh() async {
     await myRideController.getRideHistory();
   }
+  void _startAutoRefresh() {
+    _refreshTimer?.cancel();
+
+    _refreshTimer = Timer.periodic(
+      const Duration(seconds: 5),
+          (timer) {
+        if (!mounted) return;
+
+        myRideController.getRideHistory(showLoader: false); // 🚫 NO loader
+      },
+    );
+  }
+
+
+
+  // @override
+  // void dispose() {
+  //   myRideController.selectedTab.value = 0;
+  //   super.dispose();
+  // }
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();   // ✅ stop API calls
     myRideController.selectedTab.value = 0;
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -223,6 +248,8 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
               children: myRideController.completedRides.map((ride) {
                 return InkWell(
                   onTap: () {
+
+
                     if(ride.payment?.status == "pending"){
                       Get.to(
                             () => RideTrackingScreen(

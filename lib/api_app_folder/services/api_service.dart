@@ -7,8 +7,8 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // static const String baseUrl = 'https://planbot.ca/admin/public/api/';
-  static const String baseUrl = 'https://deliverymate.volive.me/alodrive/api/user/';
-  static const String baseUrl1 = 'https://deliverymate.volive.me/alodrive/api/';
+  static const String baseUrl = 'https://app.pos.pizzatwins.ca/api/user/';
+  static const String baseUrl1 = 'https://app.pos.pizzatwins.ca/api/';
   // static const String baseUrl = 'https://development.libpow.com/api/';
   static const Duration timeoutDuration = Duration(minutes: 2);
 

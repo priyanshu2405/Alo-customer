@@ -79,9 +79,12 @@ class MyRideController extends GetxController {
   Rx<LatLng?> pickupLatLng = Rx<LatLng?>(null);
   Rx<LatLng?> dropLatLng = Rx<LatLng?>(null);
 
+  Rx<LatLng?> driverLatLng = Rx<LatLng?>(null);
 
 
-  Future<void> getRideHistory() async {
+
+
+  Future<void> getRideHistory1() async {
     try {
       isRideHistory.value = true;
 
@@ -125,6 +128,52 @@ class MyRideController extends GetxController {
       isRideHistory.value = false;
     }
   }
+
+  Future<void> getRideHistory({bool showLoader = true}) async {
+    try {
+      if (showLoader) {
+        isRideHistory.value = true; // 🔥 ONLY when needed
+      }
+
+      String endpoint = 'rides/history';
+
+      if (startDate?.isNotEmpty == true ||
+          endDate?.isNotEmpty == true) {
+        endpoint += '?start_date=$startDate&end_date=$endDate';
+      }
+
+      final response = await ApiService.get(
+        endpoint: endpoint,
+        isShow: false,
+      );
+
+      rideHistoryModel.value = RideHistoryModel.fromJson(response);
+
+      /// Clear old data
+      pendingRides.clear();
+      completedRides.clear();
+      cancelRides.clear();
+
+      final rides = rideHistoryModel.value.data?.data ?? [];
+
+      for (var ride in rides) {
+        if (upcomingStatuses.contains(ride.status)) {
+          pendingRides.add(ride);
+        } else if (ride.status == 'completed') {
+          completedRides.add(ride);
+        } else if (ride.status == 'cancelled') {
+          cancelRides.add(ride);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching ride history: $e');
+    } finally {
+      if (showLoader) {
+        isRideHistory.value = false;
+      }
+    }
+  }
+
 
   /// Friendly status text
   String getStatusText(String? status) {
