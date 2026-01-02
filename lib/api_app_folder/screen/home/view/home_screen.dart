@@ -44,7 +44,9 @@ class _HomeScreenState extends State<HomeScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppAppBar(
         backgroundColor: Colors.transparent,
-        leading: Icon(Icons.menu),
+        leading: SizedBox(),
+        showBack: false,
+        leadingWidth: 0,
         title: "",
       ),
       body: Obx(() {
@@ -304,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         //       Get.to(() => BookingScreen(vehicleTypeId: homeController.selectedVehicleIndex.value));
                         //     },
                         //     style: ElevatedButton.styleFrom(
-                        //       backgroundColor: Colors.orange,
+                        //       backgroundColor: AppColors.secondary,
                         //       minimumSize: Size(double.infinity, 50.h),
                         //       shape: RoundedRectangleBorder(
                         //         borderRadius: BorderRadius.circular(12),
@@ -344,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
+                              backgroundColor: AppColors.secondary,
                               minimumSize: Size(double.infinity, 50.h),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),

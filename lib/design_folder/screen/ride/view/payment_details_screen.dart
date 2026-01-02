@@ -56,7 +56,7 @@ class PaymentDetailsScreen extends StatelessWidget {
                         ),
                         const Icon(
                           Icons.add,
-                          color: Colors.orange,
+                          color: AppColors.secondary,
                         ),
                       ],
                     ),

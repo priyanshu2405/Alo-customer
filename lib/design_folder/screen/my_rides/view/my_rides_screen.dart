@@ -179,7 +179,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
       child: Column(
         children: [
           _calendarWidget(),
-          _calendarViewRideCard(status: "Pending", statusColor: Colors.orange),
+          _calendarViewRideCard(status: "Pending", statusColor: AppColors.secondary),
         ],
       ),
     );

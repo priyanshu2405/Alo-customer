@@ -33,18 +33,16 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.white,
-        // appBar: AppAppBar(
-        //   onBack: () {
-        //     SystemNavigator.pop();
-        //   },
-        // ),
+        appBar: AppAppBar(
+        showBack: false,
+        ),
         body: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Gap(MediaQuery.of(context).size.height * 0.08),
+                // Gap(MediaQuery.of(context).size.height * 0.08),
                 AppText(
                   text: "Log in",
                   fontSize: 16,
