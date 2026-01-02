@@ -120,6 +120,7 @@ class MyRideController extends GetxController {
   }
 
   void setPickupFromApi(double lat, double lng) async{
+    print("dvdvd");
     pickupLatLng.value = LatLng(lat, lng);
 
     markers.add(
@@ -515,6 +516,7 @@ class MyRideController extends GetxController {
               token: authController.token.value,
               rideId: ride.id ?? 0,
               onUpdate: (data) async {
+                print("data--> ${data}");
                 driverLocationUpdate = data;
                 final newLatLng = LatLng(data.latitude, data.longitude);
                 // compute bearing (optional)
@@ -522,23 +524,23 @@ class MyRideController extends GetxController {
                   _currentBearing = _bearingBetween(driverLatLng.value!, newLatLng);
                 }
                 driverLatLng.value = newLatLng;
-                // if (drawing.value) return;
-                // drawing.value = true;
-                // drawCurrentRoute();
-                // drawing.value = false;
+                if (drawing.value) return;
+                drawing.value = true;
+                drawCurrentRoute();
+                drawing.value = false;
 
 
-                // final result = await getDistanceAndTime(
-                //   originLat: position?.latitude ?? 0,
-                //   originLng: position?.longitude ?? 0,
-                //   destLat: driverLocationUpdate?.latitude,
-                //   destLng: driverLocationUpdate?.longitude,
-                //   apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
-                // );
-                // if (result != null) {
-                //   print("Distance: ${result.distanceText}");
-                //   print("Duration: ${result.durationText}");
-                // }
+                final result = await getDistanceAndTime(
+                  originLat: position?.latitude ?? 0,
+                  originLng: position?.longitude ?? 0,
+                  destLat: driverLocationUpdate?.latitude,
+                  destLng: driverLocationUpdate?.longitude,
+                  apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
+                );
+                if (result != null) {
+                  print("Distance: ${result.distanceText}");
+                  print("Duration: ${result.durationText}");
+                }
                 update();
                 //log("update:: ${jsonEncode(update)}");
               },
@@ -571,7 +573,8 @@ class MyRideController extends GetxController {
     required double destLng,
     required String apiKey,
     String mode = "driving",
-  }) async {
+  })
+  async {
 
 
     final url =

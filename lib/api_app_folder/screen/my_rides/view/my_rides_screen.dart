@@ -43,8 +43,9 @@ class _MyRidesScreenState extends State<MyRidesScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       myRideController.getRideHistory();
+     // _startAutoRefresh();
     });
-    _startAutoRefresh();
+
   }
 
   Future<void> _onRefresh() async {
