@@ -88,6 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               markers: controller.markers,
                               myLocationEnabled: true,
                               myLocationButtonEnabled: false,
+                              zoomGesturesEnabled: true,
                               circles: controller.currentLatLng.value == null
                                   ? {}
                                   : {

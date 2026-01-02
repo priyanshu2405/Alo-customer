@@ -351,7 +351,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 text:
                 "Selected car : ${widget
                     .vehicleTypeName}     Fare estimate : \$${bookingController
-                    .totalFare.value}",
+                    .totalFare?.value}",
                 fontSize: 12,
                 color: AppColors.lightBlackColor,
               );
@@ -402,7 +402,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
             /// BOOK NOW BUTTON
             Obx(() {
-              return bookingController.totalFare.value != 0.0
+              return bookingController.totalFare?.value != 0.0
                   ? Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.0.w),
                 child: AppButton(

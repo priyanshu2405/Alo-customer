@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:math';
 
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/controller/dashboard_conroller.dart';
@@ -6,9 +9,16 @@ import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_sc
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/get_ride_details_model.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/ride_history_model.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart';
+import 'package:alo_ride_app/api_app_folder/services/location_services.dart';
+import 'package:alo_ride_app/api_app_folder/services/socket_services.dart';
+import 'package:alo_ride_app/api_app_folder/services/token_store.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
 
 // class MyRideController extends GetxController{
 //   RxBool isRideHistory = false.obs;
@@ -70,6 +80,7 @@ class MyRideController extends GetxController {
     'going_to_pickup',
     'pickup_done',
   ];
+  final Rxn<RouteDistanceTime> routeInfo = Rxn<RouteDistanceTime>();
 
   /// ✅ Filtered lists
   RxList<RideData> pendingRides = <RideData>[].obs;
@@ -78,8 +89,263 @@ class MyRideController extends GetxController {
 
   Rx<LatLng?> pickupLatLng = Rx<LatLng?>(null);
   Rx<LatLng?> dropLatLng = Rx<LatLng?>(null);
-
   Rx<LatLng?> driverLatLng = Rx<LatLng?>(null);
+  SocketIoService socketIoService = SocketIoService();
+  final AuthController authController = Get.put(AuthController());
+  DriverLocationUpdate? driverLocationUpdate;
+  Position? position;
+  GoogleMapController? mapController;
+
+  /// map state
+  final markers = <Marker>{}.obs;
+  final polylines = <Polyline>{}.obs;
+  final routePoints = <LatLng>[].obs;
+
+  /// positions
+  //LatLng? pickupLatLng;
+  //LatLng? driverLatLng;
+
+  /// polyline helper
+  final polylinePoints = PolylinePoints(
+    apiKey: 'AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs',
+  );
+
+  /// animated driver marker id
+  static const String driverMarkerId = "driver";
+  final ridePhase = RidePhase.toPickup.obs;
+
+  /// set Google map controller
+  void onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
+
+  void setPickupFromApi(double lat, double lng) async{
+    pickupLatLng.value = LatLng(lat, lng);
+
+    markers.add(
+      Marker(
+        markerId: const MarkerId("pickup"),
+        position: pickupLatLng.value ?? LatLng(0.0, 0.0),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+      ),
+    );
+
+    markers.refresh();
+    await drawCurrentRoute();
+  }
+
+
+  Future<void> updateDriverFromSocket(double lat, double lng) async {
+    final newPos = LatLng(lat, lng);
+
+    /// first time marker add
+    if (driverLatLng.value == null) {
+      driverLatLng.value = newPos;
+
+      markers.add(
+        Marker(
+          markerId: const MarkerId(driverMarkerId),
+          position: driverLatLng.value!,
+          rotation: 0,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        ),
+      );
+
+      await _fitDriverAndPickupBounds();
+    } else {
+      /// smooth animate movement
+      await _animateDriverMovement(driverLatLng.value!, newPos);
+      driverLatLng.value = newPos;
+    }
+
+    /// re-draw route each time driver moves
+    if (pickupLatLng.value != null) {
+      await _drawRouteDriverToPickup();
+    }
+
+    markers.refresh();
+  }
+
+  Future<void> _animateDriverMovement(LatLng from, LatLng to) async {
+    const int steps = 30;
+    const int ms = 15;
+
+    for (int i = 0; i <= steps; i++) {
+      final lat = from.latitude + (to.latitude - from.latitude) * (i / steps);
+      final lng = from.longitude + (to.longitude - from.longitude) * (i / steps);
+
+      markers.removeWhere((m) => m.markerId.value == driverMarkerId);
+
+      markers.add(
+        Marker(
+          markerId: const MarkerId(driverMarkerId),
+          position: LatLng(lat, lng),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        ),
+      );
+
+      await Future.delayed(const Duration(milliseconds: ms));
+    }
+  }
+  Future<void> _drawRouteDriverToPickup() async {
+    if (driverLatLng.value == null || pickupLatLng.value == null) return;
+
+    polylines.clear();
+    routePoints.clear();
+
+    final result = await polylinePoints.getRouteBetweenCoordinates(
+      request: PolylineRequest(
+        origin: PointLatLng(driverLatLng.value!.latitude, driverLatLng.value!.longitude),
+        destination: PointLatLng(pickupLatLng.value?.latitude ?? 0.0, pickupLatLng.value?.longitude ?? 0.0),
+        mode: TravelMode.driving,
+        avoidFeatures: [
+          AvoidFeature.ferries,
+        ],
+        alternatives: true,
+      ),
+    );
+
+    if (result.points.isEmpty) return;
+
+    for (final p in result.points) {
+      routePoints.add(LatLng(p.latitude, p.longitude));
+    }
+
+    polylines.add(
+      Polyline(
+        polylineId: const PolylineId("driver_to_pickup"),
+        width: 5,
+        color: Colors.blue,
+        points: routePoints,
+      ),
+    );
+
+    polylines.refresh();
+  }
+  Future<void> _fitDriverAndPickupBounds() async {
+    if (driverLatLng.value == null || pickupLatLng.value == null) return;
+
+    final bounds = LatLngBounds(
+      southwest: LatLng(
+        driverLatLng.value!.latitude < pickupLatLng.value!.latitude
+            ? driverLatLng.value!.latitude
+            : pickupLatLng.value!.latitude,
+        driverLatLng.value!.longitude < pickupLatLng.value!.longitude
+            ? driverLatLng.value!.longitude
+            : pickupLatLng.value!.longitude,
+      ),
+      northeast: LatLng(
+        driverLatLng.value!.latitude > pickupLatLng.value!.latitude
+            ? driverLatLng.value!.latitude
+            : pickupLatLng.value!.latitude,
+        driverLatLng.value!.longitude > pickupLatLng.value!.longitude
+            ? driverLatLng.value!.longitude
+            : pickupLatLng.value!.longitude,
+      ),
+    );
+
+    await mapController?.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 80),
+    );
+  }
+  static const String _singlePolylineId = "only_route";
+
+  Future<void> drawCurrentRoute() async {
+    if (driverLatLng.value == null) return;
+
+    LatLng? target;
+
+    if (ridePhase.value == RidePhase.toPickup) {
+      target = pickupLatLng.value;
+    } else {
+      target = dropLatLng.value;
+    }
+
+    if (target == null) return;
+
+    /// HARD RESET – remove all existing routes
+    polylines.clear();
+    routePoints.clear();
+
+    final result = await polylinePoints.getRouteBetweenCoordinates(
+      request: PolylineRequest(
+        origin: PointLatLng(
+          driverLatLng.value!.latitude,
+          driverLatLng.value!.longitude,
+        ),
+        destination: PointLatLng(
+          target.latitude,
+          target.longitude,
+        ),
+        mode: TravelMode.driving,
+        alternatives: false,
+      ),
+    );
+
+    if (result.points.isEmpty) return;
+
+    for (final p in result.points) {
+      routePoints.add(LatLng(p.latitude, p.longitude));
+    }
+
+    /// ALWAYS same id => only ONE polyline on map
+    polylines.add(
+      Polyline(
+        polylineId: const PolylineId(_singlePolylineId),
+        color: Colors.blue,
+        width: 5,
+        points: routePoints,
+      ),
+    );
+
+    polylines.refresh();
+  }
+
+  double _currentBearing = 0;
+  BitmapDescriptor? driverIcon;
+
+  Future<void> loadDriverIcon() async {
+    print("vdvdv");
+    final icon = await BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(80, 80)),
+      "assets/images/car.png",
+    );
+
+    driverIcon = icon;
+    update();
+  }
+
+  void _updateDriverMarker() {
+    if (driverLatLng.value == null) return;
+
+    markers.removeWhere((m) => m.markerId.value == driverMarkerId);
+
+    markers.add(
+      Marker(
+        markerId: const MarkerId(driverMarkerId),
+        position: driverLatLng.value!,
+        icon:/* driverIcon ?? */ BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        rotation: _currentBearing,
+        anchor: const Offset(0.5, 0.5),
+      ),
+    );
+
+    markers.refresh();
+  }
+
+  double _bearingBetween(LatLng from, LatLng to) {
+    final dLon = (to.longitude - from.longitude) * (pi / 180);
+
+    final y = sin(dLon) * cos(to.latitude * (pi / 180));
+    final x = cos(from.latitude * (pi / 180)) * sin(to.latitude * (pi / 180)) -
+        sin(from.latitude * (pi / 180)) *
+            cos(to.latitude * (pi / 180)) *
+            cos(dLon);
+
+    return (atan2(y, x) * 180 / pi + 360) % 360;
+  }
+
+  //Rx<LatLng?> driverLatLng = Rx<LatLng?>(null);
 
 
 
@@ -90,15 +356,11 @@ class MyRideController extends GetxController {
 
       String endpoint = 'rides/history';
 
-      if (startDate?.isNotEmpty == true ||
-          endDate?.isNotEmpty == true) {
+      if (startDate?.isNotEmpty == true || endDate?.isNotEmpty == true) {
         endpoint += '?start_date=$startDate&end_date=$endDate';
       }
 
-      final response = await ApiService.get(
-        endpoint: endpoint,
-        isShow: false,
-      );
+      final response = await ApiService.get(endpoint: endpoint, isShow: false);
 
       rideHistoryModel.value = RideHistoryModel.fromJson(response);
 
@@ -165,6 +427,23 @@ class MyRideController extends GetxController {
           cancelRides.add(ride);
         }
       }
+      if (!drawing.value) {
+        drawing.value = true;
+        await drawCurrentRoute();
+        drawing.value = false;
+      }
+      _updateDriverMarker();
+      routeInfo.value = await getDistanceAndTime(
+        originLat: position?.latitude ?? 0,
+        originLng: position?.longitude ?? 0,
+        destLat: pickupLatLng.value?.latitude ??0.0,
+        destLng: pickupLatLng.value?.longitude ?? 0.0,
+        apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
+      );
+      // updateDriverFromSocket(
+      //   driverLocationUpdate?.latitude,
+      //   driverLocationUpdate?.longitude,
+      // );
     } catch (e) {
       debugPrint('Error fetching ride history: $e');
     } finally {
@@ -173,6 +452,7 @@ class MyRideController extends GetxController {
       }
     }
   }
+
 
 
   /// Friendly status text
@@ -192,8 +472,12 @@ class MyRideController extends GetxController {
         return '';
     }
   }
+  Rx<bool> drawing = false.obs;
 
   Future<void> getRideDetails({required int id}) async {
+    position = await LocationService.getCurrentLocation();
+    update();
+    print(position?.latitude);
     try {
       isGetRideDetails.value = true;
 
@@ -203,10 +487,11 @@ class MyRideController extends GetxController {
       );
 
       getRideDetailsModel.value = GetRideDetailsModel.fromJson(response);
-     log(getRideDetailsModel.value.toJson().toString());
+      print(getRideDetailsModel.value.toJson().toString());
       final ride = getRideDetailsModel.value.data?.ride;
 
       if (ride != null) {
+
         /// ✅ Convert String → double safely
         final pickupLat = double.tryParse(ride.pickupLatitude ?? '');
         final pickupLng = double.tryParse(ride.pickupLongitude ?? '');
@@ -220,9 +505,58 @@ class MyRideController extends GetxController {
         if (dropLat != null && dropLng != null) {
           dropLatLng.value = LatLng(dropLat, dropLng);
         }
+        setPickupFromApi(pickupLat ?? 0.0,pickupLng ?? 0.0);
+
+        if (ride.status == "accepted" || ride.status == "going_to_pickup") {
+          print("dvdvdv");
+          unawaited(
+            initRideSocketFlow(
+              userId: ride.userId ?? 0,
+              token: authController.token.value,
+              rideId: ride.id ?? 0,
+              onUpdate: (data) async {
+                driverLocationUpdate = data;
+                final newLatLng = LatLng(data.latitude, data.longitude);
+                // compute bearing (optional)
+                if (driverLatLng.value != null) {
+                  _currentBearing = _bearingBetween(driverLatLng.value!, newLatLng);
+                }
+                driverLatLng.value = newLatLng;
+                // if (drawing.value) return;
+                // drawing.value = true;
+                // drawCurrentRoute();
+                // drawing.value = false;
+
+
+                // final result = await getDistanceAndTime(
+                //   originLat: position?.latitude ?? 0,
+                //   originLng: position?.longitude ?? 0,
+                //   destLat: driverLocationUpdate?.latitude,
+                //   destLng: driverLocationUpdate?.longitude,
+                //   apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
+                // );
+                // if (result != null) {
+                //   print("Distance: ${result.distanceText}");
+                //   print("Duration: ${result.durationText}");
+                // }
+                update();
+                //log("update:: ${jsonEncode(update)}");
+              },
+            ),
+          );
+          // socketIoService.connect(
+          //   userId: ride.userId ?? 0,
+          //   token: authController.token.value,
+          // );
+          // socketIoService.subscribeToRide(ride.id ?? 0);
+          //
+          // socketIoService.onDriverLocationUpdated((update) {
+          //   debugPrint(
+          //     'Driver location updated: ${update.latitude}, ${update.longitude}',
+          //   );
+          // });
+        }
       }
-
-
     } catch (e) {
       debugPrint('Error fetching ride details: $e');
     } finally {
@@ -230,23 +564,156 @@ class MyRideController extends GetxController {
     }
   }
 
+  Future<RouteDistanceTime?> getDistanceAndTime({
+    required double originLat,
+    required double originLng,
+    required double destLat,
+    required double destLng,
+    required String apiKey,
+    String mode = "driving",
+  }) async {
+
+
+    final url =
+        "https://maps.googleapis.com/maps/api/distancematrix/json"
+        "?origins=$originLat,$originLng"
+        "&destinations=$destLat,$destLng"
+        "&mode=$mode"
+        "&key=$apiKey";
+
+    final response = await http.get(Uri.parse(url));
+   // print("gettingLatlng ${response.body}");
+    if (response.statusCode != 200) {
+      throw Exception("Distance Matrix API failed: ${response.statusCode}");
+    }
+
+    final jsonBody = jsonDecode(response.body);
+
+    if (jsonBody["status"] != "OK") {
+      throw Exception("API error: ${jsonBody["status"]}");
+    }
+
+    final element = jsonBody["rows"][0]["elements"][0];
+
+    if (element["status"] != "OK") {
+      return null;
+    }
+
+    return RouteDistanceTime(
+      distanceMeters: element["distance"]["value"],
+      distanceText: element["distance"]["text"],
+      durationSeconds: element["duration"]["value"],
+      durationText: element["duration"]["text"],
+    );
+  }
+
+  Future<void> initRideSocketFlow({
+    required int userId,
+    required String token,
+    required int rideId,
+    required void Function(DriverLocationUpdate update) onUpdate,
+  })
+  async {
+    // 1) connect and authenticate
+    await socketIoService.connect(userId: userId.toString(), token: token);
+
+    socketIoService.getLocationStatus((status) async {
+
+      debugPrint("STATUS FROM SOCKET => $status");
+
+      if (status == "going_for_pickup") {
+        ridePhase.value = RidePhase.toPickup;
+
+        _addPickupMarker();
+        _removeDropMarker();
+
+        await drawCurrentRoute();
+      }
+
+      if (status == "pickup_done") {
+        ridePhase.value = RidePhase.toDrop;
+
+        _removePickupMarker();
+        _addDropMarker();
+
+        await drawCurrentRoute();
+      }
+    });
+    socketIoService.onDriverLocationUpdated(onUpdate);
+
+    // 2) subscribe to ride
+    await socketIoService.rideAccept(rideId: rideId);
+    await socketIoService.subScribeLocation();
+
+    // 3) listen for updates
+    print("driverLocationUpdate");
+
+  }
+
+  void _addPickupMarker() {
+    if (pickupLatLng.value == null) return;
+
+    markers.removeWhere((m) => m.markerId.value == "pickup");
+
+    markers.add(
+      Marker(
+        markerId: const MarkerId("pickup"),
+        position: pickupLatLng.value!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueOrange,
+        ),
+      ),
+    );
+
+    markers.refresh();
+  }
+  void _removePickupMarker() {
+    markers.removeWhere((m) => m.markerId.value == "pickup");
+    markers.refresh();
+  }
+
+  void _addDropMarker() {
+    if (dropLatLng.value == null) return;
+
+    markers.removeWhere((m) => m.markerId.value == "drop");
+
+    markers.add(
+      Marker(
+        markerId: const MarkerId("drop"),
+        position: dropLatLng.value!,
+        icon: BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueRed,
+        ),
+      ),
+    );
+
+    markers.refresh();
+  }
+  void _removeDropMarker() {
+    markers.removeWhere((m) => m.markerId.value == "drop");
+    markers.refresh();
+  }
   double get totalTripFare {
     final baseFare =
-        double.tryParse(getRideDetailsModel.value.data?.ride?.baseFare?.toString() ?? '0') ?? 0;
+        double.tryParse(
+          getRideDetailsModel.value.data?.ride?.baseFare?.toString() ?? '0',
+        ) ??
+        0;
 
     final commission =
-        double.tryParse(getRideDetailsModel.value.data?.ride?.commissionAmount?.toString() ?? '0') ?? 0;
+        double.tryParse(
+          getRideDetailsModel.value.data?.ride?.commissionAmount?.toString() ??
+              '0',
+        ) ??
+        0;
 
     return baseFare + commission;
   }
 
-
   Future<void> cancelRide({required int id}) async {
     isCancelRide.value = true; // Start loading
 
-    var body = {
-      "reason": reasonController.text,
-    };
+    var body = {"reason": reasonController.text};
     debugPrint("body : $body");
 
     try {
@@ -262,7 +729,7 @@ class MyRideController extends GetxController {
         controller.changeIndex(1);
         Get.to(() => DashboardScreen());
         getRideHistory();
-      } else{
+      } else {
         Get.snackbar(
           "Error",
           "${response["errors"]["mobile"]}",
@@ -284,7 +751,23 @@ class MyRideController extends GetxController {
       isCancelRide.value = false; // Stop loading in all cases
     }
   }
+}
 
+class RouteDistanceTime {
+  final int distanceMeters;
+  final String distanceText;
+  final int durationSeconds;
+  final String durationText;
 
+  RouteDistanceTime({
+    required this.distanceMeters,
+    required this.distanceText,
+    required this.durationSeconds,
+    required this.durationText,
+  });
+}
 
+enum RidePhase {
+  toPickup,
+  toDrop,
 }
