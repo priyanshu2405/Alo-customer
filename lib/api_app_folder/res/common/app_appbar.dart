@@ -13,6 +13,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double elevation;
   final bool centerTitle;
   final Widget? leading;
+  final double? leadingWidth;
 
   const AppAppBar({
     super.key,
@@ -25,7 +26,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.titleColor = AppColors.black,
     this.elevation = 0,
     this.centerTitle = false,
-    this.leading,
+    this.leading, this.leadingWidth,
   });
 
   @override
@@ -36,8 +37,8 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       elevation: elevation,
       backgroundColor: backgroundColor,
-
       centerTitle: centerTitle,
+      leadingWidth: leadingWidth,
       leading: leading ??
           (showBack
               ? IconButton(

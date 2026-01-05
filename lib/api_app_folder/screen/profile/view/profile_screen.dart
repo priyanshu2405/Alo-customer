@@ -36,28 +36,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: AppColors.white,
       appBar: AppAppBar(
         backgroundColor: Colors.transparent,
-        leading: Icon(Icons.menu),
+        leading: SizedBox(),
+        showBack: false,
+        leadingWidth: 0,
         title: "Profile",
-        actions: [
-          InkWell(
-            onTap: () async {
-              profileController.isSave.value = true;
-              // if (!profileController.isSave.value) {
-              //   // ENTER EDIT MODE
-              //   profileController.isSave.value = true;
-              // } else {
-              //   profileController.isSave.value = false;
-              // }
-            },
-            child: Obx(() {
-              return AppText(
-                text: profileController.isSave.value == true ? "Save" : "Edit",
-                fontSize: 16,
-              );
-            }),
-          ),
-          Gap(16),
-        ],
+        // actions: [
+        //   InkWell(
+        //     onTap: () async {
+        //       profileController.isSave.value = true;
+        //       // if (!profileController.isSave.value) {
+        //       //   // ENTER EDIT MODE
+        //       //   profileController.isSave.value = true;
+        //       // } else {
+        //       //   profileController.isSave.value = false;
+        //       // }
+        //     },
+        //     child: Obx(() {
+        //       return AppText(
+        //         text: profileController.isSave.value == true ? "Save" : "Edit",
+        //         fontSize: 16,
+        //       );
+        //     }),
+        //   ),
+        //   Gap(16),
+        // ],
       ),
       body: Obx(() {
         return profileController.isLoading.value
@@ -93,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           //           child: Container(
                           //             padding: EdgeInsets.all(6.w),
                           //             decoration: const BoxDecoration(
-                          //               color: Colors.orange,
+                          //               color: AppColors.secondary,
                           //               shape: BoxShape.circle,
                           //             ),
                           //             child: const Icon(
@@ -201,7 +203,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         child: Container(
                                           padding: EdgeInsets.all(6.w),
                                           decoration: const BoxDecoration(
-                                            color: Colors.orange,
+                                            color: AppColors.secondary,
                                             shape: BoxShape.circle,
                                           ),
                                           child: const Icon(
@@ -311,11 +313,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             isLoading: profileController.isEditProfile.value,
             text: "Save",
             onTap: () {
-              if(profileController.isSave.value == true){
+              if (profileController.isSave.value) {
+                // 👉 SAVE MODE
                 profileController.editProfile();
+              } else {
+                // 👉 SWITCH TO SAVE MODE
+                profileController.isSave.value = true;
               }
-
             },
+            // onTap: () {
+            //   if(profileController.isSave.value == true){
+            //     profileController.editProfile();
+            //   }
+            //
+            // },
           );
         },),
       ),

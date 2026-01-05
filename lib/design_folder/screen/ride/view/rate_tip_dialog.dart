@@ -151,18 +151,18 @@ class _RateTipDialogState extends State<RateTipDialog> {
             borderRadius: BorderRadius.circular(8.r),
             border: Border.all(
               color: isSelected
-                  ? Colors.orange
+                  ? AppColors.secondary
                   : AppColors.borderColor,
               width: 1.5,
             ),
             color: isSelected
-                ? Colors.orange.withOpacity(0.1)
+                ? AppColors.secondary.withOpacity(0.1)
                 : Colors.transparent,
           ),
           child: AppText(
             text: value,
             fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.orange : AppColors.black,
+            color: isSelected ? AppColors.secondary : AppColors.black,
           ),
         ),
       );

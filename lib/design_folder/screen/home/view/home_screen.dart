@@ -281,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Get.to(()=>BookingScreen());
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
+                      backgroundColor: AppColors.secondary,
                       minimumSize: Size(double.infinity, 50.h),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

@@ -495,7 +495,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       );
                     }),
                   ),
-                  Icon(icon, color: Colors.orange),
+                  Icon(icon, color: AppColors.secondary),
                 ],
               ),
             ),

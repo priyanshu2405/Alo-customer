@@ -449,7 +449,7 @@ class ApiService {
         backgroundColor:
             isError
                 ? Colors.red.withOpacity(0.8)
-                : Colors.orange.withOpacity(0.5),
+                : AppColors.secondary.withOpacity(0.5),
         colorText: Colors.white,
         duration: Duration(seconds: 3),
         margin: EdgeInsets.all(5),
