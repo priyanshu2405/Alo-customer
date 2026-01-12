@@ -1,13 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:math';
+import 'dart:math' hide log;
 
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/controller/dashboard_conroller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/get_ride_details_model.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/ride_history_model.dart';
+import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart';
 import 'package:alo_ride_app/api_app_folder/services/location_services.dart';
 import 'package:alo_ride_app/api_app_folder/services/socket_services.dart';
@@ -81,7 +82,7 @@ class MyRideController extends GetxController {
     'pickup_done',
   ];
   final Rxn<RouteDistanceTime> routeInfo = Rxn<RouteDistanceTime>();
-
+  Rx<String> rideStatus = "".obs;
   /// ✅ Filtered lists
   RxList<RideData> pendingRides = <RideData>[].obs;
   RxList<RideData> completedRides = <RideData>[].obs;
@@ -90,7 +91,8 @@ class MyRideController extends GetxController {
   Rx<LatLng?> pickupLatLng = Rx<LatLng?>(null);
   Rx<LatLng?> dropLatLng = Rx<LatLng?>(null);
   Rx<LatLng?> driverLatLng = Rx<LatLng?>(null);
-  SocketIoService socketIoService = SocketIoService();
+
+  // SocketIoService socketIoService = SocketIoService();
   final AuthController authController = Get.put(AuthController());
   DriverLocationUpdate? driverLocationUpdate;
   Position? position;
@@ -119,22 +121,27 @@ class MyRideController extends GetxController {
     mapController = controller;
   }
 
-  void setPickupFromApi(double lat, double lng) async{
+  @override
+  void onClose() {
+    super.onClose();
+    stopDriverLocationAutoGet();
+  }
+
+  void setPickupFromApi(double lat, double lng) async {
     print("dvdvd");
     pickupLatLng.value = LatLng(lat, lng);
 
-    markers.add(
+    /*markers.add(
       Marker(
         markerId: const MarkerId("pickup"),
         position: pickupLatLng.value ?? LatLng(0.0, 0.0),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
       ),
-    );
+    );*/
 
     markers.refresh();
     await drawCurrentRoute();
   }
-
 
   Future<void> updateDriverFromSocket(double lat, double lng) async {
     final newPos = LatLng(lat, lng);
@@ -173,7 +180,8 @@ class MyRideController extends GetxController {
 
     for (int i = 0; i <= steps; i++) {
       final lat = from.latitude + (to.latitude - from.latitude) * (i / steps);
-      final lng = from.longitude + (to.longitude - from.longitude) * (i / steps);
+      final lng =
+          from.longitude + (to.longitude - from.longitude) * (i / steps);
 
       markers.removeWhere((m) => m.markerId.value == driverMarkerId);
 
@@ -188,6 +196,7 @@ class MyRideController extends GetxController {
       await Future.delayed(const Duration(milliseconds: ms));
     }
   }
+
   Future<void> _drawRouteDriverToPickup() async {
     if (driverLatLng.value == null || pickupLatLng.value == null) return;
 
@@ -196,12 +205,16 @@ class MyRideController extends GetxController {
 
     final result = await polylinePoints.getRouteBetweenCoordinates(
       request: PolylineRequest(
-        origin: PointLatLng(driverLatLng.value!.latitude, driverLatLng.value!.longitude),
-        destination: PointLatLng(pickupLatLng.value?.latitude ?? 0.0, pickupLatLng.value?.longitude ?? 0.0),
+        origin: PointLatLng(
+          driverLatLng.value!.latitude,
+          driverLatLng.value!.longitude,
+        ),
+        destination: PointLatLng(
+          pickupLatLng.value?.latitude ?? 0.0,
+          pickupLatLng.value?.longitude ?? 0.0,
+        ),
         mode: TravelMode.driving,
-        avoidFeatures: [
-          AvoidFeature.ferries,
-        ],
+        avoidFeatures: [AvoidFeature.ferries],
         alternatives: true,
       ),
     );
@@ -223,6 +236,7 @@ class MyRideController extends GetxController {
 
     polylines.refresh();
   }
+
   Future<void> _fitDriverAndPickupBounds() async {
     if (driverLatLng.value == null || pickupLatLng.value == null) return;
 
@@ -249,6 +263,7 @@ class MyRideController extends GetxController {
       CameraUpdate.newLatLngBounds(bounds, 80),
     );
   }
+
   static const String _singlePolylineId = "only_route";
 
   Future<void> drawCurrentRoute() async {
@@ -274,10 +289,7 @@ class MyRideController extends GetxController {
           driverLatLng.value!.latitude,
           driverLatLng.value!.longitude,
         ),
-        destination: PointLatLng(
-          target.latitude,
-          target.longitude,
-        ),
+        destination: PointLatLng(target.latitude, target.longitude),
         mode: TravelMode.driving,
         alternatives: false,
       ),
@@ -307,9 +319,9 @@ class MyRideController extends GetxController {
 
   Future<void> loadDriverIcon() async {
     print("vdvdv");
-    final icon = await BitmapDescriptor.fromAssetImage(
-      const ImageConfiguration(size: Size(80, 80)),
-      "assets/images/car.png",
+    final icon = await BitmapDescriptor.asset(
+      const ImageConfiguration(size: Size(120, 120)),
+      "assets/icons/car.png",
     );
 
     driverIcon = icon;
@@ -325,7 +337,9 @@ class MyRideController extends GetxController {
       Marker(
         markerId: const MarkerId(driverMarkerId),
         position: driverLatLng.value!,
-        icon:/* driverIcon ?? */ BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        icon: /* driverIcon ?? */ BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueBlue,
+        ),
         rotation: _currentBearing,
         anchor: const Offset(0.5, 0.5),
       ),
@@ -334,22 +348,8 @@ class MyRideController extends GetxController {
     markers.refresh();
   }
 
-  double _bearingBetween(LatLng from, LatLng to) {
-    final dLon = (to.longitude - from.longitude) * (pi / 180);
-
-    final y = sin(dLon) * cos(to.latitude * (pi / 180));
-    final x = cos(from.latitude * (pi / 180)) * sin(to.latitude * (pi / 180)) -
-        sin(from.latitude * (pi / 180)) *
-            cos(to.latitude * (pi / 180)) *
-            cos(dLon);
-
-    return (atan2(y, x) * 180 / pi + 360) % 360;
-  }
 
   //Rx<LatLng?> driverLatLng = Rx<LatLng?>(null);
-
-
-
 
   Future<void> getRideHistory1() async {
     try {
@@ -400,15 +400,11 @@ class MyRideController extends GetxController {
 
       String endpoint = 'rides/history';
 
-      if (startDate?.isNotEmpty == true ||
-          endDate?.isNotEmpty == true) {
-        endpoint += '?start_date=$startDate&end_date=$endDate';
+      if ((startDate?.isNotEmpty ?? true) || (endDate?.isNotEmpty ?? true)) {
+        endpoint += '?start_date=$startDate';
       }
 
-      final response = await ApiService.get(
-        endpoint: endpoint,
-        isShow: false,
-      );
+      final response = await ApiService.get(endpoint: endpoint, isShow: false);
 
       rideHistoryModel.value = RideHistoryModel.fromJson(response);
 
@@ -433,14 +429,14 @@ class MyRideController extends GetxController {
         await drawCurrentRoute();
         drawing.value = false;
       }
-      _updateDriverMarker();
+      //_updateDriverMarker();
       routeInfo.value = await getDistanceAndTime(
         originLat: position?.latitude ?? 0,
         originLng: position?.longitude ?? 0,
         destLat: pickupLatLng.value?.latitude ??0.0,
         destLng: pickupLatLng.value?.longitude ?? 0.0,
-        apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
       );
+      print(routeInfo.value?.distanceText);
       // updateDriverFromSocket(
       //   driverLocationUpdate?.latitude,
       //   driverLocationUpdate?.longitude,
@@ -453,8 +449,6 @@ class MyRideController extends GetxController {
       }
     }
   }
-
-
 
   /// Friendly status text
   String getStatusText(String? status) {
@@ -473,6 +467,7 @@ class MyRideController extends GetxController {
         return '';
     }
   }
+
   Rx<bool> drawing = false.obs;
 
   Future<void> getRideDetails({required int id}) async {
@@ -488,11 +483,10 @@ class MyRideController extends GetxController {
       );
 
       getRideDetailsModel.value = GetRideDetailsModel.fromJson(response);
-      print(getRideDetailsModel.value.toJson().toString());
+      log(getRideDetailsModel.value.toJson().toString());
       final ride = getRideDetailsModel.value.data?.ride;
 
       if (ride != null) {
-
         /// ✅ Convert String → double safely
         final pickupLat = double.tryParse(ride.pickupLatitude ?? '');
         final pickupLng = double.tryParse(ride.pickupLongitude ?? '');
@@ -506,11 +500,12 @@ class MyRideController extends GetxController {
         if (dropLat != null && dropLng != null) {
           dropLatLng.value = LatLng(dropLat, dropLng);
         }
-        setPickupFromApi(pickupLat ?? 0.0,pickupLng ?? 0.0);
-
-        if (ride.status == "accepted" || ride.status == "going_to_pickup") {
+        //setPickupFromApi(pickupLat ?? 0.0, pickupLng ?? 0.0);
+         print("ride status:: ${ride.status}");
+        if (ride.status != "completed" || ride.status != "pending") {
           print("dvdvdv");
-          unawaited(
+          startDriverLocationAutoGet(driverId: ride.driverId ?? 0,rideId: ride.id);
+          /*unawaited(
             initRideSocketFlow(
               userId: ride.userId ?? 0,
               token: authController.token.value,
@@ -545,7 +540,7 @@ class MyRideController extends GetxController {
                 //log("update:: ${jsonEncode(update)}");
               },
             ),
-          );
+          );*/
           // socketIoService.connect(
           //   userId: ride.userId ?? 0,
           //   token: authController.token.value,
@@ -558,6 +553,13 @@ class MyRideController extends GetxController {
           //   );
           // });
         }
+        routeInfo.value = await getDistanceAndTime(
+          originLat: position?.latitude ?? 0,
+          originLng: position?.longitude ?? 0,
+          destLat: pickupLatLng.value?.latitude ??0.0,
+          destLng: pickupLatLng.value?.longitude ?? 0.0,
+        );
+        print(routeInfo.value?.distanceText);
       }
     } catch (e) {
       debugPrint('Error fetching ride details: $e');
@@ -566,26 +568,265 @@ class MyRideController extends GetxController {
     }
   }
 
+  Timer? _locationTimer;
+  bool _isSendingLocation = false;
+
+  void stopDriverLocationAutoGet() {
+    _locationTimer?.cancel();
+    _locationTimer = null;
+    debugPrint("🛑 Auto location getting stopped");
+  }
+
+  void startDriverLocationAutoGet({int? driverId,int? rideId}) {
+    // avoid duplicate timers
+    _locationTimer?.cancel();
+
+    _locationTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (_isSendingLocation) return; // avoid overlap
+      _isSendingLocation = true;
+
+      try {
+        await getDriverLocation(driverId: driverId ?? 0,rideId: rideId ?? 0);
+      } catch (e) {
+        debugPrint("❌ Auto get error: $e");
+      } finally {
+        _isSendingLocation = false;
+      }
+    });
+
+    //debugPrint("🚕 Auto location sending started for ride $rideId");
+  }
+
+  Future<void> getDriverLocation({required int driverId,required int rideId,}) async {
+    try {
+      // isLoading.value = true;
+
+      final response = await ApiService.get(
+        endpoint: 'location?id=$driverId&ride_id=$rideId',
+      );
+
+      if (response['success'] != true) return;
+
+      final lat = double.parse(response['data']['latitude'].toString());
+      final lng = double.parse(response['data']['longitude'].toString());
+     print("locationStatus:: ${response}");
+     rideStatus.value = response['data']['ride_status'];
+     if(rideStatus.value == "completed"){
+       Get.to(() => RideCompletedScreen(
+         bookingId: rideId,
+         isShowDialog: true,
+       ));
+       stopDriverLocationAutoGet();
+     }
+      final newPos = LatLng(lat, lng);
+
+      // 1) animate marker
+      await animateDriverMovement(newPos);
+
+      // 2) redraw route driver -> pickup
+      await drawRouteBetweenPoints(
+        source: newPos,
+        destination:rideStatus.value == "pickup_done" ? dropLatLng.value! : pickupLatLng.value!,
+        mapController: mapController!,
+        polylines: polylines,
+      );
+
+      // 3) ETA + distance
+      routeInfo.value = await getDistanceAndTime(
+        originLat: newPos.latitude,
+        originLng: newPos.longitude,
+        destLat: pickupLatLng.value!.latitude,
+        destLng: pickupLatLng.value!.longitude,
+      ); /*else {
+        _showError(response['message'] ?? "Update failed");
+      }*/
+    } catch (e) {
+      _isSendingLocation = false;
+      print("error: ${e.toString()}");
+      //_showError(e.toString());
+    } finally {
+      // isLoading.value = false;
+    }
+  }
+
+  Future<void> drawRouteBetweenPoints({
+    required LatLng source,
+    required LatLng destination,
+    required GoogleMapController mapController,
+    required RxSet<Polyline> polylines,
+  })
+  async {
+    //polylines.clear();
+    if (driverLatLng.value == null || pickupLatLng.value == null) return;
+
+    final polylinePoints = PolylinePoints(
+      apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
+    );
+
+    final result = await polylinePoints.getRouteBetweenCoordinates(
+      request: PolylineRequest(
+        origin: PointLatLng(source.latitude, source.longitude),
+        destination: PointLatLng(destination.latitude, destination.longitude),
+        mode: TravelMode.driving,
+        alternatives: false,
+      ),
+    );
+
+    if (result.points.isEmpty) return;
+
+    routePoints.value =
+        result.points.map((e) => LatLng(e.latitude, e.longitude)).toList();
+   /* final routeCoords = result.points
+        .map((p) => LatLng(p.latitude, p.longitude))
+        .toList();*/
+
+    polylines.add(
+      Polyline(
+        polylineId: PolylineId(_singlePolylineId),
+        width: 6,
+        color: Colors.blue,
+        points: routePoints,
+      ),
+    );
+    polylines.refresh();
+
+    //update();
+  }
+  void fitCameraBounds() {
+    if (driverLatLng.value == null || pickupLatLng.value == null) return;
+
+    final bounds = LatLngBounds(
+      southwest: LatLng(
+        min(driverLatLng.value!.latitude, pickupLatLng.value!.latitude),
+        min(driverLatLng.value!.longitude, pickupLatLng.value!.longitude),
+      ),
+      northeast: LatLng(
+        min(driverLatLng.value!.latitude, pickupLatLng.value!.latitude),
+        min(driverLatLng.value!.longitude, pickupLatLng.value!.longitude),
+      ),
+    );
+
+    mapController?.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 60),
+    );
+  }
+  double currentBearing = 0.0;
+  LatLng? lastDriverLatLng;
+
+  Future<void> animateDriverMovement(LatLng newPos) async {
+    if (lastDriverLatLng == null) {
+      lastDriverLatLng = newPos;
+      updateDriverMarker();
+      return;
+    }
+
+    final latTween = Tween<double>(
+      begin: lastDriverLatLng!.latitude,
+      end: newPos.latitude,
+    );
+
+    final lngTween = Tween<double>(
+      begin: lastDriverLatLng!.longitude,
+      end: newPos.longitude,
+    );
+
+    for (double t = 0; t < 1; t += 0.02) {
+      await Future.delayed(const Duration(milliseconds: 16));
+
+      final lat = latTween.transform(t);
+      final lng = lngTween.transform(t);
+
+      driverLatLng.value = LatLng(lat, lng);
+
+      currentBearing = Geolocator.bearingBetween(
+        lastDriverLatLng!.latitude,
+        lastDriverLatLng!.longitude,
+        newPos.latitude,
+        newPos.longitude,
+      );
+
+      updateDriverMarker();
+    }
+
+    lastDriverLatLng = newPos;
+    driverLatLng.value = newPos;
+    updateDriverMarker();
+  }
+  void updateDriverMarker() {
+    if (driverLatLng.value == null) return;
+
+    markers.removeWhere((m) => m.markerId.value == "pickup");
+    markers.removeWhere((m) => m.markerId.value == "driver");
+
+    /*markers.add(
+      Marker(
+        markerId: const MarkerId("driver"),
+        position: driverLatLng.value!,
+        rotation: currentBearing,
+        anchor: const Offset(.5, .5),
+        icon: driverIcon ?? BitmapDescriptor.defaultMarkerWithHue(
+          BitmapDescriptor.hueBlue,
+        ),
+      ),
+    );*/
+    markers.add(
+      Marker(
+        markerId: const MarkerId("pickup"),
+        position: rideStatus.value == "pickup_done" ? dropLatLng.value! : pickupLatLng.value!,
+        //rotation: currentBearing,
+        anchor: const Offset(0.5, 0.5),
+        icon: /*driverIcon ??*/ BitmapDescriptor.defaultMarker,
+      ),
+    );
+    markers.refresh();
+  }
+
+  /*Future<void> computeDistanceEta() async {
+    final distanceMeters = Geolocator.distanceBetween(
+      driverLatLng.value!.latitude,
+      driverLatLng.value!.longitude,
+      pickupLatLng.value!.latitude,
+      pickupLatLng.value!.longitude,
+    );
+
+    final km = distanceMeters / 1000;
+
+    final avgSpeedKmh = 35;
+
+    final etaMinutes = (km / avgSpeedKmh) * 60;
+
+    debugPrint("Distance: ${km.toStringAsFixed(2)} km");
+    debugPrint("ETA: ${etaMinutes.toStringAsFixed(0)} minutes");
+  }*/
+
+
+  void _showError(String message) {
+    Get.snackbar(
+      "Error",
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+    );
+  }
+
   Future<RouteDistanceTime?> getDistanceAndTime({
     required double originLat,
     required double originLng,
     required double destLat,
     required double destLng,
-    required String apiKey,
     String mode = "driving",
   })
   async {
-
-
     final url =
         "https://maps.googleapis.com/maps/api/distancematrix/json"
         "?origins=$originLat,$originLng"
         "&destinations=$destLat,$destLng"
         "&mode=$mode"
-        "&key=$apiKey";
+        "&key=AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs";
 
     final response = await http.get(Uri.parse(url));
-   // print("gettingLatlng ${response.body}");
+    // print("gettingLatlng ${response.body}");
     if (response.statusCode != 200) {
       throw Exception("Distance Matrix API failed: ${response.statusCode}");
     }
@@ -610,7 +851,7 @@ class MyRideController extends GetxController {
     );
   }
 
-  Future<void> initRideSocketFlow({
+  /* Future<void> initRideSocketFlow({
     required int userId,
     required String token,
     required int rideId,
@@ -651,51 +892,9 @@ class MyRideController extends GetxController {
     // 3) listen for updates
     print("driverLocationUpdate");
 
-  }
+  }*/
 
-  void _addPickupMarker() {
-    if (pickupLatLng.value == null) return;
 
-    markers.removeWhere((m) => m.markerId.value == "pickup");
-
-    markers.add(
-      Marker(
-        markerId: const MarkerId("pickup"),
-        position: pickupLatLng.value!,
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          BitmapDescriptor.hueOrange,
-        ),
-      ),
-    );
-
-    markers.refresh();
-  }
-  void _removePickupMarker() {
-    markers.removeWhere((m) => m.markerId.value == "pickup");
-    markers.refresh();
-  }
-
-  void _addDropMarker() {
-    if (dropLatLng.value == null) return;
-
-    markers.removeWhere((m) => m.markerId.value == "drop");
-
-    markers.add(
-      Marker(
-        markerId: const MarkerId("drop"),
-        position: dropLatLng.value!,
-        icon: BitmapDescriptor.defaultMarkerWithHue(
-          BitmapDescriptor.hueRed,
-        ),
-      ),
-    );
-
-    markers.refresh();
-  }
-  void _removeDropMarker() {
-    markers.removeWhere((m) => m.markerId.value == "drop");
-    markers.refresh();
-  }
   double get totalTripFare {
     final baseFare =
         double.tryParse(
@@ -770,7 +969,4 @@ class RouteDistanceTime {
   });
 }
 
-enum RidePhase {
-  toPickup,
-  toDrop,
-}
+enum RidePhase { toPickup, toDrop }

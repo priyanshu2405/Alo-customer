@@ -89,7 +89,10 @@ class LocationController extends GetxController {
   Future<void> _fetchLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        //desiredAccuracy: LocationAccuracy.high,
+        locationSettings: LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       currentLatLng.value = LatLng(position.latitude, position.longitude);
@@ -120,11 +123,11 @@ class LocationController extends GetxController {
     markers.value = {
       Marker(
         markerId: const MarkerId("selected"),
-        position: position,
+        position: currentLatLng.value!,
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
       ),
     };
-    currentLatLng.value = position;
+ //  currentLatLng.value = position;
   }
 
   /// Move camera to position
@@ -183,7 +186,7 @@ class LocationController extends GetxController {
 
       // Remove null and empty strings
       final nonNullParts = rawParts
-          .where((e) => e != null && e!.trim().isNotEmpty)
+          .where((e) => e != null && e.trim().isNotEmpty)
           .map((e) => e!.trim())
           .toList();
 

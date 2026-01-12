@@ -37,12 +37,11 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
   @override
   void initState() {
     super.initState();
-
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (widget.isShowDialog == true) {
           showDialog(
             context: context,
-            barrierDismissible: false,
+            barrierDismissible: true,
             builder: (_) =>  RateTipDialog(rideId: widget.bookingId),
           );
         }
@@ -56,7 +55,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
       backgroundColor: AppColors.white,
       appBar: AppAppBar(title: "Ride Completed"),
       body: Obx(() {
-        return myRideController.isGetRideDetails.value
+        return myRideController.getRideDetailsModel.value == null || myRideController.isGetRideDetails.value
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Column(
@@ -145,7 +144,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                                   ),
                                   Gap(1),
                                   AppText(
-                                    text: "2 mins away!",
+                                    text: "${myRideController.routeInfo.value?.durationText} away!",
                                     fontSize: 12,
                                     color: AppColors.lightBlackColor,
                                   ),
@@ -163,7 +162,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                               ),
                             ),
                             AppText(
-                              text: "1.5 KM",
+                              text: "${myRideController.routeInfo.value?.distanceText}",
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                               color: AppColors.lightBlackColor,
@@ -225,7 +224,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                       "HST 15%",
                       "\$${myRideController.getRideDetailsModel.value.data?.ride?.taxAmount}",
                     ),
-                    // if(widget.isShowDialog == true)...[
+                     if(widget.isShowDialog == true)...[
                     Gap(17),
                     // _fareRow("Tip", "\$${myRideController.getRideDetailsModel.value.data?.ride?.tipAmount}"),
                     // _fareRow("Tip", "\$${rideCompletedController.amountCtrl.text}"),
@@ -252,7 +251,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                       ),
                     ),
                       Gap(17),
-                    // ],
+                     ],
 
                     Divider(color: AppColors.darkTextColor),
                     Gap(10),
@@ -300,12 +299,12 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
           text: "PAY NOW",
           onTap: () {
             debugPrint(
-              "finalTotal : ${rideCompletedController.finalTotal.value}",
+              "finalTotal : ${myRideController.getRideDetailsModel.value.data?.ride?.totalFare}",
             );
             Get.to(
               () => PaymentDetailsScreen(
                 id: widget.bookingId,
-                totalFare: rideCompletedController.finalTotal.value,
+                totalFare: double.parse(myRideController.getRideDetailsModel.value.data?.ride?.totalFare ?? ""),
               ),
             );
           },

@@ -34,22 +34,38 @@ class BookingScreen extends StatefulWidget {
 class _BookingScreenState extends State<BookingScreen> {
   final LocationController controller = Get.put(LocationController());
   final BookingController bookingController = Get.put(BookingController());
+  final LocationController locationController = Get.put(LocationController());
 
   @override
   void initState() {
     super.initState();
     // ✅ Set initial pickup location to current location
     WidgetsBinding.instance.addPostFrameCallback((_) {
+     // controller.initLocation();
       if (controller.currentLatLng.value != null &&
           bookingController.fromLatLng.value == null) {
         bookingController.fromLatLng.value = controller.currentLatLng.value;
+        print("fromData:: ${bookingController.fromLatLng.value}");
         bookingController.fromLocation.value = controller.currentAddress.value;
-
+       bookingController.selectedDate.value = DateTime.now();
+       bookingController.selectedTime.value = DateTime.now();
         debugPrint("🎯 Initial Location Set:");
         debugPrint("Address: ${bookingController.fromLocation.value}");
         debugPrint("LatLng: ${bookingController.fromLatLng.value}");
       }
     });
+  }
+
+  @override
+  void dispose() {
+    bookingController.fromLatLng.value = null;
+    bookingController.dropOffLatLng.value = null;
+    bookingController.fromLocation.value = "";
+    bookingController.dropOffLocation.value = "";
+    bookingController.selectedDate.value = DateTime.now();
+    bookingController.selectedTime.value = DateTime.now();
+   // controller.currentLatLng.value = null;
+    super.dispose();
   }
 
   @override
@@ -62,374 +78,373 @@ class _BookingScreenState extends State<BookingScreen> {
         // leading: Icon(Icons.menu),
         title: "",
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              height: 600.h,
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+      body: Column(
+        children: [
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-                if (bookingController.isEstimateFare.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+              if (bookingController.isEstimateFare.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-                return Stack(
-                  children: [
-                    GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target:
-                        controller.currentLatLng.value ??
-                            const LatLng(0, 0),
-                        zoom: 14,
-                      ),
-                      onMapCreated: (mapController) {
-                        if (!controller.mapController.isCompleted) {
-                          controller.mapController.complete(mapController);
-                        }
-                        controller.googleController = mapController;
-
-                        final latLng = controller.currentLatLng.value;
-                        if (latLng != null) {
-                          mapController.animateCamera(
-                            CameraUpdate.newLatLng(latLng),
-                          );
-                        }
-                      },
-                      markers: controller.markers,
-                      myLocationEnabled: true,
-                      myLocationButtonEnabled: false,
-                      circles: controller.currentLatLng.value == null
-                          ? {}
-                          : {
-                        Circle(
-                          circleId: const CircleId('radius'),
-                          center: controller.currentLatLng.value!,
-                          radius:
-                          controller.selectedDistance.value * 1000,
-                          strokeColor: AppColors.secondary.withOpacity(
-                            0.5,
-                          ),
-                          fillColor: AppColors.secondary.withOpacity(0.2),
-                          strokeWidth: 1,
-                        ),
-                      },
-                      onTap: controller.onMapTap,
+              return Stack(
+                children: [
+                  GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target:
+                      controller.currentLatLng.value ??
+                          const LatLng(0, 0),
+                      zoom: 14,
                     ),
-                    Positioned(
-                      top: 80.h,
-                      left: 16,
-                      right: 16,
-                      child: Column(
-                        children: [
-                          // Container(
-                          //   decoration: BoxDecoration(
-                          //     color: Colors.white,
-                          //     borderRadius: BorderRadius.circular(6),
-                          //     border: Border.all(
-                          //       color: AppColors.lightGray,
-                          //       width: 2,
-                          //     ),
-                          //     boxShadow: [
-                          //       BoxShadow(
-                          //         color: Colors.black.withOpacity(0.1),
-                          //         blurRadius: 10,
-                          //         offset: const Offset(0, 4),
-                          //       ),
-                          //     ],
-                          //   ),
-                          //   child: Column(
-                          //     children: [
-                          //       // From location
-                          //       Gap(10),
-                          //       _buildLocationRow(
-                          //         icon: Icons.circle,
-                          //         iconColor: AppColors.pinkColor,
-                          //         title: 'From',
-                          //         subtitle: '341-205 Barrinou Rd, Moncton,',
-                          //         showDivider: true,
-                          //       ),
-                          //
-                          //       // Drop off location
-                          //       _buildLocationRow(
-                          //         icon: Icons.location_on,
-                          //         iconColor: AppColors.pinkColor,
-                          //         title: 'Drop off Location',
-                          //         subtitle: '100 Holland Dr, Moncton, NB E1...',
-                          //         showDivider: false,
-                          //       ),
-                          //       Gap(10),
-                          //     ],
-                          //   ),
-                          // ),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: AppColors.lightGray,
-                                width: 2,
+                    onMapCreated: (mapController) {
+                      if (!controller.mapController.isCompleted) {
+                        controller.mapController.complete(mapController);
+                      }
+                      controller.googleController = mapController;
+
+                      final latLng = controller.currentLatLng.value;
+                      if (latLng != null) {
+                        mapController.animateCamera(
+                          CameraUpdate.newLatLng(latLng),
+                        );
+                      }
+                    },
+                    markers: controller.markers,
+                    myLocationEnabled: true,
+                    myLocationButtonEnabled: false,
+                    zoomControlsEnabled: false,
+                    zoomGesturesEnabled: true,
+                    circles: controller.currentLatLng.value == null
+                        ? {}
+                        : {
+                      Circle(
+                        circleId: const CircleId('radius'),
+                        center: controller.currentLatLng.value!,
+                        radius:
+                        controller.selectedDistance.value * 1000,
+                        strokeColor: AppColors.secondary.withOpacity(
+                          0.5,
+                        ),
+                        fillColor: AppColors.secondary.withOpacity(0.2),
+                        strokeWidth: 1,
+                      ),
+                    },
+                    onTap: controller.onMapTap,
+                  ),
+                  Positioned(
+                    top: 80.h,
+                    left: 16,
+                    right: 16,
+                    child: Column(
+                      children: [
+                        // Container(
+                        //   decoration: BoxDecoration(
+                        //     color: Colors.white,
+                        //     borderRadius: BorderRadius.circular(6),
+                        //     border: Border.all(
+                        //       color: AppColors.lightGray,
+                        //       width: 2,
+                        //     ),
+                        //     boxShadow: [
+                        //       BoxShadow(
+                        //         color: Colors.black.withOpacity(0.1),
+                        //         blurRadius: 10,
+                        //         offset: const Offset(0, 4),
+                        //       ),
+                        //     ],
+                        //   ),
+                        //   child: Column(
+                        //     children: [
+                        //       // From location
+                        //       Gap(10),
+                        //       _buildLocationRow(
+                        //         icon: Icons.circle,
+                        //         iconColor: AppColors.pinkColor,
+                        //         title: 'From',
+                        //         subtitle: '341-205 Barrinou Rd, Moncton,',
+                        //         showDivider: true,
+                        //       ),
+                        //
+                        //       // Drop off location
+                        //       _buildLocationRow(
+                        //         icon: Icons.location_on,
+                        //         iconColor: AppColors.pinkColor,
+                        //         title: 'Drop off Location',
+                        //         subtitle: '100 Holland Dr, Moncton, NB E1...',
+                        //         showDivider: false,
+                        //       ),
+                        //       Gap(10),
+                        //     ],
+                        //   ),
+                        // ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: AppColors.lightGray,
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Gap(10),
+                              // From location
+                              _buildLocationRow(
+                                icon: Icons.circle,
+                                iconColor: AppColors.pinkColor,
+                                title: 'From',
+                                subtitle:
+                                bookingController
+                                    .fromLocation
+                                    .value
+                                    .isEmpty
+                                    ? controller.currentAddress.value
+                                    : bookingController.fromLocation.value,
+                                showDivider: true,
+                                onTap: () =>
+                                    _showLocationSearchSheet(
+                                      context,
+                                      isPickup: true,
+                                    ),
+                              ),
+
+                              // Drop off location
+                              _buildLocationRow(
+                                icon: Icons.location_on,
+                                iconColor: AppColors.pinkColor,
+                                title: 'Drop off Location',
+                                subtitle:
+                                bookingController
+                                    .dropOffLocation
+                                    .value
+                                    .isEmpty
+                                    ? 'Select drop off location'
+                                    : bookingController.dropOffLocation.value,
+                                showDivider: false,
+                                onTap: () =>
+                                    _showLocationSearchSheet(
+                                      context,
+                                      isPickup: false,
+                                    ),
+                              ),
+                              Gap(10),
+                            ],
+                          ),
+                        ),
+                        Gap(10),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: AppColors.lightGray,
+                              width: 2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10.0,
                             ),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Gap(10),
                                 // From location
-                                _buildLocationRow(
-                                  icon: Icons.circle,
-                                  iconColor: AppColors.pinkColor,
-                                  title: 'From',
-                                  subtitle:
-                                  bookingController
-                                      .fromLocation
-                                      .value
-                                      .isEmpty
-                                      ? controller.currentAddress.value
-                                      : bookingController.fromLocation.value,
-                                  showDivider: true,
-                                  onTap: () =>
-                                      _showLocationSearchSheet(
-                                        context,
-                                        isPickup: true,
-                                      ),
+                                Gap(12.h),
+
+                                /// PICKUP TYPE
+                                Row(
+                                  children: [
+                                    _radioOption("Pickup & Drop", 0),
+                                    Gap(20.w),
+                                    // _radioOption(
+                                    //   "Round-Trip Pickup & Drop",
+                                    //   1,
+                                    // ),
+                                  ],
                                 ),
 
-                                // Drop off location
-                                _buildLocationRow(
-                                  icon: Icons.location_on,
-                                  iconColor: AppColors.pinkColor,
-                                  title: 'Drop off Location',
-                                  subtitle:
-                                  bookingController
-                                      .dropOffLocation
-                                      .value
-                                      .isEmpty
-                                      ? 'Select drop off location'
-                                      : bookingController.dropOffLocation.value,
-                                  showDivider: false,
-                                  onTap: () =>
-                                      _showLocationSearchSheet(
-                                        context,
-                                        isPickup: false,
-                                      ),
+                                Gap(14.h),
+
+                                AppText(
+                                  text: "Ride Later",
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                                Gap(10),
+
+                                Gap(8.h),
+                                Row(
+                                  children: [
+                                    _dateTimeBox(
+                                      type: "date",
+                                      icon: Icons.calendar_month,
+                                      title: "Select Date",
+                                    ),
+                                    Gap(12.w),
+                                    _dateTimeBox(
+                                      type: "time",
+                                      icon: Icons.access_time,
+                                      title: "Select Time",
+                                    ),
+                                    // Gap(10),
+                                    // Container(
+                                    //   height: 45.h,
+                                    //   width: 45.w,
+                                    //   decoration: BoxDecoration(
+                                    //     border: Border.all(
+                                    //       color: AppColors.borderColor,
+                                    //     ),
+                                    //     borderRadius: BorderRadius.circular(
+                                    //       8.r,
+                                    //     ),
+                                    //   ),
+                                    //   child: const Icon(Icons.add),
+                                    // ),
+                                  ],
+                                ),
+                                Gap(20.w),
                               ],
                             ),
                           ),
-                          Gap(10),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: AppColors.lightGray,
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10.0,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // From location
-                                  Gap(12.h),
-
-                                  /// PICKUP TYPE
-                                  Row(
-                                    children: [
-                                      _radioOption("Pickup & Drop", 0),
-                                      Gap(20.w),
-                                      // _radioOption(
-                                      //   "Round-Trip Pickup & Drop",
-                                      //   1,
-                                      // ),
-                                    ],
-                                  ),
-
-                                  Gap(14.h),
-
-                                  AppText(
-                                    text: "Ride Later",
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-
-                                  Gap(8.h),
-                                  Row(
-                                    children: [
-                                      _dateTimeBox(
-                                        type: "date",
-                                        icon: Icons.calendar_month,
-                                        title: "Select Date",
-                                      ),
-                                      Gap(12.w),
-                                      _dateTimeBox(
-                                        type: "time",
-                                        icon: Icons.access_time,
-                                        title: "Select Time",
-                                      ),
-                                      // Gap(10),
-                                      // Container(
-                                      //   height: 45.h,
-                                      //   width: 45.w,
-                                      //   decoration: BoxDecoration(
-                                      //     border: Border.all(
-                                      //       color: AppColors.borderColor,
-                                      //     ),
-                                      //     borderRadius: BorderRadius.circular(
-                                      //       8.r,
-                                      //     ),
-                                      //   ),
-                                      //   child: const Icon(Icons.add),
-                                      // ),
-                                    ],
-                                  ),
-                                  Gap(20.w),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 10,
-                      right: 10,
-                      child: InkWell(
-                        onTap: () => AppCallHelper.callSOS(),
-                        child: AppImage(
-                          height: 55,
-                          width: 55,
-                          image: AppImages.sosButton,
-                          imageType: ImageType.asset,
                         ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 10,
+                    right: 10,
+                    child: InkWell(
+                      onTap: () => AppCallHelper.callSOS(),
+                      child: AppImage(
+                        height: 55,
+                        width: 55,
+                        image: AppImages.sosButton,
+                        imageType: ImageType.asset,
                       ),
                     ),
-                  ],
-                );
-              }),
-            ),
-            Gap(20),
-            Obx(() {
-              final date =
-                  bookingController.selectedDate.value ?? DateTime.now();
-              final time =
-                  bookingController.selectedTime.value ?? DateTime.now();
+                  ),
+                ],
+              );
+            }),
+          ),
+          Gap(20),
+          Obx(() {
+            final date =
+                bookingController.selectedDate.value ?? DateTime.now();
+            final time =
+                bookingController.selectedTime.value ?? DateTime.now();
 
-              return AppText(
-                text:
-                "Ride on ${DateFormat("dd MMM yyyy").format(
-                    date)} at ${DateFormat("hh:mm a").format(time)}",
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              );
-            }),
-            Gap(8.h),
-            Divider(color: AppColors.darkTextColor),
-            Gap(8.h),
-            Obx(() {
-              return AppText(
-                text:
-                "Selected car : ${widget
-                    .vehicleTypeName}     Fare estimate : \$${bookingController
-                    .totalFare?.value}",
-                fontSize: 12,
-                color: AppColors.lightBlackColor,
-              );
-            }),
-            Gap(8.h),
+            return AppText(
+              text:
+              "Ride on ${DateFormat("dd MMM yyyy").format(
+                  date)} at ${DateFormat("hh:mm a").format(time)}",
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            );
+          }),
+          Gap(8.h),
+          Divider(color: AppColors.darkTextColor),
+          Gap(8.h),
           Obx(() {
             return AppText(
-              text: "Distance : ${bookingController.distanceKm.value.toStringAsFixed(2)} km",
-              fontSize: 13,
+              text:
+              "Selected car : ${widget
+                  .vehicleTypeName}     Fare estimate : \$${bookingController
+                  .totalFare?.value}",
+              fontSize: 12,
               color: AppColors.lightBlackColor,
             );
           }),
-
           Gap(8.h),
+        Obx(() {
+          return AppText(
+            text: "Distance : ${bookingController.distanceKm.value.toStringAsFixed(2)} km",
+            fontSize: 13,
+            color: AppColors.lightBlackColor,
+          );
+        }),
 
-            Divider(color: AppColors.darkTextColor),
-            Gap(8.h),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: "Note: ",
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.lightBlackColor,
-                        height: 1.4,
-                      ),
+        Gap(8.h),
+
+          Divider(color: AppColors.darkTextColor),
+          Gap(8.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: "Note: ",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.lightBlackColor,
+                      height: 1.4,
                     ),
-                    TextSpan(
-                      text:
-                      "This is an approximate estimate. Actual cost may be different due to traffic and waiting time.",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                        color: AppColors.lightBlackColor,
-                        height: 1.4,
-                      ),
+                  ),
+                  TextSpan(
+                    text:
+                    "This is an approximate estimate. Actual cost may be different due to traffic and waiting time.",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.normal,
+                      color: AppColors.lightBlackColor,
+                      height: 1.4,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
+          ),
 
-            Gap(20.h),
+          Gap(20.h),
 
-            /// BOOK NOW BUTTON
-            Obx(() {
-              return bookingController.totalFare?.value != 0.0
-                  ? Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0.w),
-                child: AppButton(
-                  isLoading: bookingController.isBookRide.value,
-                  text: "Book Now",
-                  onTap: () async {
-                    print(" ${bookingController.selectedTime.value}");
-                    await bookingController.bookApi(
-                      context,
-                      vehicleTypeId: widget.vehicleTypeId,
-                    );
-                    // if (bookingController.isBookRide.value == true) {
-                    //   showRideConfirmed(context);
-                    // }
+          /// BOOK NOW BUTTON
+          Obx(() {
+            return bookingController.totalFare?.value != 0.0
+                ? Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0.w),
+              child: AppButton(
+                isLoading: bookingController.isBookRide.value,
+                text: "Book Now",
+                onTap: () async {
+                  print(" ${bookingController.selectedTime.value}");
+                  await bookingController.bookApi(
+                    context,
+                    vehicleTypeId: widget.vehicleTypeId,
+                  );
+                  // if (bookingController.isBookRide.value == true) {
+                  //   showRideConfirmed(context);
+                  // }
 
-                    // bookingController.estimateFare(vehicleTypeId: widget.vehicleTypeId);
+                  // bookingController.estimateFare(vehicleTypeId: widget.vehicleTypeId);
 
-                    // Get.to(()=>RideTrackingScreen());
-                  },
-                ),
-              )
-                  : SizedBox.shrink();
-            }),
+                  // Get.to(()=>RideTrackingScreen());
+                },
+              ),
+            )
+                : SizedBox.shrink();
+          }),
 
-            Gap(30.h),
-          ],
-        ),
+          Gap(30.h),
+        ],
       ),
     );
   }
@@ -927,16 +942,16 @@ class _BookingScreenState extends State<BookingScreen> {
 
           // ✅ ADD DEBUG PRINT
           debugPrint("✅ Pickup Location Set:");
-          debugPrint("Address: $address");
-          debugPrint("LatLng: $position");
+          debugPrint("Address: ${bookingController.fromLocation.value}");
+          debugPrint("LatLng: ${bookingController.fromLatLng.value}");
         } else {
           bookingController.dropOffLocation.value = address;
           bookingController.dropOffLatLng.value = position;
 
           // ✅ ADD DEBUG PRINT
           debugPrint("✅ Drop-off Location Set:");
-          debugPrint("Address: $address");
-          debugPrint("LatLng: $position");
+          debugPrint("Address: ${bookingController.dropOffLocation.value}");
+          debugPrint("LatLng: ${bookingController.dropOffLatLng.value}");
         }
 
         // Update map marker and camera

@@ -61,6 +61,14 @@ class MyApp extends StatelessWidget {
       splitScreenMode: true,
       builder: (context, child) {
         return GetMaterialApp(
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(1)),
+              child: child!,
+            );
+          },
           debugShowCheckedModeBanner: false,
           title: 'Alo Ride',
           home: const SplashScreen(),

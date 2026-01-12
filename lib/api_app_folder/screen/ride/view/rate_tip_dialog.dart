@@ -12,6 +12,7 @@ import 'package:get/get.dart';
 
 class RateTipDialog extends StatefulWidget {
   final int rideId;
+
   const RateTipDialog({super.key, required this.rideId});
 
   @override
@@ -38,6 +39,17 @@ class _RateTipDialogState extends State<RateTipDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                    visualDensity: VisualDensity(
+                      vertical: VisualDensity.minimumDensity,
+                      horizontal: VisualDensity.minimumDensity,
+                    ),
+                    icon: Icon(Icons.close), onPressed: () {
+                  Get.back();
+                }),
+              ),
               AppText(
                 text: "Rate or tip",
                 fontSize: 24,
@@ -126,7 +138,8 @@ class _RateTipDialogState extends State<RateTipDialog> {
                   isLoading: rideCompletedController.isTipAmount.value,
                   text: "SUBMIT",
                   onTap: () {
-                    final tip = rideCompletedController.tipAmountValue.value.toInt();
+                    final tip = rideCompletedController.tipAmountValue.value
+                        .toInt();
 
                     rideCompletedController.tipAmountApi(
                       tipAmount: tip,
@@ -178,7 +191,8 @@ class _RateTipDialogState extends State<RateTipDialog> {
 
   Widget _tip(double value) {
     return Obx(() {
-      final bool isSelected = rideCompletedController.tipAmountValue.value == value;
+      final bool isSelected =
+          rideCompletedController.tipAmountValue.value == value;
 
       return GestureDetector(
         onTap: () {

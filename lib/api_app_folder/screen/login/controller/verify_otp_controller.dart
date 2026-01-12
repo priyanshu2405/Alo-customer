@@ -7,6 +7,7 @@ import 'package:alo_ride_app/api_app_folder/screen/home/view/welcome_dialog.dart
 import 'package:alo_ride_app/api_app_folder/screen/profile/controller/profile_controller.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart';
 import 'package:alo_ride_app/api_app_folder/services/token_store.dart';
+import 'package:alo_ride_app/firebase_api/firebase_api.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -22,8 +23,10 @@ class VerifyOtpController extends GetxController {
   Timer? timer;
 
   Future<void> verifyOtp(BuildContext context,{String? countryCode,String? mobile}) async {
-    isVerifyOtp.value = true; // Start loading
-
+    isVerifyOtp.value = true;
+    final notificationService = NotificationService();
+    await notificationService.initialize();
+    final token = await NotificationService.getToken();
     try {
 
       String otp = otpControllers.map((e) => e.text).join();
@@ -41,7 +44,8 @@ class VerifyOtpController extends GetxController {
       var body = {
         "country_code": countryCode,
         "mobile": mobile,
-        "otp": otp
+        "otp": otp,
+        "fcm_token" : token,
       };
       debugPrint("body : $body");
       final response = await ApiService.post(

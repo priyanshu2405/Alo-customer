@@ -729,7 +729,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       myRideController.getRideHistory();
-     // _startAutoRefresh();
+      //_startAutoRefresh();
     });
 
   }
@@ -779,7 +779,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
     _refreshTimer = null;
 
     // ✅ Disconnect socket when stopping auto-refresh
-    myRideController.socketIoService.disconnect();
+    //myRideController.socketIoService.disconnect();
 
     debugPrint('🚫 MyRidesScreen: Auto-refresh stopped & socket disconnected');
   }
@@ -943,9 +943,15 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
             Gap(10),
             Column(
               children: myRideController.completedRides.map((ride) {
+                //print(ride.payment?.status);
                 return InkWell(
                   onTap: () {
-                    if (ride.payment?.status == "pending") {
+
+                    Get.to(() => RideCompletedScreen(
+                      bookingId: ride.id ?? 0,
+                      isShowDialog: ride.payment?.status == "pending" ? true : false,
+                    ));
+                    /*if (ride.payment?.status == "pending") {
                       Get.to(
                             () => RideTrackingScreen(
                           bookingId: ride.id ?? 0,
@@ -956,12 +962,12 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
                         bookingId: ride.id ?? 0,
                         isShowDialog: false,
                       ));
-                    }
+                    }*/
                   },
                   child: _rideCard(
                     status: "completed",
                     statusColor: AppColors.greenColor,
-                    price: "\$${ride.totalFare}",
+                    price: ride.payment?.status == "pending" ? "Payment Pending" : "\$${ride.totalFare}",
                     pickup: ride.pickupAddress ?? '',
                     drop: ride.dropAddress ?? '',
                     bookingId: ride.bookingId ?? '',
@@ -1051,6 +1057,8 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
         setState(() {
           selectedDate = value;
           myRideController.startDate = value.yyyymmdd;
+         // myRideController.endDate = value.yyyymmdd;
+          myRideController.endDate = "";
           myRideController.getRideHistory();
           _validateTimeForToday();
         });

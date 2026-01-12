@@ -47,7 +47,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
   @override
   void initState() {
     super.initState();
-    //myRideController.loadDriverIcon();
+    myRideController.loadDriverIcon();
     myRideController.getRideDetails(id: widget.bookingId);
   }
 
@@ -56,10 +56,11 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
     // Dispose the map controller before the widget is disposed
     //mapController?.dispose();
   //  mapController = null;
+    myRideController.stopDriverLocationAutoGet();
     myRideController.mapController = null;
     myRideController.mapController?.dispose();
     myRideController.polylines.clear();
-    myRideController.socketIoService.disconnect();
+   // myRideController.socketIoService.disconnect();
     myRideController.dropLatLng.value = null;
     myRideController.pickupLatLng.value = null;
     myRideController.ridePhase.value = RidePhase.toPickup;
@@ -185,11 +186,11 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
         backgroundColor: Colors.transparent,
         // leading: Icon(Icons.menu),
         title: "",
-        actions: [
-          ElevatedButton(onPressed: () async{
-           // myRideController.socketIoService.getLocationStatus();
-          }, child: Text("dvdvd"))
-        ],
+        // actions: [
+        //   ElevatedButton(onPressed: () async{
+        //    // myRideController.socketIoService.getLocationStatus();
+        //   }, child: Text("dvdvd"))
+        // ],
       ),
       body: Obx(() {
 
@@ -241,8 +242,9 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                         // ),
                         initialCameraPosition: CameraPosition(
                           target: pickup,
-                          zoom: 14,
+                          zoom: 16,
                         ),
+
                         onMapCreated: (controller) => myRideController.onMapCreated(controller),
                         markers: myRideController.markers.toSet(),
                         polylines: myRideController.polylines.toSet(),
@@ -503,6 +505,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                           ),
                           Gap(12.w),
                           ],
+                          if(myRideController.rideStatus.value != "pickup_done" && myRideController.rideStatus.value != "completed")
                           Expanded(
                             child: AppButton(
                               text: "CANCEL RIDE",

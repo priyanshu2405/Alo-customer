@@ -136,7 +136,7 @@ class BookingController extends GetxController {
 
       if (response['success'] == true) {
         debugPrint("✅ Total Fare: ${response["data"]["total_fare"]}");
-        totalFare?.value = response["data"]["total_fare"];
+        totalFare.value = response["data"]["total_fare"];
         distanceKm.value =
             double.tryParse(response['data']['distance_km'].toString()) ?? 0.0;
 

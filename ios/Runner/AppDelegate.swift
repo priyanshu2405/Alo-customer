@@ -1,18 +1,30 @@
 import UIKit
 import Flutter
-import GoogleMaps   // ✅ ADD THIS
+import UIKit
+import flutter_local_notifications
+import GoogleMaps
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
-  override func application(
-    _ application: UIApplication,
-    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
-  ) -> Bool {
+    override func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
+    ) -> Bool {
 
-    // ✅ ADD YOUR GOOGLE MAPS API KEY HERE
-    GMSServices.provideAPIKey("AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs")
+        GMSServices.provideAPIKey("AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs")
 
-    GeneratedPluginRegistrant.register(with: self)
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
-  }
+        // Register local notifications properly
+        FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { registry in
+            GeneratedPluginRegistrant.register(with: registry)
+        }
+
+        if #available(iOS 10.0, *) {
+            UNUserNotificationCenter.current().delegate = self
+        }
+
+        GeneratedPluginRegistrant.register(with: self)
+
+        return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
 }
+
