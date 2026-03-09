@@ -74,6 +74,7 @@ class MyRideController extends GetxController {
 
   Rx<RideHistoryModel> rideHistoryModel = RideHistoryModel().obs;
   Rx<GetRideDetailsModel> getRideDetailsModel = GetRideDetailsModel().obs;
+ // Rxn<GetRideDetailsModel> getRideDetailsModel = Rxn<GetRideDetailsModel>();
   final TextEditingController reasonController = TextEditingController();
   final List<String> upcomingStatuses = [
     'pending',

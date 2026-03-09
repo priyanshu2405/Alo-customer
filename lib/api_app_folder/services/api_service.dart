@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/services/token_store.dart';
@@ -8,8 +9,8 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // static const String baseUrl = 'https://planbot.ca/admin/public/api/';
-  static const String baseUrl = 'https://app.pos.pizzatwins.ca/api/user/';
-  static const String baseUrl1 = 'https://app.pos.pizzatwins.ca/api/';
+  static const String baseUrl = 'https://app.pizzatwins.ca/aloride/api/user/';
+  static const String baseUrl1 = 'https://app.pizzatwins.ca/aloride/api/';
   // static const String baseUrl = 'https://development.libpow.com/api/';
   static const Duration timeoutDuration = Duration(minutes: 2);
 
@@ -50,8 +51,11 @@ class ApiService {
       final authToken = token ?? _getToken();
 
       String url = '$baseUrl$endpoint';
-      print("url : $url");
-      print("token : $authToken");
+      ApiLogger.logRequest(
+        method: "GET",
+        url: url,
+        headers:  authToken != null ? _headersWithAuth(authToken) : _headers,
+      );
 
       if (queryParams != null && queryParams.isNotEmpty) {
         final uri = Uri.parse(url);
@@ -66,6 +70,11 @@ class ApiService {
           )
           .timeout(timeoutDuration);
 
+      ApiLogger.logResponse(
+        url: url,
+        statusCode: response.statusCode,
+        body: response.body,
+      );
       return _handleResponse(response, isShow: isShow);
     } catch (e) {
       throw _handleError(e);
@@ -84,8 +93,11 @@ class ApiService {
 
       // 👇 use the full URL if useBaseUrl = false
       String url = useBaseUrl ? '$baseUrl$endpoint' : endpoint;
-      print("url : $url");
-      print("token : $authToken");
+      ApiLogger.logRequest(
+        method: "GET",
+        url: url,
+        headers: authToken != null ? _headersWithAuth(authToken) : _headers,
+      );
 
       if (queryParams != null && queryParams.isNotEmpty) {
         final uri = Uri.parse(url);
@@ -99,7 +111,11 @@ class ApiService {
         headers: authToken != null ? _headersWithAuth(authToken) : _headers,
       )
           .timeout(timeoutDuration);
-
+      ApiLogger.logResponse(
+        url: url,
+        statusCode: response.statusCode,
+        body: response.body,
+      );
       return _handleResponse(response, isShow: isShow);
     } catch (e) {
       throw _handleError(e);
@@ -117,7 +133,12 @@ class ApiService {
     try {
       // Use provided token or get from controller
       final authToken = token ?? _getToken();
-      print("token : $authToken");
+      ApiLogger.logRequest(
+        method: "POST",
+        url: '$baseUrl$endpoint',
+        headers: authToken != null ? _headersWithAuth(authToken) : _headers,
+        body: body,
+      );
       final response = await http
           .post(
             Uri.parse('$baseUrl$endpoint'),
@@ -125,7 +146,11 @@ class ApiService {
             body: jsonEncode(body),
           )
           .timeout(timeoutDuration);
-      print("url===>${'$baseUrl$endpoint'}");
+      ApiLogger.logResponse(
+        url: '$baseUrl$endpoint',
+        statusCode: response.statusCode,
+        body: response.body,
+      );
       return _handleResponse(response, isShow: isShow);
     } catch (e) {
       throw _handleError(e);
@@ -145,8 +170,12 @@ class ApiService {
       // 👇 Use baseUrl only when necessary
       final url = useBaseUrl ? '$baseUrl$endpoint' : endpoint;
 
-      print("POST URL ===> $url");
-      print("BODY ===> $body");
+      ApiLogger.logRequest(
+        method: "POST",
+        url: useBaseUrl ? '$baseUrl$endpoint' : endpoint,
+        headers: authToken != null ? _headersWithAuth(authToken) : _headers,
+        body: body,
+      );
 
       final response = await http
           .post(
@@ -155,7 +184,11 @@ class ApiService {
         body: jsonEncode(body),
       )
           .timeout(timeoutDuration);
-
+      ApiLogger.logResponse(
+        url: '$baseUrl$endpoint',
+        statusCode: response.statusCode,
+        body: response.body,
+      );
       return _handleResponse(response, isShow: isShow);
     } catch (e) {
       throw _handleError(e);
@@ -520,4 +553,73 @@ class ApiException implements Exception {
 
   @override
   String toString() => message;
+}
+
+class ApiLogger {
+  static void logRequest({
+    required String method,
+    required String url,
+    Map<String, String>? headers,
+    Map<String, dynamic>? body,
+  }) {
+    final buffer = StringBuffer();
+
+    buffer.writeln("════════════ API REQUEST ════════════");
+    buffer.writeln("METHOD : $method");
+    buffer.writeln("URL    : $url");
+
+    if (headers != null) {
+      buffer.writeln("HEADERS:");
+      headers.forEach((k, v) => buffer.writeln("  $k : $v"));
+    }
+
+    if (body != null) {
+      buffer.writeln("BODY:");
+      buffer.writeln(const JsonEncoder.withIndent('  ').convert(body));
+    }
+
+    buffer.writeln("═════════════════════════════════════");
+
+    print(buffer.toString());
+  }
+
+  static void logResponse({
+    required String url,
+    required int statusCode,
+    dynamic body,
+  }) {
+    final buffer = StringBuffer();
+
+    buffer.writeln("════════════ API RESPONSE ════════════");
+    buffer.writeln("URL        : $url");
+    buffer.writeln("STATUSCODE : $statusCode");
+
+    if (body != null) {
+      try {
+        final decoded = jsonDecode(body);
+        buffer.writeln("RESPONSE:");
+        log(const JsonEncoder.withIndent('  ').convert(decoded));
+      } catch (_) {
+        buffer.writeln("RESPONSE: $body");
+      }
+    }
+
+    buffer.writeln("══════════════════════════════════════");
+
+    print(buffer.toString());
+  }
+
+  static void logError({
+    required String url,
+    required dynamic error,
+  }) {
+    final buffer = StringBuffer();
+
+    buffer.writeln("════════════ API ERROR ════════════");
+    buffer.writeln("URL   : $url");
+    buffer.writeln("ERROR : $error");
+    buffer.writeln("═══════════════════════════════════");
+
+    print(buffer.toString());
+  }
 }

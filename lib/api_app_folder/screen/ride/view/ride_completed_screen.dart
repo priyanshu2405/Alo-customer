@@ -55,7 +55,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
       backgroundColor: AppColors.white,
       appBar: AppAppBar(title: "Ride Completed"),
       body: Obx(() {
-        return myRideController.getRideDetailsModel.value == null || myRideController.isGetRideDetails.value
+        return myRideController.getRideDetailsModel.value.data == null || myRideController.isGetRideDetails.value
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Column(
@@ -142,12 +142,12 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
-                                  Gap(1),
-                                  AppText(
-                                    text: "${myRideController.routeInfo.value?.durationText} away!",
-                                    fontSize: 12,
-                                    color: AppColors.lightBlackColor,
-                                  ),
+                                  // Gap(1),
+                                  // AppText(
+                                  //   text: "${myRideController.routeInfo.value?.durationText} away!",
+                                  //   fontSize: 12,
+                                  //   color: AppColors.lightBlackColor,
+                                  // ),
                                   Gap(5.h),
 
                                   /// Vehicle Info
@@ -161,12 +161,12 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                                 ],
                               ),
                             ),
-                            AppText(
-                              text: "${myRideController.routeInfo.value?.distanceText}",
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.lightBlackColor,
-                            ),
+                            // AppText(
+                            //   text: "${myRideController.routeInfo.value?.distanceText}",
+                            //   fontSize: 12,
+                            //   fontWeight: FontWeight.w500,
+                            //   color: AppColors.lightBlackColor,
+                            // ),
                           ],
                         ),
                       ),
