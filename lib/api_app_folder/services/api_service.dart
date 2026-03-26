@@ -9,11 +9,10 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // static const String baseUrl = 'https://planbot.ca/admin/public/api/';
- static const String baseUrl = 'https://app.pizzatwins.ca/aloride/api/user/';
-  static const String baseUrl1 = 'https://app.pizzatwins.ca/aloride/api/';
-//  static const String baseUrl = 'https://carin-fatalistic-jacalyn.ngrok-free.dev/api/user/';
- // static const String baseUrl1 = 'https://carin-fatalistic-jacalyn.ngrok-free.dev/api/';
-  // static const String baseUrl = 'https://development.libpow.com/api/';
+ // static const String baseUrl = 'https://app.pizzatwins.ca/aloride/api/user/';
+ //  static const String baseUrl1 = 'https://app.pizzatwins.ca/aloride/api/';
+  static const String baseUrl = 'https://alodrive.ca/api/user/';
+  static const String baseUrl1 = 'https://alodrive.ca/api/';
   static const Duration timeoutDuration = Duration(minutes: 2);
 
 
@@ -319,23 +318,58 @@ class ApiService {
   }
 
   // DELETE Request
+  // static Future<Map<String, dynamic>> delete({
+  //   required String endpoint,
+  //   String? token,
+  // }) async {
+  //   try {
+  //     // Use provided token or get from controller
+  //     final authToken = token ?? _getToken();
+  //
+  //     final response = await http
+  //         .delete(
+  //           Uri.parse('$baseUrl$endpoint'),
+  //           headers: authToken != null ? _headersWithAuth(authToken) : _headers,
+  //         )
+  //         .timeout(timeoutDuration);
+  //
+  //     return _handleResponse(response);
+  //   } catch (e) {
+  //     throw _handleError(e);
+  //   }
+  // }
   static Future<Map<String, dynamic>> delete({
     required String endpoint,
     String? token,
+    bool isShow = false,
   }) async {
     try {
-      // Use provided token or get from controller
+      /// 🔑 Get token
       final authToken = token ?? _getToken();
+
+      /// 🔥 FULL URL
+      final url = '$baseUrl$endpoint';
+
+      /// ✅ DEBUG PRINTS (VERY IMPORTANT)
+      debugPrint("🟥 DELETE URL ==> $url");
+      debugPrint("🟦 TOKEN ==> $authToken");
 
       final response = await http
           .delete(
-            Uri.parse('$baseUrl$endpoint'),
-            headers: authToken != null ? _headersWithAuth(authToken) : _headers,
-          )
+        Uri.parse(url),
+        headers: authToken != null
+            ? _headersWithAuth(authToken)
+            : _headers,
+      )
           .timeout(timeoutDuration);
 
-      return _handleResponse(response);
+      /// 🔥 PRINT RAW RESPONSE
+      debugPrint("🟩 STATUS CODE ==> ${response.statusCode}");
+      debugPrint("🟨 RESPONSE BODY ==> ${response.body}");
+
+      return _handleResponse(response, isShow: isShow);
     } catch (e) {
+      debugPrint("❌ DELETE ERROR ==> $e");
       throw _handleError(e);
     }
   }

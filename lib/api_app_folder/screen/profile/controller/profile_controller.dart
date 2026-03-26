@@ -226,4 +226,40 @@ class ProfileController extends GetxController {
       isLogoutUser.value = false; // Stop loading in all cases
     }
   }
+
+  RxBool isDeleteLoading = false.obs;
+  Future<void> deleteAccount() async {
+    try {
+      isDeleteLoading.value = true;
+
+      final response = await ApiService.delete(
+        endpoint: 'delete-account', // ⚠️ correct endpoint
+        isShow: true,
+      );
+
+      /// 🔥 PRINT FULL RESPONSE
+      print("DELETE RESPONSE ==> $response");
+
+      /// 🔥 PRINT MESSAGE
+      print("MESSAGE ==> ${response['message']}");
+
+      if (response['success'] == true) {
+        print("DELETE SUCCESS ✅");
+
+        Get.snackbar("Success", response['message'] ?? "Deleted");
+
+        Get.offAllNamed('/login');
+      } else {
+        print("DELETE FAILED ❌");
+
+        Get.snackbar("Error", response['message'] ?? "Failed");
+      }
+    } catch (e) {
+      print("DELETE ERROR ==> $e");
+
+      Get.snackbar("Error", e.toString());
+    } finally {
+      isDeleteLoading.value = false;
+    }
+  }
 }

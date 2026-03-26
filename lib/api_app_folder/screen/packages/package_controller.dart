@@ -39,10 +39,10 @@ class PackageController extends GetxController {
     try {
       isVehicleTypes.value = true;
 
-      final response = await ApiService.get(
-        endpoint: 'packages',
+      final response = await ApiService.get1(
+        endpoint: '${ApiService.baseUrl1}packages',
         isShow: false,
-        //useBaseUrl: false,
+        useBaseUrl: false,
       );
 
       if (response["success"] == true) {

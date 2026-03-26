@@ -30,6 +30,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
   }
 
+  void showDeleteDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Delete Account"),
+          content: const Text(
+            "Are you sure you want to permanently delete your account?",
+          ),
+          actions: [
+
+            /// ❌ CANCEL
+            AppButton(
+              text: "Cancel",
+              onTap: () {
+                Get.back();
+              },
+            ),
+
+            /// ✅ SPACE FIXED
+            const SizedBox(height: 10),
+
+            /// ❌ DELETE
+            Obx(() {
+              return AppButton(
+                isLoading: profileController.isDeleteLoading.value,
+                text: "Delete",
+                onTap: () {
+                  Get.back();
+                  profileController.deleteAccount();
+                  authController.logout();
+                },
+              );
+            }),
+          ],
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -306,29 +345,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
           imageType: ImageType.asset,
         ),
       ),
+      // bottomNavigationBar: Padding(
+      //   padding: const EdgeInsets.all(16.0),
+      //   child: Obx(() {
+      //     return AppButton(
+      //       isLoading: profileController.isEditProfile.value,
+      //       text: "Save",
+      //       onTap: () {
+      //         if (profileController.isSave.value) {
+      //           // 👉 SAVE MODE
+      //           profileController.editProfile();
+      //         } else {
+      //           // 👉 SWITCH TO SAVE MODE
+      //           profileController.isSave.value = true;
+      //         }
+      //       },
+      //       // onTap: () {
+      //       //   if(profileController.isSave.value == true){
+      //       //     profileController.editProfile();
+      //       //   }
+      //       //
+      //       // },
+      //     );
+      //   },),
+      // ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Obx(() {
-          return AppButton(
-            isLoading: profileController.isEditProfile.value,
-            text: "Save",
-            onTap: () {
-              if (profileController.isSave.value) {
-                // 👉 SAVE MODE
-                profileController.editProfile();
-              } else {
-                // 👉 SWITCH TO SAVE MODE
-                profileController.isSave.value = true;
-              }
-            },
-            // onTap: () {
-            //   if(profileController.isSave.value == true){
-            //     profileController.editProfile();
-            //   }
-            //
-            // },
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+
+              /// 💾 SAVE BUTTON
+              AppButton(
+                isLoading: profileController.isEditProfile.value,
+                text: "Save",
+                onTap: () {
+                  if (profileController.isSave.value) {
+                    profileController.editProfile();
+                  } else {
+                    profileController.isSave.value = true;
+                  }
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              /// ❌ DELETE BUTTON
+              AppButton(
+                isLoading: profileController.isEditProfile.value,
+                text: "Delete Account",
+                onTap: showDeleteDialog,
+              ),
+            ],
           );
-        },),
+        }),
       ),
     );
   }
