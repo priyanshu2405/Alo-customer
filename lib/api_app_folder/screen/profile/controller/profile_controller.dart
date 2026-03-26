@@ -245,10 +245,7 @@ class ProfileController extends GetxController {
 
       if (response['success'] == true) {
         print("DELETE SUCCESS ✅");
-
-        Get.snackbar("Success", response['message'] ?? "Deleted");
-
-        Get.offAllNamed('/login');
+        Get.offAll(() => LoginScreen());
       } else {
         print("DELETE FAILED ❌");
 
