@@ -393,7 +393,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               /// ❌ DELETE BUTTON
               AppButton(
-                isLoading: profileController.isEditProfile.value,
+                isLoading: profileController.isDeleteLoading.value,
                 text: "Delete Account",
                 onTap: showDeleteDialog,
               ),
