@@ -12,8 +12,9 @@ import 'package:get/get.dart';
 
 class RateTipDialog extends StatefulWidget {
   final int rideId;
+  final String amount;
 
-  const RateTipDialog({super.key, required this.rideId});
+  const RateTipDialog({super.key, required this.rideId,required this.amount,});
 
   @override
   State<RateTipDialog> createState() => _RateTipDialogState();
@@ -66,7 +67,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
               ),
               Gap(6.h),
               AppText(
-                text: "Your trip was \$20.00",
+                text: "Your trip was \$${widget.amount}",
                 fontSize: 16,
                 color: AppColors.darkGrayColor,
                 fontWeight: FontWeight.w500,

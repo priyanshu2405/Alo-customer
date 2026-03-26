@@ -123,6 +123,7 @@ class RideData {
   dynamic driver;
   VehicleType? vehicleType;
   Payment? payment;
+  int? isPayment;
 
   RideData({
     this.id,
@@ -154,7 +155,7 @@ class RideData {
     this.updatedAt,
     this.driver,
     this.vehicleType,
-    this.payment,
+    this.payment,this.isPayment,
   });
 
   factory RideData.fromJson(Map<String, dynamic> json) => RideData(
@@ -188,6 +189,7 @@ class RideData {
     driver: json["driver"],
     vehicleType: json["vehicle_type"] == null ? null : VehicleType.fromJson(json["vehicle_type"]),
     payment: json["payment"] == null ? null : Payment.fromJson(json["payment"]),
+    isPayment: json["is_payment"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -221,6 +223,7 @@ class RideData {
     "driver": driver,
     "vehicle_type": vehicleType?.toJson(),
     "payment": payment?.toJson(),
+    "is_payment": isPayment,
   };
 }
 

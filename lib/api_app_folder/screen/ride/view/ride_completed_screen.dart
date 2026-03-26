@@ -5,6 +5,7 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
+import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/get_ride_details_model.dart' hide Image;
 import 'package:alo_ride_app/api_app_folder/screen/ride/controller/ride_completed_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/payment_details_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/rate_tip_dialog.dart';
@@ -38,15 +39,25 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
   void initState() {
     super.initState();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (widget.isShowDialog == true) {
-          showDialog(
-            context: context,
-            barrierDismissible: true,
-            builder: (_) =>  RateTipDialog(rideId: widget.bookingId),
-          );
-        }
-        myRideController.getRideDetails(id: widget.bookingId);
+        myRideController.getRideDetails(id: widget.bookingId).then((value) {
+          if(!mounted)return;
+          if (/*widget.isShowDialog == true*/myRideController.getRideDetailsModel.value.data?.ride?.payment?.status != "paid") {
+            showDialog(
+              context: context,
+              barrierDismissible: true,
+              builder: (_) =>  RateTipDialog(rideId: widget.bookingId,
+              amount: myRideController.getRideDetailsModel.value.data?.ride?.totalFare ?? "",
+              ),
+            );
+          }
+        });
       });
+  }
+
+  @override
+  void dispose() {
+    myRideController.getRideDetailsModel.value = GetRideDetailsModel();
+    super.dispose();
   }
 
   @override
@@ -219,11 +230,11 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                       "\$${myRideController.totalTripFare.toStringAsFixed(2)}",
                       bold: true,
                     ),
-                    Gap(17),
-                    _fareRow(
-                      "HST 15%",
-                      "\$${myRideController.getRideDetailsModel.value.data?.ride?.taxAmount}",
-                    ),
+                    // Gap(17),
+                    // _fareRow(
+                    //   "HST 15%",
+                    //   "\$${myRideController.getRideDetailsModel.value.data?.ride?.taxAmount}",
+                    // ),
                      if(widget.isShowDialog == true)...[
                     Gap(17),
                     // _fareRow("Tip", "\$${myRideController.getRideDetailsModel.value.data?.ride?.tipAmount}"),
@@ -238,7 +249,9 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                         showDialog(
                           context: context,
                           barrierDismissible: false,
-                          builder: (_) =>  RateTipDialog(rideId: widget.bookingId),
+                          builder: (_) =>  RateTipDialog(rideId: widget.bookingId,
+                            amount: myRideController.getRideDetailsModel.value.data?.ride?.totalFare ?? "",
+                          ),
                         );
                       },
                       child: Obx(
@@ -289,27 +302,54 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                         bold: true,
                       );
                     }),
+                    if(myRideController.getRideDetailsModel.value.data?.ride?.isPackageStatus == 1)...[
+                      Gap(10),
+                    Padding(
+                      padding:  EdgeInsets.symmetric(horizontal: 16.h),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: AppText(
+                          text:
+                          "Package used - ${myRideController.getRideDetailsModel.value.data?.ride?.packageName}",
+                          fontSize: 12,
+                          maxLines: 2,
+                          color: AppColors.red,
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                    ),
+                      ],
                   ],
                 ),
               );
       }),
-      bottomNavigationBar: widget.isShowDialog == true ? Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: AppButton(
-          text: "PAY NOW",
-          onTap: () {
-            debugPrint(
-              "finalTotal : ${myRideController.getRideDetailsModel.value.data?.ride?.totalFare}",
-            );
-            Get.to(
-              () => PaymentDetailsScreen(
-                id: widget.bookingId,
-                totalFare: double.parse(myRideController.getRideDetailsModel.value.data?.ride?.totalFare ?? ""),
-              ),
-            );
-          },
-        ),
-      ) :  SizedBox.shrink(),
+      bottomNavigationBar: Obx(() {
+        if(myRideController.getRideDetailsModel.value.data != null) {
+          return myRideController.getRideDetailsModel.value.data?.ride?.payment
+              ?.status != "paid" ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: AppButton(
+              text: "PAY NOW",
+              onTap: () {
+                debugPrint(
+                  "finalTotal : ${myRideController.getRideDetailsModel.value
+                      .data?.ride?.totalFare}",
+                );
+                Get.to(
+                      () =>
+                      PaymentDetailsScreen(
+                        id: widget.bookingId,
+                        totalFare: double.parse(myRideController
+                            .getRideDetailsModel.value.data?.ride?.totalFare ??
+                            ""),
+                      ),
+                );
+              },
+            ),
+          ) : SizedBox.shrink();
+        }
+      return SizedBox.shrink();
+      }),
       floatingActionButton: AppImage(
         height: 55,
         width: 55,

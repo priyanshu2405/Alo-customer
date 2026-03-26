@@ -7,6 +7,7 @@ class AppImages {
   static const String mailIcon = "assets/svg_image/mail-line.svg";
   static const String phoneIcon = "assets/svg_image/phone-line.svg";
   static const String userIcon = "assets/svg_image/user-line.svg";
+  static const String paymentSuccess = "assets/svg_image/payment_success.svg";
   // static const String bannerLogo = "assets/svg_image/banner_logo.svg";
 
 

@@ -24,9 +24,17 @@ class VerifyOtpController extends GetxController {
 
   Future<void> verifyOtp(BuildContext context,{String? countryCode,String? mobile}) async {
     isVerifyOtp.value = true;
-    final notificationService = NotificationService();
-    await notificationService.initialize();
-    final token = await NotificationService.getToken();
+    String? token;
+
+    try {
+      // Try to initialize notifications
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+
+      token = await NotificationService.getToken();
+    } catch (e) {
+      debugPrint("FCM token error: $e");
+    }
     try {
 
       String otp = otpControllers.map((e) => e.text).join();

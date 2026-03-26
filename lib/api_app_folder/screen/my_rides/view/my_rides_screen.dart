@@ -896,11 +896,19 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
             Gap(20),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.h),
-              child: AppText(
-                text: "Upcoming",
-                color: AppColors.secondary,
-                fontWeight: FontWeight.bold,
+              child: Center(
+                child: AppText(
+                  text: "Upcoming Rides",
+                  color: AppColors.secondary,
+                  fontWeight: FontWeight.bold,
+                  textAlign: TextAlign.center,
+                ),
               ),
+            ),
+            Gap(10),
+            Divider(
+              color: AppColors.secondary,
+thickness: 2,
             ),
             Gap(10),
             Column(
@@ -934,11 +942,19 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
             Gap(20),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.h),
-              child: AppText(
-                text: "Completed",
-                color: AppColors.secondary,
-                fontWeight: FontWeight.bold,
+              child: Center(
+                child: AppText(
+                  text: "Completed Rides",
+                  color: AppColors.secondary,
+                  textAlign: TextAlign.center,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+            ),
+            Gap(10),
+            Divider(
+              color: AppColors.secondary,
+              thickness: 2,
             ),
             Gap(10),
             Column(
@@ -986,11 +1002,19 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
             Gap(20),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.h),
-              child: AppText(
-                text: "Cancelled",
-                color: AppColors.secondary,
-                fontWeight: FontWeight.bold,
+              child: Center(
+                child: AppText(
+                  text: "Cancelled Rides",
+                  color: AppColors.secondary,
+                  textAlign: TextAlign.center,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
+            ),
+            Gap(10),
+            Divider(
+              color: AppColors.secondary,
+              thickness: 2,
             ),
             Gap(10),
             Column(

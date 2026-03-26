@@ -17,7 +17,6 @@ class BookingController extends GetxController {
   RxDouble totalFare = 0.0.obs;
   RxDouble distanceKm = 0.0.obs;
 
-
   // Add these for locations
   RxString fromLocation = "".obs;
   RxString dropOffLocation = "".obs;
@@ -42,7 +41,6 @@ class BookingController extends GetxController {
     if (selectedTime.value == null) return null;
     return DateFormat("hh:mm a").format(selectedTime.value!);
   }
-
 
   Future<void> pickDate(BuildContext context) async {
     final DateTime? date = await showDatePicker(
@@ -74,10 +72,11 @@ class BookingController extends GetxController {
       );
     }
   }
-
-
-
-  Future<void> estimateFare({required int vehicleTypeId}) async {
+RxBool isShowButton = false.obs;
+  Future<void> estimateFare({
+    required int vehicleTypeId,
+    required int type,
+  }) async {
     // ✅ ADD DEBUG PRINTS AT THE START
     debugPrint("=== ESTIMATE FARE CALLED ===");
     debugPrint("From Location: ${fromLocation.value}");
@@ -85,7 +84,9 @@ class BookingController extends GetxController {
     debugPrint("Drop-off Location: ${dropOffLocation.value}");
     debugPrint("Drop-off LatLng: ${dropOffLatLng.value}");
     debugPrint("Vehicle Type ID: $vehicleTypeId");
-    debugPrint("Trip Type: ${selectValue.value == 0 ? 'one_way' : 'round_trip'}");
+    debugPrint(
+      "Trip Type: ${selectValue.value == 0 ? 'one_way' : 'round_trip'}",
+    );
 
     // Validation before making API call
     if (fromLatLng.value == null) {
@@ -119,10 +120,10 @@ class BookingController extends GetxController {
       "pickup_longitude": fromLatLng.value!.longitude,
       "drop_latitude": dropOffLatLng.value!.latitude,
       "drop_longitude": dropOffLatLng.value!.longitude,
-      "vehicle_type_id": vehicleTypeId,
-      "trip_type": tripType,
+      "id": vehicleTypeId,
+      "type": type,
+      //"trip_type": tripType,
     };
-
 
     debugPrint("📤 API Request Body: $body");
 
@@ -135,18 +136,45 @@ class BookingController extends GetxController {
       debugPrint("📥 API Response: $response");
 
       if (response['success'] == true) {
-        debugPrint("✅ Total Fare: ${response["data"]["total_fare"]}");
-        totalFare.value = response["data"]["total_fare"];
-        distanceKm.value =
-            double.tryParse(response['data']['distance_km'].toString()) ?? 0.0;
+        if (response["data"]['is_navigate'] == 1) {
+          Get.back(); // Close loading
+          Get.dialog(
+            barrierDismissible: false,
+            AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              title: const Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red),
+                  SizedBox(width: 10),
+                  Text("Error", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              content: Text("${response["message"]}"),
+              actions: [
+                TextButton(
+                  onPressed: () => Get.back(),
+                  child: const Text("OK", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          );
+        }
+        else {
+          isShowButton.value = response['success'];
+          debugPrint("✅ Total Fare: ${response["data"]["total_fare"]}");
+          totalFare.value = response["data"]["total_fare"];
+          distanceKm.value =
+              double.tryParse(response['data']['distance_km'].toString()) ??
+              0.0;
 
-        Get.snackbar(
-          "Success",
-          "Fare estimated: \$${response["data"]["total_fare"]}",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green.withOpacity(0.8),
-          colorText: Colors.white,
-        );
+          Get.snackbar(
+            "Success",
+            "Fare estimated: \$${response["data"]["total_fare"]}",
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green.withOpacity(0.8),
+            colorText: Colors.white,
+          );
+        }
       } else {
         Get.snackbar(
           "Error",
@@ -160,7 +188,7 @@ class BookingController extends GetxController {
       debugPrint("❌ Error in estimateFare: $e");
       Get.snackbar(
         "Error",
-        "Failed to estimate fare. Please try again.",
+        "Failed to estimate fare. $e",
         snackPosition: SnackPosition.TOP,
         backgroundColor: AppColors.red.withOpacity(0.5),
         colorText: Colors.white,
@@ -188,10 +216,13 @@ class BookingController extends GetxController {
     return DateFormat("yyyy-MM-dd HH:mm:ss").format(combinedDateTime);
   }
 
-
-
-
-  Future<void> bookApi(BuildContext context,{required int vehicleTypeId,}) async {
+  Future<void> bookApi(
+    BuildContext context, {
+    required int vehicleTypeId,
+    required int type,
+    required bool isAirportPickup,
+    required String flightNumber,
+  }) async {
     // ✅ ADD DEBUG PRINTS AT THE START
     debugPrint("=== ESTIMATE FARE CALLED ===");
     debugPrint("From Location: ${fromLocation.value}");
@@ -199,7 +230,9 @@ class BookingController extends GetxController {
     debugPrint("Drop-off Location: ${dropOffLocation.value}");
     debugPrint("Drop-off LatLng: ${dropOffLatLng.value}");
     debugPrint("Vehicle Type ID: $vehicleTypeId");
-    debugPrint("Trip Type: ${selectValue.value == 0 ? 'one_way' : 'round_trip'}");
+    debugPrint(
+      "Trip Type: ${selectValue.value == 0 ? 'one_way' : 'round_trip'}",
+    );
 
     // Validation before making API call
     if (fromLatLng.value == null) {
@@ -235,9 +268,7 @@ class BookingController extends GetxController {
       return;
     }
 
-
     isBookRide.value = true;
-
 
     String tripType = selectValue.value == 0 ? "one_way" : "round_trip";
 
@@ -245,30 +276,29 @@ class BookingController extends GetxController {
     var body = {
       "pickup_latitude": fromLatLng.value!.latitude,
       "pickup_longitude": fromLatLng.value!.longitude,
-      "pickup_address" : fromLocation.value,
+      "pickup_address": fromLocation.value,
       "drop_latitude": dropOffLatLng.value!.latitude,
       "drop_longitude": dropOffLatLng.value!.longitude,
       "drop_address": dropOffLocation.value,
-      "vehicle_type_id": vehicleTypeId,
+      "id": vehicleTypeId,
       "trip_type": tripType,
       // "pickup_datetime" :"$formattedDate $formattedTime",
       "pickup_datetime": pickupDateTimeForApi,
-      "tip_amount" : "0.0",
+      "tip_amount": "0.0",
+      "type": type,
+      "is_flight" : isAirportPickup == true ? 1 : 0,
+      "flight_number" : flightNumber,
     };
-
 
     debugPrint("📤 API Request Body: $body");
 
     try {
-      final response = await ApiService.post(
-        endpoint: 'rides',
-        body: body,
-      );
+      final response = await ApiService.post(endpoint: 'rides', body: body);
 
       debugPrint("📥 API Response: $response");
 
       if (response['success'] == true) {
-       // debugPrint("✅ Total Fare: $response");
+        // debugPrint("✅ Total Fare: $response");
         rideBookingMessage.value = response['message'];
         print(response['data']['ride']['pickup_datetime']);
         showRideConfirmed(context);
@@ -285,7 +315,9 @@ class BookingController extends GetxController {
           colorText: Colors.white,
         );*/
       } else {
-        debugPrint("❌ Error in estimateFare: ${"${response["message"] ?? response["errors"] ?? "Failed to estimate fare"}"}");
+        debugPrint(
+          "❌ Error in estimateFare: ${"${response["message"] ?? response["errors"] ?? "Failed to estimate fare"}"}",
+        );
         Get.snackbar(
           "Error",
           "${response["message"] ?? response["errors"] ?? "Failed to estimate fare"}",
@@ -305,9 +337,10 @@ class BookingController extends GetxController {
       );
     } finally {
       isBookRide.value = false;
-    //  isBookRide.value = false;
+      //  isBookRide.value = false;
     }
   }
+
   void showRideConfirmed(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -315,13 +348,11 @@ class BookingController extends GetxController {
       backgroundColor: Colors.transparent,
       builder: (_) {
         return Obx(() {
-          return RideConfirmedWidget(
-              dateTimeText: rideBookingMessage.value);
+          return RideConfirmedWidget(dateTimeText: rideBookingMessage.value);
         });
       },
     );
   }
-
 
   void clearBookingData() {
     // Locations
@@ -345,8 +376,4 @@ class BookingController extends GetxController {
 
     debugPrint("🧹 Booking data cleared");
   }
-
-
-
-
 }

@@ -9,8 +9,10 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
   // static const String baseUrl = 'https://planbot.ca/admin/public/api/';
-  static const String baseUrl = 'https://app.pizzatwins.ca/aloride/api/user/';
+ static const String baseUrl = 'https://app.pizzatwins.ca/aloride/api/user/';
   static const String baseUrl1 = 'https://app.pizzatwins.ca/aloride/api/';
+//  static const String baseUrl = 'https://carin-fatalistic-jacalyn.ngrok-free.dev/api/user/';
+ // static const String baseUrl1 = 'https://carin-fatalistic-jacalyn.ngrok-free.dev/api/';
   // static const String baseUrl = 'https://development.libpow.com/api/';
   static const Duration timeoutDuration = Duration(minutes: 2);
 

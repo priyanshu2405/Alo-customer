@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/ride_history_model.dart';
+
 GetRideDetailsModel getRideDetailsModelFromJson(String str) => GetRideDetailsModel.fromJson(json.decode(str));
 
 String getRideDetailsModelToJson(GetRideDetailsModel data) => json.encode(data.toJson());
@@ -75,7 +77,9 @@ class Ride {
   Driver? driver;
   VehicleType? vehicleType;
   List<StatusLog>? statusLogs;
-  dynamic payment;
+  Payment? payment;
+  int? isPackageStatus;
+  String? packageName;
 
   Ride({
     this.id,
@@ -108,7 +112,7 @@ class Ride {
     this.driver,
     this.vehicleType,
     this.statusLogs,
-    this.payment,
+    this.payment,this.isPackageStatus,this.packageName,
   });
 
   factory Ride.fromJson(Map<String, dynamic> json) => Ride(
@@ -142,7 +146,9 @@ class Ride {
     driver: json["driver"] == null ? null : Driver.fromJson(json["driver"]),
     vehicleType: json["vehicle_type"] == null ? null : VehicleType.fromJson(json["vehicle_type"]),
     statusLogs: json["status_logs"] == null ? [] : List<StatusLog>.from(json["status_logs"]!.map((x) => StatusLog.fromJson(x))),
-    payment: json["payment"],
+    payment: json["payment"] == null ? null : Payment.fromJson(json['payment']),
+    isPackageStatus: json['is_package_status'],
+    packageName: json['package_name'],
   );
 
   Map<String, dynamic> toJson() => {
@@ -176,7 +182,9 @@ class Ride {
     "driver": driver?.toJson(),
     "vehicle_type": vehicleType?.toJson(),
     "status_logs": statusLogs == null ? [] : List<dynamic>.from(statusLogs!.map((x) => x.toJson())),
-    "payment": payment,
+    "payment": payment?.toJson(),
+    "is_package_status" : isPackageStatus,
+    "package_name" : packageName,
   };
 }
 

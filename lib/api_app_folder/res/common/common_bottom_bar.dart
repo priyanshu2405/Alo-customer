@@ -33,7 +33,9 @@ class CommonBottomBar extends StatelessWidget {
         items: [
           _buildBottomNavItem(icon: Icons.home_filled, label: 'Home', index: 0),
           _buildBottomNavItem(icon: Icons.directions_car, label: 'My Rides', index: 1),
-          _buildBottomNavItem(icon: Icons.person_outline,label: 'Profile', index: 2),
+          _buildBottomNavItem(icon: Icons.subscriptions, label: 'Packages', index: 2),
+          _buildBottomNavItem(icon: Icons.history, label: 'History', index: 3),
+          _buildBottomNavItem(icon: Icons.person_outline,label: 'Profile', index: 4),
         ],
       ),
     );

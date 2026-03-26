@@ -29,11 +29,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    homeController.getVehicleTypes();
+   // homeController.getVehicleTypes();
+    homeController.getFlatRatesList();
+    homeController.getMyPackagesList();
+    homeController.getErrandsList();
+    homeController.selectedType.value = 0;
+    homeController.selectedType.value = 0;
     /// ✅ Show dialog AFTER first frame
     // WidgetsBinding.instance.addPostFrameCallback((_) {
     //   _showWelcomeDialog();
     // });
+  }
+
+  @override
+  void dispose() {
+    homeController.selectedItemId.value = -1;
+    super.dispose();
   }
 
   @override
@@ -52,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
         return homeController.isVehicleTypes.value
             ? Center(child: CircularProgressIndicator())
             : Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Obx(() {
@@ -199,169 +211,539 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Gap(20.h),
-                    // Title
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      child: AppText(
-                        text: "Choose Your Vehicle Type",
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Gap(16.h),
+                Expanded(
+                 child: SingleChildScrollView(
+                   child: Column(
+                     crossAxisAlignment: CrossAxisAlignment.start,
+                     children: [
+                       Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         mainAxisSize: MainAxisSize.min,
+                         children: [
+                           Gap(20.h),
+                           // Title
+                           Padding(
+                             padding: EdgeInsets.symmetric(horizontal: 16.w),
+                             child: AppText(
+                               text: "Flats Rates",
+                               fontSize: 18,
+                               fontWeight: FontWeight.bold,
+                             ),
+                           ),
+                           Gap(16.h),
+                   
+                           // Vehicle Options
+                           Obx(() {
+                             final vehicles = homeController.flatRatesList;
+                   
+                             if (vehicles.isEmpty) {
+                               return const SizedBox();
+                             }
+                   
+                             return SingleChildScrollView(
+                               scrollDirection: Axis.horizontal,
+                               padding: EdgeInsets.symmetric(horizontal: 12.w),
+                               child: Row(
+                                 children: List.generate(vehicles.length, (index) {
+                                   final vehicle = vehicles[index];
 
-                    // Vehicle Options
-                    SizedBox(
-                      height: 110.h,
-                      child: Obx(() {
-                        return ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.symmetric(horizontal: 12.w),
-                          itemCount: homeController.getVehicleTypesModel.value.data?.length ?? 0,
-                          itemBuilder: (context, index) {
-                            final vehicle = homeController.getVehicleTypesModel.value.data![index];
+                                   bool isSelected =
+                                       homeController.selectedItemId.value == vehicle.id &&
+                                           homeController.selectedType.value == 1;
+                   
+                                   return GestureDetector(
+                                     onTap: () {
+                                       if (vehicle.id != null) {
+                                         homeController.selectedItemId.value = vehicle.id!;
+                                         homeController.selectedType.value = 1;
+                                         homeController.selectedVehicleName.value = vehicle.rideType ?? "";
+                                       }
+                                     },
+                                     child: Container(
+                                       width: 90.w,
+                                       margin: EdgeInsets.symmetric(horizontal: 6.w),
+                                       padding: EdgeInsets.symmetric(
+                                         horizontal: 8.w,
+                                         vertical: 10.h,
+                                       ),
+                                       decoration: BoxDecoration(
+                                         color: isSelected
+                                             ? AppColors.secondary.withOpacity(0.07)
+                                             : AppColors.white,
+                                         borderRadius: BorderRadius.circular(12.r),
+                                         border: Border.all(
+                                           color: isSelected
+                                               ? AppColors.secondary
+                                               : AppColors.greyColor,
+                                         ),
+                                       ),
+                                       child: Column(
+                                         mainAxisSize: MainAxisSize.min, // ⭐ important
+                                         children: [
+                                           AppImage(
+                                             image: vehicle.image ?? "",
+                                             imageType: ImageType.network,
+                                             height: 45.h,
+                                             width: 45.w,
+                                             fit: BoxFit.contain,
+                                           ),
+                   
+                                           SizedBox(height: 6.h),
+                   
+                                           AppText(
+                                             text: vehicle.rideType ?? "",
+                                             fontSize: 12.sp,
+                                             fontWeight:
+                                             isSelected ? FontWeight.bold : FontWeight.normal,
+                                             color: AppColors.black,
+                                             textAlign: TextAlign.center,
+                                             maxLines: 1,
+                                             overflow: TextOverflow.ellipsis,
+                                           ),
+                   
+                                           SizedBox(height: 3.h),
+                   
+                                           AppText(
+                                             text: "Distance : ${vehicle.distanceRule ?? "-"}",
+                                             fontSize: 10.sp,
+                                             color: AppColors.lightTextColor,
+                                             textAlign: TextAlign.center,
+                                             overflow: TextOverflow.visible,
+                                           ),
+                   
+                                           SizedBox(height: 3.h),
+                   
+                                           AppText(
+                                             text: vehicle.price != null
+                                                 ? "Price : \$${vehicle.price}"
+                                                 : "Price : -",
+                                             fontSize: 10.sp,
+                                             color: AppColors.lightTextColor,
+                                             textAlign: TextAlign.center,
+                                           ),
+                                         ],
+                                       ),
+                                     ),
+                                   );
+                                 }),
+                               ),
+                             );
+                           }),
+                           // SizedBox(
+                           //   height: 150.h,
+                           //   child: Obx(() {
+                           //     return ListView.builder(
+                           //       scrollDirection: Axis.horizontal,
+                           //       padding: EdgeInsets.symmetric(horizontal: 12.w),
+                           //       itemCount: homeController.flatRatesList.length ?? 0,
+                           //       itemBuilder: (context, index) {
+                           //         final vehicle = homeController.flatRatesList[index];
+                           //
+                           //         bool isSelected = homeController.selectedVehicleIndex.value == vehicle.id;
+                           //
+                           //         return GestureDetector(
+                           //           onTap: () {
+                           //             if (vehicle.id != null) {
+                           //              setState(() {
+                           //                homeController.selectedVehicleIndex.value = vehicle.id!;
+                           //               // homeController.selectedVehicleName.value = vehicle.name ?? '';
+                           //
+                           //
+                           //                debugPrint("Selected Vehicle ID: ${vehicle.id}");
+                           //               // debugPrint("Selected Vehicle Name: ${vehicle.name}");
+                           //              });
+                           //             }
+                           //           },
+                           //           child: Container(
+                           //             width: 90.w,
+                           //             margin: EdgeInsets.symmetric(horizontal: 4.w),
+                           //             padding: EdgeInsets.all(8.w),
+                           //             decoration: BoxDecoration(
+                           //               color: isSelected
+                           //                   ? AppColors.secondary.withOpacity(0.07)
+                           //                   : AppColors.white,
+                           //               borderRadius: BorderRadius.circular(12),
+                           //               border: Border.all(
+                           //                 color: isSelected
+                           //                     ? AppColors.secondary
+                           //                     : AppColors.greyColor,
+                           //                 width: 1,
+                           //               ),
+                           //             ),
+                           //             child: Column(
+                           //               mainAxisAlignment: MainAxisAlignment.center,
+                           //               children: [
+                           //                 // Icon(
+                           //                 //   Icons.directions_car,
+                           //                 //   size: 32,
+                           //                 //   color: isSelected
+                           //                 //       ? AppColors.secondary
+                           //                 //       : AppColors.greyColor,
+                           //                 // ),
+                           //                 AppImage(image: "${vehicle.image}",imageType: ImageType.network,height: 50.h,),
+                           //                 Gap(6.h),
+                           //                 AppText(
+                           //                   text: vehicle.rideType ?? "",
+                           //                   fontSize: 12,
+                           //                   fontWeight:
+                           //                   isSelected ? FontWeight.bold : FontWeight.normal,
+                           //                   color: AppColors.black,
+                           //                 ),
+                           //                 Gap(2.h),
+                           //                 AppText(
+                           //                   text: "Distance : ${vehicle.distanceRule}",
+                           //                   fontSize: 9,
+                           //                   color: AppColors.lightTextColor,
+                           //                   textAlign: TextAlign.center,
+                           //                   overflow: TextOverflow.visible,
+                           //                 ),
+                           //                 Gap(2.h),
+                           //                 AppText(
+                           //                   text: "Price : ${vehicle.price}",
+                           //                   fontSize: 9,
+                           //                   color: AppColors.lightTextColor,
+                           //                   textAlign: TextAlign.center,
+                           //                 ),
+                           //               ],
+                           //             ),
+                           //           ),
+                           //         );
+                           //       },
+                           //     );
+                           //   },),
+                           // ),
+                   
+                   
+                         ],
+                       ),
+                       // Column(
+                       //   crossAxisAlignment: CrossAxisAlignment.start,
+                       //   mainAxisSize: MainAxisSize.min,
+                       //   mainAxisAlignment: MainAxisAlignment.start,
+                       //   children: [
+                       //     Gap(20.h),
+                       //     // Title
+                       //     Padding(
+                       //       padding: EdgeInsets.symmetric(horizontal: 16.w),
+                       //       child: AppText(
+                       //         text: "Choose Your Purchased Package",
+                       //         fontSize: 18,
+                       //         fontWeight: FontWeight.bold,
+                       //       ),
+                       //     ),
+                       //     Gap(16.h),
+                       //
+                       //     // Vehicle Options
+                       //     Obx(() {
+                       //       final vehicles = homeController.myPackageList;
+                       //
+                       //       if (vehicles.isEmpty) {
+                       //         return  Center(
+                       //           child: AppText(
+                       //             text: "No Purchased Package Found",
+                       //             fontSize: 7.sp,
+                       //             fontWeight: FontWeight.normal,
+                       //             color: AppColors.black,
+                       //
+                       //             textAlign: TextAlign.center,
+                       //             overflow: TextOverflow.visible,
+                       //           ),
+                       //         );
+                       //       }
+                       //
+                       //       return SingleChildScrollView(
+                       //         scrollDirection: Axis.horizontal,
+                       //         padding: EdgeInsets.symmetric(horizontal: 12.w),
+                       //         child: Row(
+                       //           crossAxisAlignment: CrossAxisAlignment.start,
+                       //           mainAxisAlignment: MainAxisAlignment.start,
+                       //           children: List.generate(vehicles.length, (index) {
+                       //             final vehicle = vehicles[index];
+                       //             bool isSelected =
+                       //                 homeController.selectedItemId.value == vehicle.purchaseId &&
+                       //                     homeController.selectedType.value == 2;
+                       //
+                       //             return GestureDetector(
+                       //               onTap: () {
+                       //                 if (vehicle.purchaseId != null) {
+                       //                   homeController.selectedItemId.value = vehicle.purchaseId!;
+                       //                   homeController.selectedType.value = 2;
+                       //                   homeController.selectedVehicleName.value = vehicle.packageName ?? "";
+                       //                 }
+                       //               },
+                       //               child: Container(
+                       //                 width: 90.w,
+                       //                 margin: EdgeInsets.symmetric(horizontal: 6.w),
+                       //                 padding: EdgeInsets.symmetric(
+                       //                   horizontal: 8.w,
+                       //                   vertical: 10.h,
+                       //                 ),
+                       //                 decoration: BoxDecoration(
+                       //                   color: isSelected
+                       //                       ? AppColors.secondary.withOpacity(0.07)
+                       //                       : AppColors.white,
+                       //                   borderRadius: BorderRadius.circular(12.r),
+                       //                   border: Border.all(
+                       //                     color: isSelected
+                       //                         ? AppColors.secondary
+                       //                         : AppColors.greyColor,
+                       //                   ),
+                       //                 ),
+                       //                 child: Column(
+                       //
+                       //                   mainAxisSize: MainAxisSize.min, // ⭐ important
+                       //                   children: [
+                       //                     AppImage(
+                       //                       image: vehicle.image ?? "",
+                       //                       imageType: ImageType.network,
+                       //                       height: 45.h,
+                       //                       width: 45.w,
+                       //                       fit: BoxFit.contain,
+                       //                     ),
+                       //
+                       //                     SizedBox(height: 6.h),
+                       //
+                       //                     AppText(
+                       //                       text: vehicle.packageName ?? "",
+                       //                       fontSize: 12.sp,
+                       //                       fontWeight:
+                       //                       isSelected ? FontWeight.bold : FontWeight.normal,
+                       //                       color: AppColors.black,
+                       //                       textAlign: TextAlign.center,
+                       //                       overflow: TextOverflow.visible,
+                       //                     ),
+                       //
+                       //                     SizedBox(height: 3.h),
+                       //
+                       //                     AppText(
+                       //                       text: "Rides Remaining : ${vehicle.ridesRemaining ?? "-"}",
+                       //                       fontSize: 10.sp,
+                       //                       color: AppColors.lightTextColor,
+                       //                       textAlign: TextAlign.center,
+                       //                       overflow: TextOverflow.visible,
+                       //                     ),
+                       //
+                       //                     AppText(
+                       //                       text:  "Price : \$${vehicle.amountPaid}",
+                       //                       fontSize: 10.sp,
+                       //                       color: AppColors.lightTextColor,
+                       //                       textAlign: TextAlign.center,
+                       //                       overflow: TextOverflow.visible,
+                       //                     ),
+                       //                   ],
+                       //                 ),
+                       //               ),
+                       //             );
+                       //           }),
+                       //         ),
+                       //       );
+                       //     }),
+                       //   ],
+                       // ),
+                       Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         mainAxisSize: MainAxisSize.min,
+                         mainAxisAlignment: MainAxisAlignment.start,
+                         children: [
+                           Gap(20.h),
+                           // Title
+                           Padding(
+                             padding: EdgeInsets.symmetric(horizontal: 16.w),
+                             child: AppText(
+                               text: "Choose the Errands",
+                               fontSize: 18,
+                               fontWeight: FontWeight.bold,
+                             ),
+                           ),
+                           Gap(16.h),
+                   
+                           // Vehicle Options
+                           Obx(() {
+                             final vehicles = homeController.errandsList;
+                   
+                             if (vehicles.isEmpty) {
+                               return const SizedBox();
+                             }
+                   
+                             return SingleChildScrollView(
+                               scrollDirection: Axis.horizontal,
+                               padding: EdgeInsets.symmetric(horizontal: 12.w),
+                               child: Row(
+                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                 mainAxisAlignment: MainAxisAlignment.start,
+                                 children: List.generate(vehicles.length, (index) {
+                                   final vehicle = vehicles[index];
 
-                            bool isSelected = homeController.selectedVehicleIndex.value == vehicle.id;
+                                   bool isSelected =
+                                       homeController.selectedItemId.value == vehicle.id &&
+                                           homeController.selectedType.value == 3;
+                   
+                                   return GestureDetector(
+                                     onTap: () {
+                                       if (vehicle.id != null) {
+                                         homeController.selectedItemId.value = vehicle.id!;
+                                         homeController.selectedType.value = 3;
+                                         homeController.selectedVehicleName.value = vehicle.name ?? "";
+                                       }
+                                     },
+                                     child: Container(
+                                       width: 90.w,
+                                       margin: EdgeInsets.symmetric(horizontal: 6.w),
+                                       padding: EdgeInsets.symmetric(
+                                         horizontal: 8.w,
+                                         vertical: 10.h,
+                                       ),
+                                       decoration: BoxDecoration(
+                                         color: isSelected
+                                             ? AppColors.secondary.withOpacity(0.07)
+                                             : AppColors.white,
+                                         borderRadius: BorderRadius.circular(12.r),
+                                         border: Border.all(
+                                           color: isSelected
+                                               ? AppColors.secondary
+                                               : AppColors.greyColor,
+                                         ),
+                                       ),
+                                       child: Column(
+                   
+                                         mainAxisSize: MainAxisSize.min, // ⭐ important
+                                         children: [
+                                           AppImage(
+                                             image: vehicle.image ?? "",
+                                             imageType: ImageType.network,
+                                             height: 45.h,
+                                             width: 45.w,
+                                             fit: BoxFit.contain,
+                                           ),
+                   
+                                           SizedBox(height: 6.h),
+                   
+                                           AppText(
+                                             text: vehicle.name ?? "",
+                                             fontSize: 12.sp,
+                                             fontWeight:
+                                             isSelected ? FontWeight.bold : FontWeight.normal,
+                                             color: AppColors.black,
+                                             textAlign: TextAlign.center,
+                                             maxLines: 1,
+                                             overflow: TextOverflow.ellipsis,
+                                           ),
+                   
+                                           SizedBox(height: 3.h),
+                   
+                                           AppText(
+                                             text: "Distance : ${vehicle.distanceLimit ?? "-"}",
+                                             fontSize: 10.sp,
+                                             color: AppColors.lightTextColor,
+                                             textAlign: TextAlign.center,
+                                             overflow: TextOverflow.visible,
+                                           ),
+                                           AppText(
+                                             text: "Duration Minutes : ${vehicle.durationMinutes ?? "-"}",
+                                             fontSize: 10.sp,
+                                             color: AppColors.lightTextColor,
+                                             textAlign: TextAlign.center,
+                                             overflow: TextOverflow.visible,
+                                           ),
+                   
+                                           SizedBox(height: 3.h),
+                   
+                                           AppText(
+                                             text: vehicle.price != null
+                                                 ? "Price : \$${vehicle.price}"
+                                                 : "Price : -",
+                                             fontSize: 10.sp,
+                                             color: AppColors.lightTextColor,
+                                             textAlign: TextAlign.center,
+                                           ),
+                                         ],
+                                       ),
+                                     ),
+                                   );
+                                 }),
+                               ),
+                             );
+                           }),
+                         ],
+                       ),
+                     ],
+                   ),
+                 ),
+               ),
+                Gap(16.h),
 
-                            return GestureDetector(
-                              onTap: () {
-                                if (vehicle.id != null) {
-                                 setState(() {
-                                   homeController.selectedVehicleIndex.value = vehicle.id!;
-                                   homeController.selectedVehicleName.value = vehicle.name ?? '';
-
-
-                                   debugPrint("Selected Vehicle ID: ${vehicle.id}");
-                                   debugPrint("Selected Vehicle Name: ${vehicle.name}");
-                                 });
-                                }
-                              },
-                              child: Container(
-                                width: 90.w,
-                                margin: EdgeInsets.symmetric(horizontal: 4.w),
-                                padding: EdgeInsets.all(8.w),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? AppColors.secondary.withOpacity(0.07)
-                                      : AppColors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? AppColors.secondary
-                                        : AppColors.greyColor,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    // Icon(
-                                    //   Icons.directions_car,
-                                    //   size: 32,
-                                    //   color: isSelected
-                                    //       ? AppColors.secondary
-                                    //       : AppColors.greyColor,
-                                    // ),
-                                    AppImage(image: "${vehicle.vehicleImage}",imageType: ImageType.network,height: 50.h,),
-                                    Gap(6.h),
-                                    AppText(
-                                      text: vehicle.name ?? "",
-                                      fontSize: 12,
-                                      fontWeight:
-                                      isSelected ? FontWeight.bold : FontWeight.normal,
-                                      color: AppColors.black,
-                                    ),
-                                    Gap(2.h),
-                                    AppText(
-                                      text: "Capacity: ${vehicle.capacity ?? '-'}",
-                                      fontSize: 9,
-                                      color: AppColors.lightTextColor,
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+                // Book Now Button
+                // Padding(
+                //   padding: EdgeInsets.symmetric(horizontal: 16.w),
+                //   child: ElevatedButton(
+                //     onPressed: () {
+                //       // Get.to(()=>BookingScreen());
+                //       debugPrint("vehicleTypeId : ${homeController.selectedVehicleIndex.value}");
+                //       Get.to(() => BookingScreen(vehicleTypeId: homeController.selectedVehicleIndex.value));
+                //     },
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: AppColors.secondary,
+                //       minimumSize: Size(double.infinity, 50.h),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(12),
+                //       ),
+                //     ),
+                //     child: AppText(
+                //       text: "BOOK NOW",
+                //       color: Colors.white,
+                //       fontSize: 16,
+                //       fontWeight: FontWeight.bold,
+                //     ),
+                //   ),
+                // ),
+                //Text(homeController.selectedItemId.value.toString()),
+                if(homeController.selectedItemId.value != -1)
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (homeController.selectedItemId.value == -1) {
+                        Get.snackbar(
+                          "Selection Required",
+                          "Please select one option from Flat Rates, Packages or Errands",
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: Colors.red.withOpacity(0.8),
+                          colorText: Colors.white,
                         );
-                      },),
-                    ),
+                        return;
+                      }
 
-                    Gap(16.h),
-
-                    // Book Now Button
-                    // Padding(
-                    //   padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    //   child: ElevatedButton(
-                    //     onPressed: () {
-                    //       // Get.to(()=>BookingScreen());
-                    //       debugPrint("vehicleTypeId : ${homeController.selectedVehicleIndex.value}");
-                    //       Get.to(() => BookingScreen(vehicleTypeId: homeController.selectedVehicleIndex.value));
-                    //     },
-                    //     style: ElevatedButton.styleFrom(
-                    //       backgroundColor: AppColors.secondary,
-                    //       minimumSize: Size(double.infinity, 50.h),
-                    //       shape: RoundedRectangleBorder(
-                    //         borderRadius: BorderRadius.circular(12),
-                    //       ),
-                    //     ),
-                    //     child: AppText(
-                    //       text: "BOOK NOW",
-                    //       color: Colors.white,
-                    //       fontSize: 16,
-                    //       fontWeight: FontWeight.bold,
-                    //     ),
-                    //   ),
-                    // ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (homeController.selectedVehicleIndex.value == -1) {
-                            Get.snackbar(
-                              "Selection Required",
-                              "Please select a vehicle first",
-                              snackPosition: SnackPosition.TOP,
-                              backgroundColor: Colors.red.withOpacity(0.8),
-                              colorText: Colors.white,
-                            );
-                            return;
-                          }
-
-                          debugPrint(
-                            "vehicleTypeId : ${homeController.selectedVehicleIndex.value}",
-                          );
-                          print("latLng:: ${controller.currentLatLng.value}");
-                          Get.to(() => BookingScreen(
-                              vehicleTypeId: homeController.selectedVehicleIndex.value,
-                            vehicleTypeName: homeController.selectedVehicleName.value,
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
-                          minimumSize: Size(double.infinity, 50.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: AppText(
-                          text: "BOOK NOW",
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      debugPrint(
+                        "vehicleTypeId : ${homeController.selectedVehicleIndex.value}",
+                      );
+                      print("latLng:: ${controller.currentLatLng.value}");
+                      Get.to(() => BookingScreen(
+                        selectedType: homeController.selectedType.value,
+                        vehicleTypeId: homeController.selectedItemId.value,
+                        vehicleTypeName: homeController.selectedVehicleName.value,
+                      ),)?.then((value) async{
+                        homeController.getFlatRatesList();
+                        homeController.getMyPackagesList();
+                        homeController.getErrandsList();
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.secondary,
+                      minimumSize: Size(double.infinity, 50.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-
-                    Gap(16.h),
-                  ],
+                    child: AppText(
+                      text: "BOOK NOW",
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
+
+                Gap(16.h),
               ],
             );
       }),
