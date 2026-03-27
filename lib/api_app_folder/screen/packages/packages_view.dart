@@ -5,8 +5,8 @@ import 'package:alo_ride_app/api_app_folder/screen/booking/view/booking_screen.d
 import 'package:alo_ride_app/api_app_folder/screen/packages/package_controller.dart';
 import 'package:alo_ride_app/api_app_folder/utils/payment_success_view.dart';
 import 'package:alo_ride_app/api_app_folder/utils/stripe_payment_services.dart';
+import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import '../../res/constant/app_colors.dart';
@@ -124,7 +124,7 @@ class _PackagesViewState extends State<PackagesView> {
                                             .packageList[index]
                                             .packageName ??
                                         "",
-                                    fontSize: 16.sp,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.black,
                                   ),
@@ -143,7 +143,7 @@ class _PackagesViewState extends State<PackagesView> {
                                   child: AppText(
                                     text:
                                         "${controller.packageList[index].discountPercentage ?? ""}% OFF",
-                                    fontSize: 10.sp,
+                                    fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.red,
                                   ),
@@ -151,27 +151,27 @@ class _PackagesViewState extends State<PackagesView> {
                               ],
                             ),
 
-                            SizedBox(height: 14.h),
+                            const SizedBox(height: 14),
 
                             /// Package Info
                             _packageInfoRow(
                               "Distance",
                               "${controller.packageList[index].km ?? ""} km",
                             ),
-                            SizedBox(height: 8.h),
+                            const SizedBox(height: 8),
 
                             _packageInfoRow(
                               "No of Rides",
                               controller.packageList[index].numRides.toString(),
                             ),
-                            SizedBox(height: 8.h),
+                            const SizedBox(height: 8),
                             if (controller.packageList[index].isPurchased == 1)
                               _packageInfoRow(
                                 "Remaining Rides",
                                 controller.packageList[index].ridesRemaining
                                     .toString(),
                               ),
-                            SizedBox(height: 16.h),
+                            const SizedBox(height: 16),
 
                             /// Price + Button
                             Row(
@@ -184,11 +184,11 @@ class _PackagesViewState extends State<PackagesView> {
                                     children: [
                                       AppText(
                                         text: "Price",
-                                        fontSize: 12.sp,
+                                        fontSize: 12,
                                         color: AppColors.lightTextColor,
                                       ),
 
-                                      SizedBox(height: 4),
+                                      const SizedBox(height: 4),
 
                                       Row(
                                         children: [
@@ -196,18 +196,18 @@ class _PackagesViewState extends State<PackagesView> {
                                           AppText(
                                             text:
                                                 "\$${controller.packageList[index].packagePriceTtc ?? ""}",
-                                            fontSize: 20.sp,
+                                            fontSize: 20,
                                             fontWeight: FontWeight.bold,
                                             color: AppColors.secondary,
                                           ),
 
-                                          SizedBox(width: 8),
+                                          const SizedBox(width: 8),
 
                                           /// Original Price
                                           Text(
                                             "\$${controller.packageList[index].originalPrice ?? ""}",
                                             style: TextStyle(
-                                              fontSize: 13.sp,
+                                              fontSize: 13,
                                               color: Colors.grey,
                                               decoration:
                                                   TextDecoration.lineThrough,
@@ -227,7 +227,7 @@ class _PackagesViewState extends State<PackagesView> {
                                               .isPurchased ==
                                           0
                                       ? SizedBox(
-                                          height: 42.h,
+                                          height: 42,
                                           child: AppButton(
                                             // isLoading:
                                             //     controller.isCreatePaymentIntent.value == true,
@@ -249,7 +249,7 @@ class _PackagesViewState extends State<PackagesView> {
                                           ),
                                         )
                                       : SizedBox(
-                                          height: 42.h,
+                                          height: 42,
                                           child: AppButton(
                                             // isLoading:
                                             //     controller.isCreatePaymentIntent.value == true,
@@ -376,12 +376,12 @@ class _PackagesViewState extends State<PackagesView> {
       children: [
         AppText(
           text: "${title} : ",
-          fontSize: 13.sp,
+          fontSize: 13,
           color: AppColors.lightTextColor,
         ),
         AppText(
           text: value,
-          fontSize: 13.sp,
+          fontSize: 13,
           fontWeight: FontWeight.w500,
           color: AppColors.black,
         ),

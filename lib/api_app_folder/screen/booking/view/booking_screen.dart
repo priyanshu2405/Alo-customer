@@ -7,8 +7,8 @@ import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/booking/controller/booking_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/controller/location_controller.dart';
+import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'dart:convert';
@@ -126,16 +126,19 @@ class _BookingScreenState extends State<BookingScreen> {
                     onTap: controller.onMapTap,
                   ),
                   
-                  // ✅ Dynamic Form Overlay
+                  // ✅ Dynamic Form Overlay – centered on tablets/iPads
                   Positioned(
-                    top: 80.h,
-                    left: 16,
-                    right: 16,
-                    bottom: 10, 
-                    child: SingleChildScrollView(
-                      physics: const BouncingScrollPhysics(),
-                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                      child: _buildFormContent(),
+                    top: 80,
+                    left: 0,
+                    right: 0,
+                    bottom: 10,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                        child: _buildFormContent(),
+                      ),
                     ),
                   ),
 
@@ -158,8 +161,9 @@ class _BookingScreenState extends State<BookingScreen> {
             }),
           ),
 
-          // Bottom Summary
-          if (!isKeyboardOpen) _buildBottomSummary(context),
+          // Bottom Summary – centered on tablets/iPads
+          if (!isKeyboardOpen)
+            _buildBottomSummary(context),
         ],
       ),
     );
@@ -168,7 +172,7 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget _buildBottomSummary(BuildContext context) {
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -182,25 +186,25 @@ class _BookingScreenState extends State<BookingScreen> {
               fontWeight: FontWeight.w500,
             );
           }),
-          Gap(8.h),
+          const Gap(8),
           Divider(color: AppColors.darkTextColor),
-          Gap(8.h),
+          const Gap(8),
           Obx(() => AppText(
                 text: "Fare estimate : \$${bookingController.totalFare?.value}",
                 fontSize: 12,
                 color: AppColors.lightBlackColor,
               )),
-          Gap(8.h),
+          const Gap(8),
           Obx(() => AppText(
                 text: "Distance : ${bookingController.distanceKm.value.toStringAsFixed(2)} km",
                 fontSize: 13,
                 color: AppColors.lightBlackColor,
               )),
-          Gap(8.h),
+          const Gap(8),
           Divider(color: AppColors.darkTextColor),
-          Gap(8.h),
+          const Gap(8),
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: RichText(
               text: TextSpan(
                 children: [
@@ -223,7 +227,7 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             ),
           ),
-          Gap(20.h),
+          const Gap(20),
           Obx(() {
             return bookingController.isShowButton.value == true
                 ? AppButton(
@@ -302,24 +306,24 @@ class _BookingScreenState extends State<BookingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Gap(12.h),
+                  const Gap(12),
                   Row(
                     children: [
                       _radioOption("Pickup & Drop", 0),
-                      Gap(20.w),
+                      const Gap(20),
                     ],
                   ),
-                  Gap(14.h),
+                  const Gap(14),
                   AppText(text: "Ride Later", fontSize: 16, fontWeight: FontWeight.w500),
-                  Gap(8.h),
+                  const Gap(8),
                   Row(
                     children: [
                       _dateTimeBox(type: "date", icon: Icons.calendar_month, title: "Select Date"),
-                      Gap(12.w),
+                      const Gap(12),
                       _dateTimeBox(type: "time", icon: Icons.access_time, title: "Select Time"),
                     ],
                   ),
-                  Gap(15.h),
+                  const Gap(15),
                 ],
               ),
             ),
@@ -365,7 +369,7 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             );
           }),
-          Gap(100.h), // Extra space to scroll past the SOS button
+          const Gap(100), // Extra space to scroll past the SOS button
         ],
       ),
     );
@@ -397,7 +401,7 @@ class _BookingScreenState extends State<BookingScreen> {
         child: Row(
           children: [
             Icon(isSelected ? Icons.radio_button_checked : Icons.radio_button_off, color: AppColors.black),
-            Gap(6.w),
+            const Gap(6),
             AppText(text: text, fontSize: 12),
           ],
         ),
@@ -421,11 +425,11 @@ class _BookingScreenState extends State<BookingScreen> {
             AppText(text: title, fontSize: 12, color: AppColors.textColor, fontWeight: FontWeight.w500),
             Gap(7),
             Container(
-              height: 45.h,
-              padding: EdgeInsets.symmetric(horizontal: 10.w),
+              height: 45,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
               decoration: BoxDecoration(
                 border: Border.all(color: AppColors.borderColor),
-                borderRadius: BorderRadius.circular(8.r),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
@@ -521,7 +525,7 @@ class _BookingScreenState extends State<BookingScreen> {
         child: Column(
           children: [
             Container(
-              padding: EdgeInsets.all(16.w),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -529,16 +533,16 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
               child: Column(
                 children: [
-                  Container(width: 40.w, height: 4.h, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-                  Gap(16.h),
+                  Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                  const Gap(16),
                   Row(
                     children: [
                       Icon(isPickup ? Icons.circle : Icons.location_on, color: AppColors.pinkColor, size: 20),
-                      Gap(8.w),
+                      const Gap(8),
                       AppText(text: isPickup ? "Select Pickup Location" : "Select Drop-off Location", fontSize: 16, fontWeight: FontWeight.w600),
                     ],
                   ),
-                  Gap(12.h),
+                  const Gap(12),
                   TextField(
                     controller: controller.searchController,
                     autofocus: true,
@@ -573,7 +577,7 @@ class _BookingScreenState extends State<BookingScreen> {
             Expanded(
               child: Obx(() {
                 if (!controller.showPredictions.value || controller.predictions.isEmpty) {
-                  return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.location_on_outlined, size: 64, color: Colors.grey), Gap(16.h), const AppText(text: "Search for a location", fontSize: 16, color: AppColors.greyColor)]));
+                  return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.location_on_outlined, size: 64, color: Colors.grey), const Gap(16), const AppText(text: "Search for a location", fontSize: 16, color: AppColors.greyColor)]));
                 }
                 return ListView.separated(
                   itemCount: controller.predictions.length,

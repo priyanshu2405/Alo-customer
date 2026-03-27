@@ -3,7 +3,6 @@ import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/controller/home_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/profile/controller/profile_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_button.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
@@ -26,20 +25,20 @@ class WelcomeDialog extends StatelessWidget {
       color: Colors.transparent,
       child: Center(
         child: SingleChildScrollView( // ✅ Prevent overflow
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
-            width: 1.sw,
-            padding: EdgeInsets.all(20.w),
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12.r),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Form(
               key: controller.formKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Gap(20.h),
+                  const Gap(20),
                   AppText(
                     text: "Welcome to Alo Drive!",
                     fontSize: 18,
@@ -47,7 +46,7 @@ class WelcomeDialog extends StatelessWidget {
                     color: AppColors.textColor,
                   ),
 
-                  Gap(6.h),
+                  const Gap(6),
 
                   AppText(
                     text: "Please introduce yourself",
@@ -55,7 +54,7 @@ class WelcomeDialog extends StatelessWidget {
                     color: AppColors.darkGrayColor,
                   ),
 
-                  Gap(16.h),
+                  const Gap(16),
 
                   /// 🔹 Name Input
                   CommonTextField(
@@ -73,7 +72,7 @@ class WelcomeDialog extends StatelessWidget {
                   ),
 
 
-                  Gap(20.h),
+                  const Gap(20),
 
                   /// 🔹 Submit Button
                   AppButton(
@@ -88,7 +87,7 @@ class WelcomeDialog extends StatelessWidget {
                       }
                     },
                   ),
-                  Gap(20.h),
+                  const Gap(20),
                 ],
               ),
             ),
@@ -122,15 +121,16 @@ class AdsPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
     return Material(
       color: Colors.black.withOpacity(0.4), // 🔹 dark overlay
       child: Center(
         child: Container(
-          width: 1.sw - 40.w,
+          width: screenWidth - 40,
           decoration: BoxDecoration(
-            color: Color(0xffFAE5C2),
-            borderRadius: BorderRadius.circular(6.r),
-            border: Border.all(color: AppColors.black,width: 2)
+            color: const Color(0xffFAE5C2),
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: AppColors.black, width: 2),
           ),
           child: Stack(
             children: [
@@ -138,15 +138,15 @@ class AdsPopup extends StatelessWidget {
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Gap(20),
+                  const Gap(20),
                   /// Header / Logo Area
                   AppImage(
-                    height: 122.h,
+                    height: 122,
                     image: AppImages.bannerLogo,
                     imageType: ImageType.asset,
                   ),
 
-                  Gap(10),
+                  const Gap(10),
                   /// Offer Text
                   Column(
                     children: [
@@ -176,7 +176,7 @@ class AdsPopup extends StatelessWidget {
                     ],
                   ),
 
-                  Gap(30),
+                  const Gap(30),
 
                   /// Food Images
                   AppImage(
@@ -188,12 +188,12 @@ class AdsPopup extends StatelessWidget {
 
               /// 🔹 Close Button
               Positioned(
-                right: 6.w,
-                top: 6.h,
+                right: 6,
+                top: 6,
                 child: GestureDetector(
                   onTap: onClose,
                   child: Container(
-                    padding: EdgeInsets.all(6.w),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
@@ -212,7 +212,7 @@ class AdsPopup extends StatelessWidget {
 
   Widget _foodImage(String image) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(8.r),
+      borderRadius: BorderRadius.circular(8),
       child: AppImage(
         image: image,
         imageType: ImageType.asset,

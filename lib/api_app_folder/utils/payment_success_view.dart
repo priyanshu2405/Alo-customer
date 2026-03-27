@@ -6,7 +6,6 @@ import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/view/home_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 
@@ -50,7 +49,7 @@ class PaymentSuccessView extends StatelessWidget {
             Gap(58),
             AppText(
               text: "Subscription ID: #$transactionId ",
-              fontSize: 14.sp,
+              fontSize: 14,
               color: AppColors.black,
               fontWeight: FontWeight.w400,
             ),
@@ -73,7 +72,7 @@ class PaymentSuccessView extends StatelessWidget {
             Gap(42),
             AppText(
               text: "Payment Completed Successfully",
-              fontSize: 14.sp,
+              fontSize: 14,
               color: AppColors.black,
               fontWeight: FontWeight.w500,
             ),
@@ -82,7 +81,7 @@ class PaymentSuccessView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: AppText(
                 text: message ?? "",
-                fontSize: 14.sp,
+                fontSize: 14,
                 color: AppColors.black,
                 textAlign: TextAlign.center,
                 fontWeight: FontWeight.w400,

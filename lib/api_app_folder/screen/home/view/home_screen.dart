@@ -7,9 +7,7 @@ import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/booking/view/booking_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/controller/home_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/controller/location_controller.dart';
-import 'package:alo_ride_app/api_app_folder/screen/home/view/welcome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -120,15 +118,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           onTap: controller.onMapTap,
                         ),
                         Positioned(
-                          top: 90.h,
-                          left: 16.w,
-                          right: 16.w,
+                          top: 90,
+                          left: 16,
+                          right: 16,
                           child: InkWell(
                             onTap: () {
                               _showLocationSearchSheet(context);
                             },
                             child: Container(
-                              padding: EdgeInsets.all(12.w),
+                              padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
@@ -148,12 +146,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     CrossAxisAlignment.start,
                                 children: [
                                   AppImage(
-                                    height: 20.h,
-                                    width: 20.w,
+                                    height: 20,
+                                    width: 20,
                                     image: AppImages.recordCircleFill,
                                     imageType: ImageType.svgAsset,
                                   ),
-                                  Gap(10.w),
+                                  const Gap(10),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
@@ -161,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         AppText(text: "From", fontSize: 15),
-                                        Gap(4.h),
+                                        const Gap(4),
                                         Row(
                                           children: [
                                             Expanded(
@@ -220,17 +218,17 @@ class _HomeScreenState extends State<HomeScreen> {
                          crossAxisAlignment: CrossAxisAlignment.start,
                          mainAxisSize: MainAxisSize.min,
                          children: [
-                           Gap(20.h),
+                           const Gap(20),
                            // Title
                            Padding(
-                             padding: EdgeInsets.symmetric(horizontal: 16.w),
+                             padding: const EdgeInsets.symmetric(horizontal: 16),
                              child: AppText(
                                text: "Flats Rates",
                                fontSize: 18,
                                fontWeight: FontWeight.bold,
                              ),
                            ),
-                           Gap(16.h),
+                           const Gap(16),
                    
                            // Vehicle Options
                            Obx(() {
@@ -242,7 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                    
                              return SingleChildScrollView(
                                scrollDirection: Axis.horizontal,
-                               padding: EdgeInsets.symmetric(horizontal: 12.w),
+                               padding: const EdgeInsets.symmetric(horizontal: 12),
                                child: Row(
                                  children: List.generate(vehicles.length, (index) {
                                    final vehicle = vehicles[index];
@@ -250,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                    bool isSelected =
                                        homeController.selectedItemId.value == vehicle.id &&
                                            homeController.selectedType.value == 1;
-                   
+
                                    return GestureDetector(
                                      onTap: () {
                                        if (vehicle.id != null) {
@@ -260,17 +258,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                        }
                                      },
                                      child: Container(
-                                       width: 90.w,
-                                       margin: EdgeInsets.symmetric(horizontal: 6.w),
-                                       padding: EdgeInsets.symmetric(
-                                         horizontal: 8.w,
-                                         vertical: 10.h,
+                                       width: 90,
+                                       margin: const EdgeInsets.symmetric(horizontal: 6),
+                                       padding: const EdgeInsets.symmetric(
+                                         horizontal: 8,
+                                         vertical: 10,
                                        ),
                                        decoration: BoxDecoration(
                                          color: isSelected
                                              ? AppColors.secondary.withOpacity(0.07)
                                              : AppColors.white,
-                                         borderRadius: BorderRadius.circular(12.r),
+                                         borderRadius: BorderRadius.circular(12),
                                          border: Border.all(
                                            color: isSelected
                                                ? AppColors.secondary
@@ -283,16 +281,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                            AppImage(
                                              image: vehicle.image ?? "",
                                              imageType: ImageType.network,
-                                             height: 45.h,
-                                             width: 45.w,
+                                             height: 45,
+                                             width: 45,
                                              fit: BoxFit.contain,
                                            ),
-                   
-                                           SizedBox(height: 6.h),
-                   
+
+                                           const SizedBox(height: 6),
+
                                            AppText(
                                              text: vehicle.rideType ?? "",
-                                             fontSize: 12.sp,
+                                             fontSize: 12,
                                              fontWeight:
                                              isSelected ? FontWeight.bold : FontWeight.normal,
                                              color: AppColors.black,
@@ -301,23 +299,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                              overflow: TextOverflow.ellipsis,
                                            ),
                    
-                                           SizedBox(height: 3.h),
-                   
+                                           const SizedBox(height: 3),
+
                                            AppText(
                                              text: "Distance : ${vehicle.distanceRule ?? "-"}",
-                                             fontSize: 10.sp,
+                                             fontSize: 10,
                                              color: AppColors.lightTextColor,
                                              textAlign: TextAlign.center,
                                              overflow: TextOverflow.visible,
                                            ),
                    
-                                           SizedBox(height: 3.h),
-                   
+                                           const SizedBox(height: 3),
+
                                            AppText(
                                              text: vehicle.price != null
                                                  ? "Price : \$${vehicle.price}"
                                                  : "Price : -",
-                                             fontSize: 10.sp,
+                                             fontSize: 10,
                                              color: AppColors.lightTextColor,
                                              textAlign: TextAlign.center,
                                            ),
@@ -545,29 +543,29 @@ class _HomeScreenState extends State<HomeScreen> {
                          mainAxisSize: MainAxisSize.min,
                          mainAxisAlignment: MainAxisAlignment.start,
                          children: [
-                           Gap(20.h),
+                           const Gap(20),
                            // Title
                            Padding(
-                             padding: EdgeInsets.symmetric(horizontal: 16.w),
+                             padding: const EdgeInsets.symmetric(horizontal: 16),
                              child: AppText(
                                text: "Choose the Errands",
                                fontSize: 18,
                                fontWeight: FontWeight.bold,
                              ),
                            ),
-                           Gap(16.h),
-                   
+                           const Gap(16),
+
                            // Vehicle Options
                            Obx(() {
                              final vehicles = homeController.errandsList;
-                   
+
                              if (vehicles.isEmpty) {
                                return const SizedBox();
                              }
-                   
+
                              return SingleChildScrollView(
                                scrollDirection: Axis.horizontal,
-                               padding: EdgeInsets.symmetric(horizontal: 12.w),
+                               padding: const EdgeInsets.symmetric(horizontal: 12),
                                child: Row(
                                  crossAxisAlignment: CrossAxisAlignment.start,
                                  mainAxisAlignment: MainAxisAlignment.start,
@@ -577,7 +575,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                    bool isSelected =
                                        homeController.selectedItemId.value == vehicle.id &&
                                            homeController.selectedType.value == 3;
-                   
+
                                    return GestureDetector(
                                      onTap: () {
                                        if (vehicle.id != null) {
@@ -587,17 +585,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                        }
                                      },
                                      child: Container(
-                                       width: 90.w,
-                                       margin: EdgeInsets.symmetric(horizontal: 6.w),
-                                       padding: EdgeInsets.symmetric(
-                                         horizontal: 8.w,
-                                         vertical: 10.h,
+                                       width: 90,
+                                       margin: const EdgeInsets.symmetric(horizontal: 6),
+                                       padding: const EdgeInsets.symmetric(
+                                         horizontal: 8,
+                                         vertical: 10,
                                        ),
                                        decoration: BoxDecoration(
                                          color: isSelected
                                              ? AppColors.secondary.withOpacity(0.07)
                                              : AppColors.white,
-                                         borderRadius: BorderRadius.circular(12.r),
+                                         borderRadius: BorderRadius.circular(12),
                                          border: Border.all(
                                            color: isSelected
                                                ? AppColors.secondary
@@ -611,16 +609,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                            AppImage(
                                              image: vehicle.image ?? "",
                                              imageType: ImageType.network,
-                                             height: 45.h,
-                                             width: 45.w,
+                                             height: 45,
+                                             width: 45,
                                              fit: BoxFit.contain,
                                            ),
-                   
-                                           SizedBox(height: 6.h),
-                   
+
+                                           const SizedBox(height: 6),
+
                                            AppText(
                                              text: vehicle.name ?? "",
-                                             fontSize: 12.sp,
+                                             fontSize: 12,
                                              fontWeight:
                                              isSelected ? FontWeight.bold : FontWeight.normal,
                                              color: AppColors.black,
@@ -629,30 +627,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                              overflow: TextOverflow.ellipsis,
                                            ),
                    
-                                           SizedBox(height: 3.h),
-                   
+                                           const SizedBox(height: 3),
+
                                            AppText(
                                              text: "Distance : ${vehicle.distanceLimit ?? "-"}",
-                                             fontSize: 10.sp,
+                                             fontSize: 10,
                                              color: AppColors.lightTextColor,
                                              textAlign: TextAlign.center,
                                              overflow: TextOverflow.visible,
                                            ),
                                            AppText(
                                              text: "Duration Minutes : ${vehicle.durationMinutes ?? "-"}",
-                                             fontSize: 10.sp,
+                                             fontSize: 10,
                                              color: AppColors.lightTextColor,
                                              textAlign: TextAlign.center,
                                              overflow: TextOverflow.visible,
                                            ),
                    
-                                           SizedBox(height: 3.h),
-                   
+                                           const SizedBox(height: 3),
+
                                            AppText(
                                              text: vehicle.price != null
                                                  ? "Price : \$${vehicle.price}"
                                                  : "Price : -",
-                                             fontSize: 10.sp,
+                                             fontSize: 10,
                                              color: AppColors.lightTextColor,
                                              textAlign: TextAlign.center,
                                            ),
@@ -668,38 +666,14 @@ class _HomeScreenState extends State<HomeScreen> {
                        ),
                      ],
                    ),
+                   ),
                  ),
-               ),
-                Gap(16.h),
+                const Gap(16),
 
-                // Book Now Button
-                // Padding(
-                //   padding: EdgeInsets.symmetric(horizontal: 16.w),
-                //   child: ElevatedButton(
-                //     onPressed: () {
-                //       // Get.to(()=>BookingScreen());
-                //       debugPrint("vehicleTypeId : ${homeController.selectedVehicleIndex.value}");
-                //       Get.to(() => BookingScreen(vehicleTypeId: homeController.selectedVehicleIndex.value));
-                //     },
-                //     style: ElevatedButton.styleFrom(
-                //       backgroundColor: AppColors.secondary,
-                //       minimumSize: Size(double.infinity, 50.h),
-                //       shape: RoundedRectangleBorder(
-                //         borderRadius: BorderRadius.circular(12),
-                //       ),
-                //     ),
-                //     child: AppText(
-                //       text: "BOOK NOW",
-                //       color: Colors.white,
-                //       fontSize: 16,
-                //       fontWeight: FontWeight.bold,
-                //     ),
-                //   ),
-                // ),
                 //Text(homeController.selectedItemId.value.toString()),
                 if(homeController.selectedItemId.value != -1)
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ElevatedButton(
                     onPressed: () {
                       if (homeController.selectedItemId.value == -1) {
@@ -721,7 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         selectedType: homeController.selectedType.value,
                         vehicleTypeId: homeController.selectedItemId.value,
                         vehicleTypeName: homeController.selectedVehicleName.value,
-                      ),)?.then((value) async{
+                      ))?.then((value) async {
                         homeController.getFlatRatesList();
                         homeController.getMyPackagesList();
                         homeController.getErrandsList();
@@ -729,7 +703,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.secondary,
-                      minimumSize: Size(double.infinity, 50.h),
+                      minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -743,7 +717,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
 
-                Gap(16.h),
+                const Gap(16),
               ],
             );
       }),
@@ -765,15 +739,15 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             // Header
             Container(
-              padding: EdgeInsets.all(16.w),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 4,
                     color: Colors.black.withOpacity(0.05),
-                    offset: Offset(0, 2),
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -781,14 +755,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   // Handle bar
                   Container(
-                    width: 40.w,
-                    height: 4.h,
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
                       color: Colors.grey[300],
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  Gap(16.h),
+                  const Gap(16),
                   // Search Field
                   TextField(
                     controller: controller.searchController,
@@ -872,7 +846,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           size: 64,
                           color: Colors.grey[300],
                         ),
-                        Gap(16.h),
+                        const Gap(16),
                         AppText(
                           text: "Search for a location",
                           fontSize: 16,

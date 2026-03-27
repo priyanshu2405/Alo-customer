@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 enum ImageType { network, asset, svgNetwork, svgAsset }
@@ -24,16 +23,13 @@ class AppImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final h = height?.h;
-    final w = width?.w;
-
     switch (imageType) {
     /// 🔹 Network Image (PNG/JPG)
       case ImageType.network:
         return Image.network(
           image,
-          height: h,
-          width: w,
+          height: height,
+          width: width,
           fit: fit,
           color: color,
           loadingBuilder: (context, child, loadingProgress) {
@@ -49,8 +45,8 @@ class AppImage extends StatelessWidget {
       case ImageType.asset:
         return Image.asset(
           image,
-          height: h,
-          width: w,
+          height: height,
+          width: width,
           fit: fit,
           color: color,
         );
@@ -59,8 +55,8 @@ class AppImage extends StatelessWidget {
       case ImageType.svgAsset:
         return SvgPicture.asset(
           image,
-          height: h,
-          width: w,
+          height: height,
+          width: width,
           fit: fit,
           colorFilter:
           color != null ? ColorFilter.mode(color!, BlendMode.srcIn) : null,
@@ -72,8 +68,8 @@ class AppImage extends StatelessWidget {
       case ImageType.svgNetwork:
         return SvgPicture.network(
           image,
-          height: h,
-          width: w,
+          height: height,
+          width: width,
           fit: fit,
           colorFilter:
           color != null ? ColorFilter.mode(color!, BlendMode.srcIn) : null,

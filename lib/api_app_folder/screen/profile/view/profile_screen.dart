@@ -10,7 +10,6 @@ import 'package:alo_ride_app/api_app_folder/screen/profile/view/common_profile_d
 import 'package:alo_ride_app/api_app_folder/services/token_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 
@@ -113,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     Gap(10),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.h),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -165,8 +164,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 avatarWidget = ClipOval(
                                   child: Image.file(
                                     profileController.profileImageFile.value!,
-                                    width: 90.w,
-                                    height: 90.w,
+                                    width: 90,
+                                    height: 90,
                                     fit: BoxFit.cover,
                                   ),
                                 );
@@ -177,16 +176,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 avatarWidget = ClipOval(
                                   child: Image.network(
                                     profileController.profileImageUrl.value,
-                                    width: 90.w,
-                                    height: 90.w,
+                                    width: 90,
+                                    height: 90,
                                     fit: BoxFit.cover,
 
                                     /// 🔄 LOADER
                                     loadingBuilder: (context, child, loadingProgress) {
                                       if (loadingProgress == null) return child;
                                       return SizedBox(
-                                        width: 90.w,
-                                        height: 90.w,
+                                        width: 90,
+                                        height: 90,
                                         child: const Center(
                                           child: CircularProgressIndicator(strokeWidth: 2),
                                         ),
@@ -197,8 +196,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     errorBuilder: (context, error, stackTrace) {
                                       return Image.network(
                                         "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png",
-                                        width: 90.w,
-                                        height: 90.w,
+                                        width: 90,
+                                        height: 90,
                                         fit: BoxFit.cover,
                                       );
                                     },
@@ -211,8 +210,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 avatarWidget = ClipOval(
                                   child: Image.network(
                                     "https://static.vecteezy.com/system/resources/previews/019/879/186/non_2x/user-icon-on-transparent-background-free-png.png",
-                                    width: 90.w,
-                                    height: 90.w,
+                                    width: 90,
+                                    height: 90,
                                     fit: BoxFit.cover,
                                   ),
                                 );
@@ -221,7 +220,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               return Stack(
                                 children: [
                                   Container(
-                                    padding: EdgeInsets.all(2.w),
+                                    padding: const EdgeInsets.all(2),
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
@@ -240,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       child: InkWell(
                                         onTap: profileController.showImagePicker,
                                         child: Container(
-                                          padding: EdgeInsets.all(6.w),
+                                          padding: const EdgeInsets.all(6),
                                           decoration: const BoxDecoration(
                                             color: AppColors.secondary,
                                             shape: BoxShape.circle,
@@ -257,7 +256,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               );
                             }),
 
-                            Gap(30.h),
+                            const Gap(30),
 
                             AppText(
                               text: profileController.nameController.text.isNotEmpty
@@ -270,7 +269,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
 
-                        Gap(50.h),
+                        const Gap(50),
                           CommonProfileData(
                             icon: AppImages.userIcon,
                             title: "Name",

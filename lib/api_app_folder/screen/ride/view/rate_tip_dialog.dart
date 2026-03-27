@@ -6,7 +6,6 @@ import 'package:alo_ride_app/api_app_folder/screen/ride/controller/ride_complete
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/payment_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 
@@ -27,15 +26,16 @@ class _RateTipDialogState extends State<RateTipDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
     return Material(
       color: Colors.black.withOpacity(0.4),
       child: Center(
         child: Container(
-          width: 1.sw - 40.w,
-          padding: EdgeInsets.all(20.w),
+          width: screenWidth - 40,
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -43,11 +43,11 @@ class _RateTipDialogState extends State<RateTipDialog> {
               Align(
                 alignment: Alignment.topRight,
                 child: IconButton(
-                    visualDensity: VisualDensity(
+                    visualDensity: const VisualDensity(
                       vertical: VisualDensity.minimumDensity,
                       horizontal: VisualDensity.minimumDensity,
                     ),
-                    icon: Icon(Icons.close), onPressed: () {
+                    icon: const Icon(Icons.close), onPressed: () {
                   Get.back();
                 }),
               ),
@@ -57,7 +57,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
                 fontWeight: FontWeight.bold,
                 color: AppColors.textColor,
               ),
-              Gap(12.h),
+              const Gap(12),
 
               AppText(
                 text: "Add a tip for Driver",
@@ -65,7 +65,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
                 fontWeight: FontWeight.w600,
                 color: AppColors.darkGrayColor,
               ),
-              Gap(6.h),
+              const Gap(6),
               AppText(
                 text: "Your trip was \$${widget.amount}",
                 fontSize: 16,
@@ -73,11 +73,11 @@ class _RateTipDialogState extends State<RateTipDialog> {
                 fontWeight: FontWeight.w500,
               ),
 
-              Gap(14.h),
+              const Gap(14),
 
               /// TIP BUTTONS
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40.h),
+                padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Column(
                   children: [
                     Row(
@@ -85,7 +85,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
                       children: [_tip(1), _tip(3), _tip(5)],
                     ),
 
-                    Gap(12.h),
+                    const Gap(12),
 
                     CommonTextField(
                       controller: rideCompletedController.amountCtrl,
@@ -95,9 +95,9 @@ class _RateTipDialogState extends State<RateTipDialog> {
                   ],
                 ),
               ),
-              Gap(20),
+              const Gap(20),
               Divider(color: AppColors.darkTextColor),
-              Gap(10),
+              const Gap(10),
 
               AppText(
                 text: "Rate your trip",
@@ -105,7 +105,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
                 fontWeight: FontWeight.bold,
                 color: AppColors.textColor,
               ),
-              Gap(6.h),
+              const Gap(6),
 
               AppText(
                 text: "Thursday to 2824 Ellwood Dr sw",
@@ -114,7 +114,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
                 fontWeight: FontWeight.w500,
               ),
 
-              Gap(12.h),
+              const Gap(12),
 
               /// STARS
               Obx(() {
@@ -133,7 +133,7 @@ class _RateTipDialogState extends State<RateTipDialog> {
                 );
               }),
 
-              Gap(20.h),
+              const Gap(20),
               Obx(() {
                 return AppButton(
                   isLoading: rideCompletedController.isTipAmount.value,
@@ -149,46 +149,13 @@ class _RateTipDialogState extends State<RateTipDialog> {
                   },
                 );
               }),
-              Gap(10.h),
+              const Gap(10),
             ],
           ),
         ),
       ),
     );
   }
-
-  // Widget _tip(String value) {
-  //   return Obx(() {
-  //     final bool isSelected =
-  //         rideCompletedController.selectedTip.value == value;
-  //
-  //     return GestureDetector(
-  //       onTap: () {
-  //         rideCompletedController.onTipSelected(value);
-  //       },
-  //       child: Container(
-  //         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-  //         decoration: BoxDecoration(
-  //           borderRadius: BorderRadius.circular(8.r),
-  //           border: Border.all(
-  //             color: isSelected
-  //                 ? AppColors.secondary
-  //                 : AppColors.borderColor,
-  //             width: 1.5,
-  //           ),
-  //           color: isSelected
-  //               ? AppColors.secondary.withOpacity(0.1)
-  //               : Colors.transparent,
-  //         ),
-  //         child: AppText(
-  //           text: value,
-  //           fontWeight: FontWeight.w600,
-  //           color: isSelected ? AppColors.secondary : AppColors.black,
-  //         ),
-  //       ),
-  //     );
-  //   });
-  // }
 
   Widget _tip(double value) {
     return Obx(() {
@@ -200,9 +167,9 @@ class _RateTipDialogState extends State<RateTipDialog> {
           rideCompletedController.onTipSelected(value);
         },
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.r),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isSelected ? AppColors.secondary : AppColors.borderColor,
               width: 1.5,

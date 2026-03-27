@@ -1,6 +1,5 @@
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -30,7 +29,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(56.h);
+  Size get preferredSize => const Size.fromHeight(56);
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +41,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: leading ??
           (showBack
               ? IconButton(
-            icon: Icon(Icons.arrow_back_ios_new, size: 18.sp),
+            icon: const Icon(Icons.arrow_back_ios_new, size: 18),
             color: titleColor,
             onPressed: onBack ?? () => Navigator.pop(context),
           )
@@ -52,7 +51,7 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
               ? Text(
             title!,
             style: TextStyle(
-              fontSize: 17.sp,
+              fontSize: 17,
               fontWeight: FontWeight.w600,
               color: titleColor,
             ),

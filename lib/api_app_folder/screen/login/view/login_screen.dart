@@ -3,10 +3,8 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_button.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/login/controller/login_controller.dart';
-import 'package:alo_ride_app/api_app_folder/screen/login/view/otp_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
 import 'package:gap/gap.dart';
@@ -20,183 +18,151 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   final LoginController loginController = Get.put(LoginController());
-
 
   @override
   Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).padding.bottom;
+
     return WillPopScope(
       onWillPop: () async {
-        SystemNavigator.pop(); // 🔴 CLOSE APP
-        return false; // prevent navigation stack pop
+        SystemNavigator.pop();
+        return false;
       },
       child: Scaffold(
         backgroundColor: AppColors.white,
-        appBar: AppAppBar(
-        showBack: false,
-        ),
+        appBar: AppAppBar(showBack: false),
         body: SingleChildScrollView(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Gap(MediaQuery.of(context).size.height * 0.08),
-                AppText(
-                  text: "Log in",
-                  fontSize: 16,
-                  color: AppColors.secondary,
-                  fontWeight: FontWeight.w500,
-                ),
-                Gap(5),
-                /// 🔹 Illustration
-                Center(
-                  child: AppImage(
-                    image: AppImages.loginLogo,
-                    imageType: ImageType.svgAsset,
-                    height: 210,
-                    fit: BoxFit.contain,
-                  ),
-                ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Gap(12),
 
-                Gap(10.h),
+                        AppText(
+                          text: "Log in",
+                          fontSize: 16,
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        const Gap(5),
 
-                /// 🔹 Title
-                AppText(
-                  text: "Join us via Phone number",
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textColor,
-                ),
-
-                Gap(8.h),
-
-                /// 🔹 Subtitle
-                AppText(
-                  text: "We’ll text a code to verify your phone",
-                  fontSize: 14,
-                  color: AppColors.darkGrayColor,
-                ),
-
-                Gap(25.h),
-
-                /// 🔹 Phone Input
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w),
-                  height: 50.h,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.r),
-                    border: Border.all(color: AppColors.borderColor),
-                  ),
-                  child: Row(
-                    children: [
-                      /// Country Code
-                     InkWell(
-                       onTap: loginController.pickCountry,
-                       child: Row(
-                         children: [
-                           Obx(() {
-                             return AppText(
-                               text: "+${loginController.countryCode.value?.phoneCode ?? ""}",
-                               fontSize: 16,
-                               fontWeight: FontWeight.w500,
-                             );
-                           }),
-                           Gap(8.w),
-                           Icon(Icons.keyboard_arrow_down),
-                           Gap(10.w),
-                         ],
-                       ),
-                     ),
-
-                      /// Divider
-                      Container(
-                        width: 1.w,
-                        height: 30.h,
-                        color: AppColors.black,
-                      ),
-                      Gap(10.w),
-
-                      /// Phone TextField
-                      // Expanded(
-                      //   child: TextFormField(
-                      //     keyboardType: TextInputType.phone,
-                      //     controller: loginController.phoneNumberCtrl,
-                      //     validator: (value) {
-                      //       if (value == null || value.trim().isEmpty) {
-                      //         return "Phone number is required";
-                      //       } else if (value.length < 8 || value.length > 15) {
-                      //         return "Enter a valid phone number";
-                      //       }
-                      //       return null;
-                      //     },
-                      //     decoration: const InputDecoration(
-                      //
-                      //       border: InputBorder.none,
-                      //       hintText: "",
-                      //     ),
-                      //   ),
-                      // ),
-                      Expanded(
-                        child: TextFormField(
-                          controller: loginController.phoneNumberCtrl,
-                          textInputAction: TextInputAction.done,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly, // ✅ Only numbers
-                          ],
-                          // keyboardType: TextInputType.phone,
-                          maxLength: 13,
-                          onChanged: (_) => loginController.validatePhone(),
-                          decoration: const InputDecoration(
-                            counterText: '',
-                            border: InputBorder.none,
-                            hintText: "Phone number",
+                        /// Illustration
+                        Center(
+                          child: AppImage(
+                            image: AppImages.loginLogo,
+                            imageType: ImageType.svgAsset,
+                            height: 210,
+                            fit: BoxFit.contain,
                           ),
                         ),
-                      ),
 
+                        const Gap(10),
 
+                        /// Title
+                        AppText(
+                          text: "Join us via Phone number",
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textColor,
+                        ),
 
+                        const Gap(8),
 
-                    ],
-                  ),
-                ),
+                        /// Subtitle
+                        AppText(
+                          text: "We'll text a code to verify your phone",
+                          fontSize: 14,
+                          color: AppColors.darkGrayColor,
+                        ),
 
-                Obx(() {
-                  if (loginController.phoneError.value.isEmpty) {
-                    return const SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: EdgeInsets.only(top: 6.h),
-                    child: AppText(
-                      text: loginController.phoneError.value,
-                      color: Colors.red,
-                      fontSize: 12,
+                        const Gap(25),
+
+                        /// Phone Input
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.borderColor),
+                          ),
+                          child: Row(
+                            children: [
+                              /// Country Code
+                              InkWell(
+                                onTap: loginController.pickCountry,
+                                child: Row(
+                                  children: [
+                                    Obx(() {
+                                      return AppText(
+                                        text:
+                                            "+${loginController.countryCode.value?.phoneCode ?? ""}",
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      );
+                                    }),
+                                    const Gap(8),
+                                    const Icon(Icons.keyboard_arrow_down),
+                                    const Gap(10),
+                                  ],
+                                ),
+                              ),
+
+                              /// Divider
+                              Container(
+                                width: 1,
+                                height: 30,
+                                color: AppColors.black,
+                              ),
+                              const Gap(10),
+
+                              /// Phone TextField
+                              Expanded(
+                                child: TextFormField(
+                                  controller: loginController.phoneNumberCtrl,
+                                  textInputAction: TextInputAction.done,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  maxLength: 13,
+                                  onChanged: (_) =>
+                                      loginController.validatePhone(),
+                                  decoration: const InputDecoration(
+                                    counterText: '',
+                                    border: InputBorder.none,
+                                    hintText: "Phone number",
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        Obx(() {
+                          if (loginController.phoneError.value.isEmpty) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: AppText(
+                              text: loginController.phoneError.value,
+                              color: Colors.red,
+                              fontSize: 12,
+                            ),
+                          );
+                        }),
+
+                        const Gap(20),
+                      ],
                     ),
-                  );
-                }),
-
-              ],
-            ),
-          ),
         ),
         bottomNavigationBar: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Obx(() {
-            return  AppButton(
-              isLoading: loginController.isLoading.value,
-              text: "NEXT",
-              onTap: () {
-                // loginController.validatePhone();
-
-                // if (loginController.isPhoneValid.value) {
-                  loginController.loginApi();
-
-                // }
-              },
-            );
-          },),
+          padding: EdgeInsets.fromLTRB(20, 12, 20, bottom + 20),
+          child: Obx(() => AppButton(
+                isLoading: loginController.isLoading.value,
+                text: "NEXT",
+                onTap: () => loginController.loginApi(),
+              )),
         ),
       ),
     );

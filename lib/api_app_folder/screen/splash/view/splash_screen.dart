@@ -2,7 +2,6 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/splash/controller/splash_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -18,9 +17,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:  SizedBox(
-        width: 1.sw,
-        height: 1.sh,
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
         child: AppImage(
           image: AppImages.splashBg,
           imageType: ImageType.asset,

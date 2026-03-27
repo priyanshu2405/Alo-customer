@@ -10,7 +10,6 @@ import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_c
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -325,7 +324,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                     /// Driver Info
                     if(myRideController.getRideDetailsModel.value.data?.ride?.driver != null)...[
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.h),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: InkWell(
                         onTap: () {
                           Get.to(() => RideCompletedScreen(bookingId: widget.bookingId,));
@@ -335,8 +334,8 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                           children: [
                             ClipOval(
                               child: SizedBox(
-                                width: 60.r,
-                                height: 60.r,
+                                width: 60,
+                                height: 60,
                                 child: Image.network(
                                   "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.profilePhoto}",
                                   fit: BoxFit.cover,
@@ -369,7 +368,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                 ),
                               ),
                             ),
-                            Gap(12.w),
+                            const Gap(12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment:
@@ -387,7 +386,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                     fontSize: 12,
                                     color: AppColors.lightBlackColor,
                                   ),
-                                  Gap(12.h),
+                                  const Gap(12),
 
                                   /// Vehicle Info
                                   // Row(
@@ -421,24 +420,24 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                     children: [
                                       Container(
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(6.r),
+                                          borderRadius: BorderRadius.circular(6),
                                           border: Border.all(
                                             color: AppColors.greyColor,
                                           ),
                                         ),
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(4.r),
+                                          borderRadius: BorderRadius.circular(4),
                                           child: numberPlateUrl != null && numberPlateUrl.isNotEmpty
                                               ? Image.network(
                                             numberPlateUrl,
-                                            height: 29.h,
-                                            width: 57.w,
+                                            height: 29,
+                                            width: 57,
                                             fit: BoxFit.cover,
                                             loadingBuilder: (context, child, loadingProgress) {
                                               if (loadingProgress == null) return child;
-                                              return SizedBox(
-                                                height: 20.h,
-                                                width: 40.w,
+                                              return const SizedBox(
+                                                height: 20,
+                                                width: 40,
                                                 child: Center(
                                                   child: CircularProgressIndicator(strokeWidth: 2),
                                                 ),
@@ -457,7 +456,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                           ),
                                         ),
                                       ),
-                                      Gap(10.w),
+                                      const Gap(10),
 
                                       AppText(
                                         text:
@@ -484,14 +483,14 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                       ),
                     ),
 
-                    Gap(17.h),
+                    const Gap(17),
                     Divider(color: AppColors.darkTextColor),
-                    Gap(17.h),
+                    const Gap(17),
                     ],
 
                     /// Buttons
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.h),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -503,7 +502,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                               onTap: () => AppCallHelper.makeCall("${myRideController.getRideDetailsModel.value.data?.ride?.driver?.mobile}"),
                             ),
                           ),
-                          Gap(12.w),
+                          const Gap(12),
                           ],
                           if(myRideController.rideStatus.value != "pickup_done" && myRideController.rideStatus.value != "completed")
                           Expanded(
@@ -517,7 +516,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                         ],
                       ),
                     ),
-                    Gap(20.h),
+                    const Gap(20),
                   ],
                 ),
               ],

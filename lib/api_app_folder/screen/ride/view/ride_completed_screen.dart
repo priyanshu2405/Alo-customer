@@ -9,8 +9,8 @@ import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/get_ride_detai
 import 'package:alo_ride_app/api_app_folder/screen/ride/controller/ride_completed_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/payment_details_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/rate_tip_dialog.dart';
+import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -62,13 +62,16 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bottom = MediaQuery.of(context).padding.bottom;
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppAppBar(title: "Ride Completed"),
       body: Obx(() {
-        return myRideController.getRideDetailsModel.value.data == null || myRideController.isGetRideDetails.value
-            ? Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
+        if (myRideController.getRideDetailsModel.value.data == null ||
+            myRideController.isGetRideDetails.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return SingleChildScrollView(
                 child: Column(
                   children: [
                     Divider(color: AppColors.darkTextColor),
@@ -98,7 +101,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                     Divider(color: AppColors.darkTextColor),
                     Gap(10),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.h),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: InkWell(
                         onTap: () {},
                         child: Row(
@@ -106,8 +109,8 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                           children: [
                             ClipOval(
                               child: SizedBox(
-                                width: 60.r,
-                                height: 60.r,
+                                width: 60,
+                                height: 60,
                                 child: Image.network(
                                   "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.profilePhoto}",
                                   fit: BoxFit.cover,
@@ -142,7 +145,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                                 ),
                               ),
                             ),
-                            Gap(12.w),
+                            const Gap(12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,7 +162,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                                   //   fontSize: 12,
                                   //   color: AppColors.lightBlackColor,
                                   // ),
-                                  Gap(5.h),
+                                  const Gap(5),
 
                                   /// Vehicle Info
                                   AppText(
@@ -191,8 +194,8 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                         // Gap(10),
                         _buildLocationRow(
                           icon: AppImage(
-                            height: 20.h,
-                            width: 20.w,
+                            height: 20,
+                            width: 20,
                             image: AppImages.recordCircleFill,
                             imageType: ImageType.svgAsset,
                           ),
@@ -305,7 +308,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                     if(myRideController.getRideDetailsModel.value.data?.ride?.isPackageStatus == 1)...[
                       Gap(10),
                     Padding(
-                      padding:  EdgeInsets.symmetric(horizontal: 16.h),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: AppText(
@@ -319,36 +322,30 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                       ),
                     ),
                       ],
-                  ],
-                ),
-              );
-      }),
+                          ],
+                        ),
+                      );
+              }),
       bottomNavigationBar: Obx(() {
-        if(myRideController.getRideDetailsModel.value.data != null) {
-          return myRideController.getRideDetailsModel.value.data?.ride?.payment
-              ?.status != "paid" ? Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        final data = myRideController.getRideDetailsModel.value.data;
+        if (data != null && data.ride?.payment?.status != "paid") {
+          return Padding(
+            padding: EdgeInsets.fromLTRB(20, 12, 20, bottom + 20),
             child: AppButton(
               text: "PAY NOW",
               onTap: () {
-                debugPrint(
-                  "finalTotal : ${myRideController.getRideDetailsModel.value
-                      .data?.ride?.totalFare}",
-                );
+                debugPrint("finalTotal : ${data.ride?.totalFare}");
                 Get.to(
-                      () =>
-                      PaymentDetailsScreen(
-                        id: widget.bookingId,
-                        totalFare: double.parse(myRideController
-                            .getRideDetailsModel.value.data?.ride?.totalFare ??
-                            ""),
-                      ),
+                  () => PaymentDetailsScreen(
+                    id: widget.bookingId,
+                    totalFare: double.parse(data.ride?.totalFare ?? "0"),
+                  ),
                 );
               },
             ),
-          ) : SizedBox.shrink();
+          );
         }
-      return SizedBox.shrink();
+        return SizedBox(height: bottom);
       }),
       floatingActionButton: AppImage(
         height: 55,
@@ -425,7 +422,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
     double fontSize = 14,
   }) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,

@@ -1,6 +1,6 @@
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
+import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppText extends StatelessWidget {
@@ -37,7 +37,7 @@ class AppText extends StatelessWidget {
       overflow: overflow,
       softWrap: softWrap,
       style: GoogleFonts.poppins(
-        fontSize: fontSize.sp,     // ✅ responsive text
+        fontSize: AppResponsive.sp(context, fontSize),
         fontWeight: fontWeight,
         color: color,
         letterSpacing: letterSpacing,

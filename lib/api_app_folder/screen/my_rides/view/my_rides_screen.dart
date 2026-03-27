@@ -10,8 +10,8 @@ import 'package:alo_ride_app/api_app_folder/screen/my_rides/view/ride_tracking_s
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
 import 'package:alo_ride_app/core/extensions/date_time_extension.dart';
+import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -152,7 +152,7 @@ import 'package:intl/intl.dart';
 //           child: Column(
 //             children: [
 //               Padding(
-//                 padding: EdgeInsets.symmetric(vertical: 12.h),
+//                 padding: const EdgeInsets.symmetric(vertical: 12),
 //                 child: AppText(
 //                   text: title,
 //                   color: selected
@@ -181,7 +181,7 @@ import 'package:intl/intl.dart';
 //           if (myRideController.pendingRides.isNotEmpty) ...[
 //             Gap(20),
 //             Padding(
-//               padding: EdgeInsets.symmetric(horizontal: 16.h),
+//               padding: const EdgeInsets.symmetric(horizontal: 16),
 //               child: AppText(
 //                 text: "Upcoming",
 //                 color: AppColors.secondary,
@@ -236,7 +236,7 @@ import 'package:intl/intl.dart';
 //           if (myRideController.completedRides.isNotEmpty) ...[
 //             Gap(20),
 //             Padding(
-//               padding: EdgeInsets.symmetric(horizontal: 16.h),
+//               padding: const EdgeInsets.symmetric(horizontal: 16),
 //               child: AppText(
 //                 text: "Completed",
 //                 color: AppColors.secondary,
@@ -283,7 +283,7 @@ import 'package:intl/intl.dart';
 //           if (myRideController.cancelRides.isNotEmpty) ...[
 //             Gap(20),
 //             Padding(
-//               padding: EdgeInsets.symmetric(horizontal: 16.h),
+//               padding: const EdgeInsets.symmetric(horizontal: 16),
 //               child: AppText(
 //                 text: "Cancelled",
 //                 color: AppColors.secondary,
@@ -496,7 +496,7 @@ import 'package:intl/intl.dart';
 //                     ),
 //                   ),
 //
-//                   Gap(6.w),
+//                   const Gap(6),
 //                   Column(
 //                     children: [
 //                       if (price != null)
@@ -507,14 +507,14 @@ import 'package:intl/intl.dart';
 //                         fontSize: 12,
 //                         fontWeight: FontWeight.w500,
 //                       ),
-//                       Gap(6.w),
+//                       const Gap(6),
 //                     ],
 //                   ),
 //                 ],
 //               ),
-//               Gap(6.h),
+//               const Gap(6),
 //               AppText(text: date, fontSize: 12, fontWeight: FontWeight.w500),
-//               Gap(8.h),
+//               const Gap(8),
 //               _buildLocationRow(
 //                 icon: AppImage(
 //                   height: 20.h,
@@ -866,7 +866,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 12.h),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: AppText(
                   text: title,
                   color: selected
@@ -895,7 +895,7 @@ class _MyRidesScreenState extends State<MyRidesScreen> with WidgetsBindingObserv
           if (myRideController.pendingRides.isNotEmpty) ...[
             Gap(20),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: AppText(
                   text: "Upcoming Rides",
@@ -941,7 +941,7 @@ thickness: 2,
           if (myRideController.completedRides.isNotEmpty) ...[
             Gap(20),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: AppText(
                   text: "Completed Rides",
@@ -1001,7 +1001,7 @@ thickness: 2,
           if (myRideController.cancelRides.isNotEmpty) ...[
             Gap(20),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.h),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Center(
                 child: AppText(
                   text: "Cancelled Rides",
@@ -1103,7 +1103,7 @@ thickness: 2,
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.h),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1116,7 +1116,7 @@ thickness: 2,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Gap(6.w),
+                  const Gap(6),
                   Column(
                     children: [
                       if (price != null)
@@ -1127,18 +1127,18 @@ thickness: 2,
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                       ),
-                      Gap(6.w),
+                      const Gap(6),
                     ],
                   ),
                 ],
               ),
-              Gap(6.h),
+              const Gap(6),
               AppText(text: date, fontSize: 12, fontWeight: FontWeight.w500),
-              Gap(8.h),
+              const Gap(8),
               _buildLocationRow(
                 icon: AppImage(
-                  height: 20.h,
-                  width: 20.w,
+                  height: 20,
+                  width: 20,
                   image: AppImages.recordCircleFill,
                   imageType: ImageType.svgAsset,
                 ),

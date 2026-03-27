@@ -82,9 +82,7 @@ controller.getPackageHistory();
                   child: ListView.builder(
                     itemCount: controller.packageList.length,
                     itemBuilder: (context, index) {
-
                       final package = controller.packageList[index];
-
                       return packageHistoryCard(package);
                     },
                   ),

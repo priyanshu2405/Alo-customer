@@ -1,6 +1,5 @@
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AppButton extends StatelessWidget {
   final String text;
@@ -35,22 +34,22 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width ?? 1.sw,
-      height: height ?? 52.h,
+      width: width ?? double.infinity,
+      height: height ?? 52,
       child: ElevatedButton(
         onPressed: isLoading ? null : onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: backgroundColor,
           padding: padding,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius.r),
+            borderRadius: BorderRadius.circular(borderRadius),
           ),
           elevation: 0,
         ),
         child: isLoading
             ? SizedBox(
-          height: 22.h,
-          width: 22.h,
+          height: 22,
+          width: 22,
           child: CircularProgressIndicator(
             strokeWidth: 2,
             color: textColor,
@@ -62,12 +61,12 @@ class AppButton extends StatelessWidget {
           children: [
             if (icon != null) ...[
               icon!,
-              SizedBox(width: 8.w),
+              const SizedBox(width: 8),
             ],
             Text(
               text,
               style: TextStyle(
-                fontSize: fontSize.sp,
+                fontSize: fontSize,
                 fontWeight: fontWeight,
                 color: textColor,
               ),

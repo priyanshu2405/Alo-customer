@@ -3,7 +3,6 @@ import 'package:alo_ride_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -55,25 +54,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(390, 844),
-      minTextAdapt: true,
-      splitScreenMode: true,
+    return GetMaterialApp(
       builder: (context, child) {
-        return GetMaterialApp(
-          builder: (context, child) {
-            return MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: TextScaler.linear(1)),
-              child: child!,
-            );
-          },
-          debugShowCheckedModeBanner: false,
-          title: 'Alo Ride',
-          home: const SplashScreen(),
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(1),
+          ),
+          child: child!,
         );
       },
+      debugShowCheckedModeBanner: false,
+      title: 'Alo Ride',
+      home: const SplashScreen(),
     );
   }
 }

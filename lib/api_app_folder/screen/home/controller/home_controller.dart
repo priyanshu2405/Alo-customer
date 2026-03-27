@@ -80,7 +80,7 @@ class HomeController extends GetxController{
     try {
       isVehicleTypes.value = true;
 
-      final response = await ApiService.get(
+      final response = await ApiService.get1(
         endpoint: 'packages',
         isShow: false,
       );
@@ -118,6 +118,12 @@ class HomeController extends GetxController{
 
         myPackageList.assignAll(
           list.map((e) => FlatRatesModel.fromJson(e)).toList(),
+        );
+
+        final List list1 = response["data"]['errands'];
+
+        errandsList.assignAll(
+          list1.map((e) => FlatRatesModel.fromJson(e)).toList(),
         );
 
         debugPrint("myPackageList ==> ${myPackageList.length}");
