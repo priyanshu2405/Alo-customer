@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -22,51 +24,38 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tel</string>
+		<string>sms</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>The camera is used to let users upload profile photos and capture images for ride-related support requests.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Your location is used to continuously track your ride, improve pickup accuracy, and provide live ride status updates even when the app is running in the background.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Alo Drive uses your location in the background to track your active ride in real time, so the driver can navigate to you and you can monitor your trip progress even when the app is not in the foreground. For example, your location is used to update the live trip map during an ongoing ride.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to find nearby drivers, calculate pickup and drop-off locations, estimate ride fares, and provide real-time ride tracking during your trip.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>The photo library is used to allow users to select profile pictures or upload ride-related images.</string>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>We send notifications for ride updates.</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
-
-	<!-- Location permissions -->
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs location access to show maps.</string>
-
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>This app needs location access even in background.</string>
-
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>This app needs location access.</string>
-
-    <key>NSCameraUsageDescription</key>
-    <string>Allow camera access to upload profile image</string>
-
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>Allow gallery access to upload profile image</string>
-
-    <!-- Notifications -->
-    <key>NSUserNotificationUsageDescription</key>
-    <string>We send notifications for ride updates.</string>
-
-
-    <!-- ================= PHONE CALL ================= -->
-
-    <key>LSApplicationQueriesSchemes</key>
-    <array>
-        <string>tel</string>
-        <string>sms</string>
-    </array>
-
-    <!-- ================= INTERNET ================= -->
-
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-
-
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -80,9 +69,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
 </dict>
 </plist>

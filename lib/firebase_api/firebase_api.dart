@@ -95,12 +95,7 @@ class NotificationService {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
       print('✅ User granted permission');
-      if (Platform.isIOS) {
-        String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-        print('📱 APNs Token: $apnsToken');
-      }
     } else {
       print('User declined or has not accepted permission');
     }
@@ -125,7 +120,7 @@ class NotificationService {
     );
 
     await _localNotifications.initialize(
-      settings: initSettings,
+      initSettings,
       // onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
@@ -191,10 +186,10 @@ class NotificationService {
     };
 
     await _localNotifications.show(
-      id :message.hashCode,
-      title :message.notification?.title ?? 'New Message',
-      body :message.notification?.body ?? 'You have a new message',
-      notificationDetails: platformDetails,
+     message.hashCode,
+     message.notification?.title ?? 'New Message',
+    message.notification?.body ?? 'You have a new message',
+      platformDetails,
       payload: jsonEncode(payloadData),
     );
 

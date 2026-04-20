@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.app.aloRide</string>
+	<string>com.ios.aloRide</string>
 	<key>PROJECT_ID</key>
 	<string>alo-drive-6359e</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:217981683590:ios:5e4cf121f89f17372a0e07</string>
+	<string>1:217981683590:ios:da40e13fdca0d6ed2a0e07</string>
 </dict>
 </plist>

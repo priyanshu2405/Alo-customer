@@ -59,10 +59,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDRz9HyZRuzqiCvA1H6Tmke64HzkG2fnUU',
-    appId: '1:217981683590:ios:5e4cf121f89f17372a0e07',
+    appId: '1:217981683590:ios:da40e13fdca0d6ed2a0e07',
     messagingSenderId: '217981683590',
     projectId: 'alo-drive-6359e',
     storageBucket: 'alo-drive-6359e.firebasestorage.app',
-    iosBundleId: 'com.app.aloRide',
+    iosBundleId: 'com.ios.aloRide',
   );
+
 }

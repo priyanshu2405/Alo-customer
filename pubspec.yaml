@@ -51,13 +51,13 @@ dependencies:
   image_picker: ^1.2.1
   json_annotation: ^4.11.0
 
-  change_package_name: ^1.1.0
+  change_app_package_name: ^1.4.0
   flutter_stripe: ^12.1.1
   web_socket_channel: ^3.0.3
 
-  firebase_core: ^4.5.0
+  firebase_core: ^4.6.0
   firebase_messaging: ^16.1.2
-  flutter_local_notifications: ^21.0.0
+  flutter_local_notifications: ^16.1.3
   flutter_polyline_points: ^3.1.0
 
   socket_io_client: ^3.1.3
