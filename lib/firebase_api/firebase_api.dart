@@ -120,7 +120,7 @@ class NotificationService {
     );
 
     await _localNotifications.initialize(
-      initSettings,
+      settings: initSettings,
       // onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
@@ -185,11 +185,18 @@ class NotificationService {
       ...message.data // merge other fields if present
     };
 
+    // await _localNotifications.show(
+    //  message.hashCode,
+    //  message.notification?.title ?? 'New Message',
+    // message.notification?.body ?? 'You have a new message',
+    //   platformDetails,
+    //   payload: jsonEncode(payloadData),
+    // );
     await _localNotifications.show(
-     message.hashCode,
-     message.notification?.title ?? 'New Message',
-    message.notification?.body ?? 'You have a new message',
-      platformDetails,
+      id: message.hashCode,
+      title: message.notification?.title ?? 'New Message',
+      body: message.notification?.body ?? 'You have a new message',
+      notificationDetails: platformDetails,
       payload: jsonEncode(payloadData),
     );
 
