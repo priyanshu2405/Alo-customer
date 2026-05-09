@@ -4,6 +4,8 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
+import 'package:alo_ride_app/api_app_folder/screen/card/controller/card_controller.dart';
+import 'package:alo_ride_app/api_app_folder/screen/card/view/add_card_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/get_ride_details_model.dart' hide Image;
 import 'package:alo_ride_app/api_app_folder/screen/ride/controller/ride_completed_controller.dart';
@@ -34,6 +36,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
   final RideCompletedController rideCompletedController = Get.put(
     RideCompletedController(),
   );
+  final CardController cardController = Get.put(CardController());
 
   @override
   void initState() {
@@ -150,9 +153,8 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  AppText(
-                                    text:
-                                        "Driver: ${myRideController.getRideDetailsModel.value.data?.ride?.driver?.name}",
+                                  (myRideController.getRideDetailsModel.value.data?.ride?.driver?.name==null || myRideController.getRideDetailsModel.value.data?.ride?.driver?.name=="")?SizedBox():AppText(
+                                    text: "Driver: ${myRideController.getRideDetailsModel.value.data?.ride?.driver?.name}",
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -165,7 +167,7 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                                   const Gap(5),
 
                                   /// Vehicle Info
-                                  AppText(
+                                  (myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber==null || myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber=="")?SizedBox():AppText(
                                     text:
                                         "Car No: ${myRideController.getRideDetailsModel.value.data?.ride?.driver?.vehicleNumber}",
                                     fontSize: 12,
@@ -233,11 +235,12 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
                       "\$${myRideController.totalTripFare.toStringAsFixed(2)}",
                       bold: true,
                     ),
-                    // Gap(17),
-                    // _fareRow(
-                    //   "HST 15%",
-                    //   "\$${myRideController.getRideDetailsModel.value.data?.ride?.taxAmount}",
-                    // ),
+                    Gap(17),
+                    _fareRow(
+                      "Tax Amount",
+                      "\$${myRideController.getRideDetailsModel.value.data?.ride?.taxAmount}",
+                      bold: true,
+                    ),
                      if(widget.isShowDialog == true)...[
                     Gap(17),
                     // _fareRow("Tip", "\$${myRideController.getRideDetailsModel.value.data?.ride?.tipAmount}"),
@@ -329,18 +332,15 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
       bottomNavigationBar: Obx(() {
         final data = myRideController.getRideDetailsModel.value.data;
         if (data != null && data.ride?.payment?.status != "paid") {
+          final totalFare =
+              double.tryParse(data.ride?.totalFare ?? "0") ?? 0.0;
           return Padding(
             padding: EdgeInsets.fromLTRB(20, 12, 20, bottom + 20),
             child: AppButton(
               text: "PAY NOW",
               onTap: () {
                 debugPrint("finalTotal : ${data.ride?.totalFare}");
-                Get.to(
-                  () => PaymentDetailsScreen(
-                    id: widget.bookingId,
-                    totalFare: double.parse(data.ride?.totalFare ?? "0"),
-                  ),
-                );
+                _showPaymentOptions(totalFare);
               },
             ),
           );
@@ -352,6 +352,256 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
         width: 55,
         image: AppImages.sosButton,
         imageType: ImageType.asset,
+      ),
+    );
+  }
+
+  void _showSavedCardsPicker() {
+    cardController.getCards();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.lightGray,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Gap(16),
+            const AppText(
+              text: 'Choose a Card',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+            const Gap(4),
+            const AppText(
+              text: 'Tap a card to pay for this ride',
+              fontSize: 12,
+              color: AppColors.lightTextColor,
+            ),
+            const Gap(16),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(sheetCtx).size.height * 0.5,
+              ),
+              child: Obx(() {
+                if (cardController.isLoadingCards.value &&
+                    cardController.cards.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                if (cardController.cards.isEmpty) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.credit_card_off,
+                          size: 44,
+                          color: AppColors.lightTextColor,
+                        ),
+                        const Gap(10),
+                        const AppText(
+                          text: 'No saved cards',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        const Gap(4),
+                        const AppText(
+                          text: 'Add a card to pay this ride.',
+                          fontSize: 12,
+                          color: AppColors.lightTextColor,
+                        ),
+                        const Gap(16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: AppButton(
+                            text: 'Add Card',
+                            onTap: () {
+                              Navigator.pop(sheetCtx);
+                              Get.to(() => AddCardScreen())?.then((_) {
+                                cardController.getCards();
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                return ListView.separated(
+                  shrinkWrap: true,
+                  padding: EdgeInsets.zero,
+                  itemCount: cardController.cards.length,
+                  separatorBuilder: (_, __) => const Gap(10),
+                  itemBuilder: (_, i) {
+                    final card = cardController.cards[i];
+                    return _SavedCardRow(
+                      card: card,
+                      onTap: () {
+                        Navigator.pop(sheetCtx);
+                        _payWithSavedCard(card);
+                      },
+                    );
+                  },
+                );
+              }),
+            ),
+            const Gap(12),
+            GestureDetector(
+              onTap: () => Navigator.pop(sheetCtx),
+              child: Container(
+                width: double.infinity,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(
+                  child: AppText(
+                    text: 'Cancel',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.lightTextColor,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _payWithSavedCard(Map<String, dynamic> card) async {
+    final paymentMethodId = int.tryParse(card['id']?.toString() ?? '');
+    if (paymentMethodId == null) {
+      Get.snackbar(
+        'Error',
+        'Invalid card',
+        snackPosition: SnackPosition.TOP,
+      );
+      return;
+    }
+
+    Get.dialog(
+      const Center(
+        child: CircularProgressIndicator(color: AppColors.secondary),
+      ),
+      barrierDismissible: false,
+    );
+
+    try {
+      final ok = await rideCompletedController.payRideWithSavedCard(
+        rideId: widget.bookingId,
+        paymentMethodId: paymentMethodId,
+      );
+
+      if (Get.isDialogOpen ?? false) Get.back();
+
+      if (ok) {
+        Get.snackbar(
+          'Success',
+          'Payment successful',
+          snackPosition: SnackPosition.TOP,
+        );
+      }
+    } catch (e) {
+      if (Get.isDialogOpen ?? false) Get.back();
+      Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.TOP);
+    }
+  }
+
+  void _showPaymentOptions(double totalFare) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetCtx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.lightGray,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Gap(16),
+            const AppText(
+              text: 'Choose Payment Method',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+            const Gap(20),
+            _PaymentOptionTile(
+              icon: Icons.payment_rounded,
+              iconBg: AppColors.blueColor.withOpacity(0.15),
+              iconColor: AppColors.blueColor,
+              title: 'Stripe Payment',
+              subtitle: 'Pay with a new card via Stripe',
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                Get.to(
+                  () => PaymentDetailsScreen(
+                    id: widget.bookingId,
+                    totalFare: totalFare,
+                  ),
+                );
+              },
+            ),
+            const Gap(12),
+            _PaymentOptionTile(
+              icon: Icons.credit_card_rounded,
+              iconBg: AppColors.secondary.withOpacity(0.15),
+              iconColor: AppColors.secondary,
+              title: 'Card Payment',
+              subtitle: 'Pay with a saved card',
+              onTap: () {
+                Navigator.pop(sheetCtx);
+                _showSavedCardsPicker();
+              },
+            ),
+            const Gap(20),
+            GestureDetector(
+              onTap: () => Navigator.pop(sheetCtx),
+              child: Container(
+                width: double.infinity,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(
+                  child: AppText(
+                    text: 'Cancel',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.lightTextColor,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -458,5 +708,181 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
     final dt = DateTime.parse(dateTime).toLocal();
 
     return DateFormat('dd/MM/yyyy hh.mm a').format(dt);
+  }
+}
+
+class _SavedCardRow extends StatelessWidget {
+  final Map<String, dynamic> card;
+  final VoidCallback onTap;
+
+  const _SavedCardRow({required this.card, required this.onTap});
+
+  String get _brand =>
+      (card['brand'] ?? card['card_brand'] ?? 'CARD')
+          .toString()
+          .toUpperCase();
+
+  String get _last4 => (card['last4'] ??
+          card['last_four'] ??
+          card['card_last4'] ??
+          '')
+      .toString();
+
+  String get _expiry {
+    final m = card['exp_month'] ?? card['expiry_month'];
+    final y = card['exp_year'] ?? card['expiry_year'];
+    if (m == null || y == null) return '';
+    final yy =
+        y.toString().length == 4 ? y.toString().substring(2) : y.toString();
+    return '${m.toString().padLeft(2, '0')}/$yy';
+  }
+
+  bool get _isDefault =>
+      card['is_default'] == true || card['default'] == true;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.lightGray),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: const Icon(
+                Icons.credit_card_rounded,
+                color: AppColors.secondary,
+                size: 22,
+              ),
+            ),
+            const Gap(14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      AppText(
+                        text: _brand,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      const Gap(8),
+                      if (_isDefault)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const AppText(
+                            text: 'Default',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.secondary,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const Gap(2),
+                  AppText(
+                    text:
+                        '•••• ${_last4.isEmpty ? '••••' : _last4}${_expiry.isEmpty ? '' : '   ·   $_expiry'}',
+                    fontSize: 12,
+                    color: AppColors.lightTextColor,
+                    letterSpacing: 1,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.lightTextColor,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PaymentOptionTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconBg;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _PaymentOptionTile({
+    required this.icon,
+    required this.iconBg,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.lightGray),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const Gap(14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    text: title,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  const Gap(2),
+                  AppText(
+                    text: subtitle,
+                    fontSize: 12,
+                    color: AppColors.lightTextColor,
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.lightTextColor,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

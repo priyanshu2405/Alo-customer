@@ -8,11 +8,14 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // static const String baseUrl = 'https://planbot.ca/admin/public/api/';
- // static const String baseUrl = 'https://app.pizzatwins.ca/aloride/api/user/';
- //  static const String baseUrl1 = 'https://app.pizzatwins.ca/aloride/api/';
+
   static const String baseUrl = 'https://alodrive.ca/api/user/';
   static const String baseUrl1 = 'https://alodrive.ca/api/';
+
+
+  // static const String baseUrl = 'http://192.168.1.12:8000/api/user/';
+  // static const String baseUrl1 = 'http://192.168.1.12:8000/api/';
+
   static const Duration timeoutDuration = Duration(minutes: 2);
 
 
@@ -52,6 +55,7 @@ class ApiService {
       final authToken = token ?? _getToken();
 
       String url = '$baseUrl$endpoint';
+      debugPrint("url : ${url}");
       ApiLogger.logRequest(
         method: "GET",
         url: url,
@@ -298,20 +302,34 @@ class ApiService {
     required String endpoint,
     required Map<String, dynamic> body,
     String? token,
+    bool isShow = false,
   }) async {
     try {
-      // Use provided token or get from controller
       final authToken = token ?? _getToken();
+      final url = '$baseUrl$endpoint';
+
+      ApiLogger.logRequest(
+        method: "PUT",
+        url: url,
+        headers: authToken != null ? _headersWithAuth(authToken) : _headers,
+        body: body,
+      );
 
       final response = await http
           .put(
-            Uri.parse('$baseUrl$endpoint'),
+            Uri.parse(url),
             headers: authToken != null ? _headersWithAuth(authToken) : _headers,
             body: jsonEncode(body),
           )
           .timeout(timeoutDuration);
 
-      return _handleResponse(response);
+      ApiLogger.logResponse(
+        url: url,
+        statusCode: response.statusCode,
+        body: response.body,
+      );
+
+      return _handleResponse(response, isShow: isShow);
     } catch (e) {
       throw _handleError(e);
     }

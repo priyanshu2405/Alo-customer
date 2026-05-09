@@ -227,7 +227,10 @@ class LocationController extends GetxController {
     update();
   }
 
-  /// Get place predictions from Google Places API
+  /// Get place predictions from Google Places API.
+  /// Restricted to New Brunswick, Canada — uses a circle around NB's
+  /// approximate center with `strictbounds=true` so results outside the
+  /// province (and outside Canada) are filtered out by Google.
   Future<void> getPlaces(String input) async {
     if (input.isEmpty) {
       predictions.clear();
@@ -235,8 +238,15 @@ class LocationController extends GetxController {
       return;
     }
 
+    final encodedInput = Uri.encodeQueryComponent(input);
     final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=$_apiKey',
+      'https://maps.googleapis.com/maps/api/place/autocomplete/json'
+      '?input=$encodedInput'
+      '&components=country:ca'
+      '&location=46.5,-66.0'
+      '&radius=300000'
+      '&strictbounds=true'
+      '&key=$_apiKey',
     );
 
     try {

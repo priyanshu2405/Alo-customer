@@ -77,8 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           initialCameraPosition: CameraPosition(
                             target:
                                 controller.currentLatLng.value ??
-                                const LatLng(0, 0),
-                            zoom: 14,
+                                const LatLng(46.5, -66.0),
+                            zoom: 7,
                           ),
                           onMapCreated: (mapController) {
                             if (!controller.mapController.isCompleted) {

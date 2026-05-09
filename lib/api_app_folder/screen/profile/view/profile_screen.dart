@@ -5,6 +5,7 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
+import 'package:alo_ride_app/api_app_folder/screen/card/view/card_list_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/profile/controller/profile_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/profile/view/common_profile_data.dart';
 import 'package:alo_ride_app/api_app_folder/services/token_store.dart';
@@ -303,6 +304,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 profileController.phoneNumberController.text,
                           ),
                           Gap(50),
+                          Divider(color: Color(0xffD9D9D9)),
+                          Gap(10),
+                          InkWell(
+                            onTap: () => Get.to(() => const CardListScreen()),
+                            child: Row(
+                              children: const [
+                                Icon(
+                                  Icons.credit_card,
+                                  color: AppColors.darkGrayColor,
+                                ),
+                                Gap(28),
+                                AppText(
+                                  text: "Save Cards",
+                                  color: AppColors.darkGrayColor,
+                                ),
+                              ],
+                            ),
+                          ),
+                          Gap(10),
                           Divider(color: Color(0xffD9D9D9)),
                           Gap(10),
                           Row(

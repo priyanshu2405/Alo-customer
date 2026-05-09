@@ -15,6 +15,7 @@ class BookingController extends GetxController {
   Rxn<DateTime> selectedTime = Rxn<DateTime>();
 
   RxDouble totalFare = 0.0.obs;
+  RxDouble totalTax = 0.0.obs;
   RxDouble distanceKm = 0.0.obs;
 
   // Add these for locations
@@ -163,6 +164,7 @@ RxBool isShowButton = false.obs;
           isShowButton.value = response['success'];
           debugPrint("✅ Total Fare: ${response["data"]["total_fare"]}");
           totalFare.value = response["data"]["total_fare"];
+          totalTax.value = response["data"]["tax_amount"];
           distanceKm.value =
               double.tryParse(response['data']['distance_km'].toString()) ??
               0.0;
@@ -368,6 +370,7 @@ RxBool isShowButton = false.obs;
     // Trip & Fare
     selectValue.value = 0; // one_way
     totalFare.value = 0.0;
+    totalTax.value = 0.0;
     distanceKm.value = 0.0;
 
     // Flags

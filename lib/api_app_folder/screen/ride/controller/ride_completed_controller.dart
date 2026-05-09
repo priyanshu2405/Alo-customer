@@ -124,6 +124,46 @@ class RideCompletedController extends GetxController {
 
 
 
+  /// POST /api/user/rides/{rideId}/pay-with-saved-card
+  /// `paymentMethodId` is the backend card row id (from GET /payment-methods),
+  /// not the Stripe `pm_xxx`.
+  Future<bool> payRideWithSavedCard({
+    required int rideId,
+    required int paymentMethodId,
+  }) async {
+    isCreatePaymentIntent.value = true;
+    try {
+      final response = await ApiService.post(
+        endpoint: 'rides/$rideId/pay-with-saved-card',
+        body: {'payment_method_id': paymentMethodId},
+        isShow: true,
+      );
+      debugPrint('payRideWithSavedCard response: $response');
+
+      final isSuccess =
+          response['success'] == true || response['status'] == true;
+      if (isSuccess) {
+        await myRideController.getRideDetails(id: rideId);
+        final controller = Get.put(DashBoardController());
+        controller.changeIndex(1);
+        Get.to(() => DashboardScreen());
+      }
+      return isSuccess;
+    } catch (e) {
+      debugPrint('payRideWithSavedCard error: $e');
+      Get.snackbar(
+        'Error',
+        e.toString(),
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red.withOpacity(0.85),
+        colorText: Colors.white,
+      );
+      return false;
+    } finally {
+      isCreatePaymentIntent.value = false;
+    }
+  }
+
   Future<Map<String, dynamic>?> createPaymentIntent({required int id}) async {
     isCreatePaymentIntent.value = true;
 

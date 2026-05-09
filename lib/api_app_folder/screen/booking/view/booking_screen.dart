@@ -92,8 +92,9 @@ class _BookingScreenState extends State<BookingScreen> {
                 children: [
                   GoogleMap(
                     initialCameraPosition: CameraPosition(
-                      target: controller.currentLatLng.value ?? const LatLng(0, 0),
-                      zoom: 14,
+                      target: controller.currentLatLng.value ??
+                          const LatLng(46.5, -66.0),
+                      zoom: 7,
                     ),
                     onMapCreated: (mapController) {
                       if (!controller.mapController.isCompleted) {
@@ -194,6 +195,12 @@ class _BookingScreenState extends State<BookingScreen> {
                 fontSize: 12,
                 color: AppColors.lightBlackColor,
               )),
+          const Gap(8),
+          Obx(() => AppText(
+            text: "Tax : \$${bookingController.totalTax?.value}",
+            fontSize: 12,
+            color: AppColors.lightBlackColor,
+          )),
           const Gap(8),
           Obx(() => AppText(
                 text: "Distance : ${bookingController.distanceKm.value.toStringAsFixed(2)} km",
