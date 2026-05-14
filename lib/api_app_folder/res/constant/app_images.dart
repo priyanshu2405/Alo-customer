@@ -12,7 +12,8 @@ class AppImages {
 
 
   /// png image
-   static const String splashBg = "assets/images/splash_bg.png";
+  //  static const String splashBg = "assets/images/splash_bg.png";
+   static const String splashBg = "assets/images/alo_ride_logo.png";
    static const String banner = "assets/images/banner.png";
    static const String bannerLogo = "assets/images/banner_logo.png";
    static const String sosButton = "assets/images/sos-button.png";
