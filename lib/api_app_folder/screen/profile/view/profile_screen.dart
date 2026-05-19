@@ -24,10 +24,19 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   ProfileController profileController = Get.put(ProfileController());
   final AuthController authController = Get.put(AuthController());
+  // @override
+  // void initState() {
+  //   profileController.getProfile();
+  //   super.initState();
+  // }
   @override
   void initState() {
-    profileController.getProfile();
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await profileController.getProfile();
+      profileController.isSave.value = false; // Show "Edit" initially
+    });
   }
 
   void showDeleteDialog() {
@@ -398,7 +407,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               /// 💾 SAVE BUTTON
               AppButton(
                 isLoading: profileController.isEditProfile.value,
-                text: "Save",
+                // text: "Save",
+                text: profileController.isSave.value ? "Update" : "Edit",
                 onTap: () {
                   if (profileController.isSave.value) {
                     profileController.editProfile();
