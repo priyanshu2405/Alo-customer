@@ -1,7 +1,5 @@
 // ==================== stripe_payment_service.dart ====================
-import 'dart:convert';
 import 'dart:developer';
-import 'package:alo_ride_app/api_app_folder/constant/key_constants.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/screen/packages/package_controller.dart';
 import 'package:alo_ride_app/api_app_folder/utils/payment_success_view.dart';
@@ -10,7 +8,6 @@ import 'package:get/get.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/controller/ride_completed_controller.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:http/http.dart' as http;
 
 
 class StripePaymentService extends GetxController {
@@ -71,40 +68,23 @@ class StripePaymentService extends GetxController {
         String? amount,
       }) async {
     try {
-      // Present the payment sheet to user
+      // Throws on failure or cancellation, so reaching the next line means
+      // the payment went through. `payment/confirm` re-verifies server-side.
       await Stripe.instance.presentPaymentSheet();
-
-      // Verify payment status with Stripe
-      paymentIntent = await checkStripePaymentStatus(paymentIntent?['id']);
       update();
 
       final transactionId = paymentIntent?['id'];
-      final currency = paymentIntent?['currency'];
-      final status = paymentIntent?['status'];
-      final paymentMethodTypes = paymentIntent?['payment_method_types'];
-      final stripeToken = transactionId;
-
-      // Convert payment method types to string
-      String paymentMethodTypesValue = "";
-      if (paymentMethodTypes is List) {
-        paymentMethodTypesValue = paymentMethodTypes.join(",");
-      } else if (paymentMethodTypes is String) {
-        paymentMethodTypesValue = paymentMethodTypes;
-      }
 
       log("✅ Payment successful");
       log("📌 Transaction ID: $transactionId");
-      log("💰 Amount: $amount $currency");
-      log("✔️ Status: $status");
-      log("💳 Payment Method: $paymentMethodTypesValue");
+      log("💰 Amount: $amount ${paymentIntent?['currency']}");
 
       // Save payment details to backend
       await savePaymentDetails(
         bookingId: bookingId,
         hostId: hostId,
-        paymentMethodTypes: paymentMethodTypesValue,
         amount: amount.toString(),
-        stripeToken: stripeToken,
+        stripeToken: transactionId,
         context,
       );
     } on StripeException catch (e) {
@@ -143,7 +123,6 @@ class StripePaymentService extends GetxController {
 
     try {
       final txnId = paymentIntent?['id'];
-      final status = paymentIntent?['status'];
 
       if (txnId == null || txnId.isEmpty) {
         throw Exception("Missing transaction ID.");
@@ -156,23 +135,21 @@ class StripePaymentService extends GetxController {
         // "booking_id": bookingId,
         // "host_id": hostId,
         // "amount": amount,
-        // "payment_method": paymentMethodTypes,
       };
 
       print("Saving Payment: $body");
 
       final response = await controller.savePaymentDetails(body);
 
+      // `payment/confirm` verifies with Stripe server-side, so its response is
+      // the authoritative signal that the payment landed.
       if (response['status'] == true || response['success'] == true) {
         // Check context again before showing snackbar
         if (context.mounted) {
           _showSnackBarSafe(context, response['message'] ?? 'Payment successful');
         }
 
-        // Navigate to success page if payment succeeded
-        if (status == "succeeded") {
-          Get.offAll(() => DashboardScreen());
-        }
+        Get.offAll(() => DashboardScreen());
       } else {
         print("Payment save failed");
         Get.snackbar(
@@ -242,22 +219,6 @@ class StripePaymentService extends GetxController {
         ),
       );
     }
-  }
-
-  /// Check payment status directly from Stripe
-  Future<Map<String, dynamic>> checkStripePaymentStatus(
-      String paymentIntentId,
-      ) async {
-    final response = await http.get(
-      Uri.parse('https://api.stripe.com/v1/payment_intents/$paymentIntentId'),
-      headers: {
-        'Authorization': 'Bearer $secretKey',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    );
-    final data = jsonDecode(response.body);
-    print("Stripe Status Response: $data");
-    return data;
   }
 
   /// Safely close any open dialogs or snackbars
@@ -348,42 +309,18 @@ class SubscriptionPaymentService extends GetxController {
         String? amount,
       }) async {
     try {
-      // Present the payment sheet to user
+      // Throws on failure or cancellation, so reaching the next line means
+      // the payment went through. `packages/confirm-payment` re-verifies
+      // server-side.
       await Stripe.instance.presentPaymentSheet();
-       print("PaymentIntentId:: ${paymentIntent?['id']}");
-      // Verify payment status with Stripe
-      paymentIntent = await checkStripePaymentStatus(paymentIntent?['id']);
       update();
 
-      final transactionId = paymentIntent?['id'];
-      final currency = paymentIntent?['currency'];
-      final status = paymentIntent?['status'];
-      final paymentMethodTypes = paymentIntent?['payment_method_types'];
-      final stripeToken = transactionId;
-
-      // Convert payment method types to string
-      String paymentMethodTypesValue = "";
-      if (paymentMethodTypes is List) {
-        paymentMethodTypesValue = paymentMethodTypes.join(",");
-      } else if (paymentMethodTypes is String) {
-        paymentMethodTypesValue = paymentMethodTypes;
-      }
-
       log("✅ Payment successful");
-      log("📌 Transaction ID: $transactionId");
-      log("💰 Amount: $amount $currency");
-      log("✔️ Status: $status");
-      log("💳 Payment Method: $paymentMethodTypesValue");
+      log("📌 Transaction ID: ${paymentIntent?['id']}");
+      log("💰 Amount: $amount ${paymentIntent?['currency']}");
 
       // Save payment details to backend
-      await savePaymentDetails(
-        // bookingId: bookingId,
-        // hostId: hostId,
-        // paymentMethodTypes: paymentMethodTypesValue,
-        // amount: amount.toString(),
-        // stripeToken: stripeToken,
-        context,
-      );
+      await savePaymentDetails(context);
     } on StripeException catch (e) {
       log("❌ StripeException: ${e.error.localizedMessage}");
       if (context.mounted) {
@@ -420,7 +357,6 @@ class SubscriptionPaymentService extends GetxController {
 
     try {
       final txnId = paymentIntent?['id'];
-      final status = paymentIntent?['status'];
 
       if (txnId == null || txnId.isEmpty) {
         throw Exception("Missing transaction ID.");
@@ -431,19 +367,18 @@ class SubscriptionPaymentService extends GetxController {
 
       final response = await controller.savePaymentDetails(paymentIntentId:txnId );
 
+      // `packages/confirm-payment` verifies with Stripe server-side, so its
+      // response is the authoritative signal that the payment landed.
       if (response['status'] == true || response['success'] == true) {
         // Check context again before showing snackbar
         if (context.mounted) {
           _showSnackBarSafe(context, response['message'] ?? 'Payment successful');
         }
 
-        // Navigate to success page if payment succeeded
-        if (status == "succeeded") {
-          Get.offAll(() => PaymentSuccessView(
-            transactionId: txnId,
-            message: response['message'],
-          ));
-        }
+        Get.offAll(() => PaymentSuccessView(
+          transactionId: txnId,
+          message: response['message'],
+        ));
       } else {
         print("Payment save failed");
         Get.snackbar(
@@ -513,22 +448,6 @@ class SubscriptionPaymentService extends GetxController {
         ),
       );
     }
-  }
-
-  /// Check payment status directly from Stripe
-  Future<Map<String, dynamic>> checkStripePaymentStatus(
-      String paymentIntentId,
-      ) async {
-    final response = await http.get(
-      Uri.parse('https://api.stripe.com/v1/payment_intents/$paymentIntentId'),
-      headers: {
-        'Authorization': 'Bearer $secretKey',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    );
-    final data = jsonDecode(response.body);
-    log("Stripe Status Response: $data");
-    return data;
   }
 
   /// Safely close any open dialogs or snackbars

@@ -10,7 +10,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:alo_ride_app/api_app_folder/screen/splash/view/splash_screen.dart';
 import 'package:alo_ride_app/api_app_folder/services/token_store.dart';
 
-import 'api_app_folder/constant/key_constants.dart';
+import 'package:alo_ride_app/api_app_folder/services/stripe_config_service.dart';
 
 // import 'package:alo_ride_app/design_folder/screen/splash/view/splash_screen.dart';
 
@@ -44,8 +44,12 @@ Future<void> main() async {
 
   // 🔥 REQUIRED: Register AuthController once
   Get.put(AuthController(), permanent: true);
-  Stripe.publishableKey = publishKey;
-  await Stripe.instance.applySettings();
+  final publishableKey = await StripeConfigService.fetchPublishableKey();
+  debugPrint("publishableKey : $publishableKey");
+  if (publishableKey != null) {
+    Stripe.publishableKey = publishableKey;
+    await Stripe.instance.applySettings();
+  }
   runApp(const MyApp());
 }
 

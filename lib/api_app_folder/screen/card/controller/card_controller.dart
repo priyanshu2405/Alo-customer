@@ -1,4 +1,3 @@
-import 'package:alo_ride_app/api_app_folder/constant/key_constants.dart';
 import 'package:alo_ride_app/api_app_folder/screen/card/view/card_list_screen.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +34,7 @@ class CardController extends GetxController {
 
   Future<void> _initStripe() async {
     try {
-      Stripe.publishableKey = publishKey;
+      // publishableKey is already set from /api/stripe-config during startup.
       await Stripe.instance.applySettings();
       isStripeReady.value = true;
     } catch (e) {
