@@ -8,6 +8,7 @@ import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/view/ride_tracking_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
+import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/ride_history_model.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
 import 'package:alo_ride_app/core/extensions/date_time_extension.dart';
 import 'package:alo_ride_app/core/utils/responsive_helper.dart';
@@ -926,6 +927,7 @@ thickness: 2,
                     statusColor: AppColors.secondary,
                     pickup: ride.pickupAddress ?? '',
                     drop: ride.dropAddress ?? '',
+                    stops: ride.stops,
                     bookingId: ride.bookingId ?? '',
                     date: formatDateRange(
                       start: ride.pickupDatetime?.toString(),
@@ -986,6 +988,7 @@ thickness: 2,
                     price: ride.payment?.status == "pending" ? "Payment Pending" : "\$${ride.totalFare}",
                     pickup: ride.pickupAddress ?? '',
                     drop: ride.dropAddress ?? '',
+                    stops: ride.stops,
                     bookingId: ride.bookingId ?? '',
                     date: formatDateRange(
                       start: ride.pickupDatetime?.toString(),
@@ -1031,6 +1034,7 @@ thickness: 2,
                     statusColor: AppColors.secondary,
                     pickup: ride.pickupAddress ?? '',
                     drop: ride.dropAddress ?? '',
+                    stops: ride.stops,
                     bookingId: ride.bookingId ?? '',
                     date: formatDateRange(
                       start: ride.pickupDatetime?.toString(),
@@ -1099,7 +1103,14 @@ thickness: 2,
     required String date,
     required String bookingId,
     String? price,
+    List<Stop>? stops,
   }) {
+    // Prefer the full stops list (multiple drop-offs). Fall back to the single
+    // drop_address when the ride has no stops array.
+    final List<Stop> rideStops = stops ?? [];
+    final List<String> dropAddresses = rideStops.isNotEmpty
+        ? rideStops.map((s) => s.address ?? '').where((a) => a.isNotEmpty).toList()
+        : [drop];
     return Column(
       children: [
         Padding(
@@ -1146,16 +1157,20 @@ thickness: 2,
                 title: pickup,
                 showDivider: true,
               ),
-              _buildLocationRow(
-                icon: Icon(
-                  Icons.location_on,
-                  color: AppColors.pinkColor,
-                  size: 20,
-                ),
-                iconColor: AppColors.pinkColor,
-                title: drop,
-                showDivider: false,
-              ),
+              // One row per drop-off (supports multiple stops).
+              ...List.generate(dropAddresses.length, (index) {
+                final isLast = index == dropAddresses.length - 1;
+                return _buildLocationRow(
+                  icon: Icon(
+                    Icons.location_on,
+                    color: AppColors.pinkColor,
+                    size: 20,
+                  ),
+                  iconColor: AppColors.pinkColor,
+                  title: dropAddresses[index],
+                  showDivider: !isLast,
+                );
+              }),
             ],
           ),
         ),
@@ -1183,7 +1198,7 @@ thickness: 2,
                 icon,
                 if (showDivider)
                   Column(
-                    children: List.generate(4, (index) {
+                    children: List.generate(5, (index) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 2.0),
                         child: Container(

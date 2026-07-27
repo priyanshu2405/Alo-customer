@@ -42,7 +42,7 @@ class _BookingScreenState extends State<BookingScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      bookingController.dropOffLocation.value = "";
+      bookingController.dropOffs.clear();
       bookingController.isShowButton.value = false;
       if (controller.currentLatLng.value != null &&
           bookingController.fromLatLng.value == null) {
@@ -57,9 +57,8 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   void dispose() {
     bookingController.fromLatLng.value = null;
-    bookingController.dropOffLatLng.value = null;
     bookingController.fromLocation.value = "";
-    bookingController.dropOffLocation.value = "";
+    bookingController.dropOffs.clear();
     bookingController.selectedDate.value = DateTime.now();
     bookingController.selectedTime.value = DateTime.now();
     bookingController.isShowButton.value = false;
@@ -290,16 +289,46 @@ class _BookingScreenState extends State<BookingScreen> {
                   showDivider: true,
                   onTap: () => _showLocationSearchSheet(context, isPickup: true),
                 ),
-                _buildLocationRow(
-                  icon: Icons.location_on,
-                  iconColor: AppColors.pinkColor,
-                  title: 'Drop off Location',
-                  subtitle: bookingController.dropOffLocation.value.isEmpty
-                      ? 'Select drop off location'
-                      : bookingController.dropOffLocation.value,
-                  showDivider: false,
-                  onTap: () => _showLocationSearchSheet(context, isPickup: false),
-                ),
+                Obx(() {
+                  final drops = bookingController.dropOffs;
+                  return Column(
+                    children: [
+                      // One row per selected drop-off stop.
+                      ...List.generate(drops.length, (index) {
+                        return _buildDropOffRow(
+                          index: index,
+                          address: drops[index].address,
+                          isLast: index == drops.length - 1,
+                        );
+                      }),
+                      // Prompt to add the first drop-off when none selected yet.
+                      if (drops.isEmpty)
+                        _buildLocationRow(
+                          icon: Icons.location_on,
+                          iconColor: AppColors.pinkColor,
+                          title: 'Drop off Location',
+                          subtitle: 'Select drop off location',
+                          showDivider: false,
+                          onTap: () => _showLocationSearchSheet(context, isPickup: false),
+                        ),
+                      // Add another drop-off within the selected package.
+                      if (drops.isNotEmpty)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton.icon(
+                            onPressed: () => _showLocationSearchSheet(context, isPickup: false),
+                            icon: const Icon(Icons.add_location_alt, size: 18, color: AppColors.secondary),
+                            label: const AppText(
+                              text: "Add another drop-off",
+                              fontSize: 13,
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                }),
                 Gap(10),
               ],
             ),
@@ -518,7 +547,62 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  void _showLocationSearchSheet(BuildContext context, {required bool isPickup}) {
+  Widget _buildDropOffRow({
+    required int index,
+    required String address,
+    required bool isLast,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.location_on, color: AppColors.pinkColor, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: InkWell(
+              onTap: () => _showLocationSearchSheet(context, isPickup: false, dropIndex: index),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Drop off ${index + 1}',
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    address.isEmpty ? 'Select drop off location' : address,
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          InkWell(
+            onTap: () {
+              bookingController.removeDropOff(index);
+              if (bookingController.dropOffs.isNotEmpty) {
+                bookingController.estimateFare(
+                  vehicleTypeId: widget.vehicleTypeId,
+                  type: widget.selectedType,
+                );
+              } else {
+                bookingController.isShowButton.value = false;
+              }
+            },
+            child: const Padding(
+              padding: EdgeInsets.all(4.0),
+              child: Icon(Icons.close, color: AppColors.red, size: 20),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLocationSearchSheet(BuildContext context, {required bool isPickup, int? dropIndex}) {
     controller.searchController.clear();
     controller.predictions.clear();
     controller.showPredictions.value = false;
@@ -596,7 +680,7 @@ class _BookingScreenState extends State<BookingScreen> {
                       title: AppText(text: prediction['structured_formatting']['main_text'] ?? '', fontSize: 15, fontWeight: FontWeight.w500, maxLines: 1, overflow: TextOverflow.ellipsis),
                       subtitle: AppText(text: prediction['description'] ?? '', fontSize: 12, color: AppColors.greyColor, maxLines: 2, overflow: TextOverflow.ellipsis),
                       onTap: () async {
-                        await _selectLocation(prediction['place_id'], prediction['description'] ?? '', isPickup);
+                        await _selectLocation(prediction['place_id'], prediction['description'] ?? '', isPickup, dropIndex: dropIndex);
                         Navigator.pop(context);
                         bookingController.estimateFare(vehicleTypeId: widget.vehicleTypeId, type: widget.selectedType);
                       },
@@ -611,7 +695,7 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  Future<void> _selectLocation(String placeId, String address, bool isPickup) async {
+  Future<void> _selectLocation(String placeId, String address, bool isPickup, {int? dropIndex}) async {
     final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs');
     try {
       final response = await http.get(url);
@@ -623,8 +707,8 @@ class _BookingScreenState extends State<BookingScreen> {
           bookingController.fromLocation.value = address;
           bookingController.fromLatLng.value = position;
         } else {
-          bookingController.dropOffLocation.value = address;
-          bookingController.dropOffLatLng.value = position;
+          // dropIndex == null → add a new drop-off; otherwise edit that stop.
+          bookingController.setDropOff(index: dropIndex, latLng: position, address: address);
         }
         controller.setMarker(position);
         controller.moveCameraTo(position);

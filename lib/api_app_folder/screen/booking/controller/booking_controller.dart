@@ -1,4 +1,5 @@
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
+import 'package:alo_ride_app/api_app_folder/screen/booking/model/drop_off_point.dart';
 import 'package:alo_ride_app/api_app_folder/screen/booking/view/ride_confirmed_widget.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart';
 import 'package:flutter/material.dart';
@@ -20,10 +21,32 @@ class BookingController extends GetxController {
 
   // Add these for locations
   RxString fromLocation = "".obs;
-  RxString dropOffLocation = "".obs;
   Rx<LatLng?> fromLatLng = Rx<LatLng?>(null);
-  Rx<LatLng?> dropOffLatLng = Rx<LatLng?>(null);
+
+  // Multiple drop-off stops selected within the chosen package.
+  RxList<DropOffPoint> dropOffs = <DropOffPoint>[].obs;
+
   RxString rideBookingMessage = "".obs;
+
+  /// Adds a new drop-off stop, or replaces the one at [index] when editing.
+  void setDropOff({int? index, required LatLng latLng, required String address}) {
+    final point = DropOffPoint(latLng: latLng, address: address);
+    if (index != null && index >= 0 && index < dropOffs.length) {
+      dropOffs[index] = point;
+    } else {
+      dropOffs.add(point);
+    }
+  }
+
+  void removeDropOff(int index) {
+    if (index >= 0 && index < dropOffs.length) {
+      dropOffs.removeAt(index);
+    }
+  }
+
+  /// Drop-offs formatted for the API request body.
+  List<Map<String, dynamic>> get dropOffsPayload =>
+      dropOffs.map((d) => d.toJson()).toList();
 
   // String get formattedDate => selectedDate.value == null
   //     ? "Select Date"
@@ -82,8 +105,7 @@ RxBool isShowButton = false.obs;
     debugPrint("=== ESTIMATE FARE CALLED ===");
     debugPrint("From Location: ${fromLocation.value}");
     debugPrint("From LatLng: ${fromLatLng.value}");
-    debugPrint("Drop-off Location: ${dropOffLocation.value}");
-    debugPrint("Drop-off LatLng: ${dropOffLatLng.value}");
+    debugPrint("Drop-offs: ${dropOffsPayload}");
     debugPrint("Vehicle Type ID: $vehicleTypeId");
     debugPrint(
       "Trip Type: ${selectValue.value == 0 ? 'one_way' : 'round_trip'}",
@@ -101,7 +123,7 @@ RxBool isShowButton = false.obs;
       return;
     }
 
-    if (dropOffLatLng.value == null) {
+    if (dropOffs.isEmpty) {
       Get.snackbar(
         "Error",
         "Please select drop-off location",
@@ -119,8 +141,7 @@ RxBool isShowButton = false.obs;
     var body = {
       "pickup_latitude": fromLatLng.value!.latitude,
       "pickup_longitude": fromLatLng.value!.longitude,
-      "drop_latitude": dropOffLatLng.value!.latitude,
-      "drop_longitude": dropOffLatLng.value!.longitude,
+      "drop_offs": dropOffsPayload,
       "id": vehicleTypeId,
       "type": type,
       //"trip_type": tripType,
@@ -226,11 +247,10 @@ RxBool isShowButton = false.obs;
     required String flightNumber,
   }) async {
     // ✅ ADD DEBUG PRINTS AT THE START
-    debugPrint("=== ESTIMATE FARE CALLED ===");
+    debugPrint("=== BOOK RIDE CALLED ===");
     debugPrint("From Location: ${fromLocation.value}");
     debugPrint("From LatLng: ${fromLatLng.value}");
-    debugPrint("Drop-off Location: ${dropOffLocation.value}");
-    debugPrint("Drop-off LatLng: ${dropOffLatLng.value}");
+    debugPrint("Drop-offs: ${dropOffsPayload}");
     debugPrint("Vehicle Type ID: $vehicleTypeId");
     debugPrint(
       "Trip Type: ${selectValue.value == 0 ? 'one_way' : 'round_trip'}",
@@ -248,7 +268,7 @@ RxBool isShowButton = false.obs;
       return;
     }
 
-    if (dropOffLatLng.value == null) {
+    if (dropOffs.isEmpty) {
       Get.snackbar(
         "Error",
         "Please select drop-off location",
@@ -279,9 +299,7 @@ RxBool isShowButton = false.obs;
       "pickup_latitude": fromLatLng.value!.latitude,
       "pickup_longitude": fromLatLng.value!.longitude,
       "pickup_address": fromLocation.value,
-      "drop_latitude": dropOffLatLng.value!.latitude,
-      "drop_longitude": dropOffLatLng.value!.longitude,
-      "drop_address": dropOffLocation.value,
+      "drop_offs": dropOffsPayload,
       "id": vehicleTypeId,
       "trip_type": tripType,
       // "pickup_datetime" :"$formattedDate $formattedTime",
@@ -359,9 +377,8 @@ RxBool isShowButton = false.obs;
   void clearBookingData() {
     // Locations
     fromLocation.value = "";
-    dropOffLocation.value = "";
     fromLatLng.value = null;
-    dropOffLatLng.value = null;
+    dropOffs.clear();
 
     // Date & Time (THIS FIXES THE ERROR)
     selectedDate.value = null;

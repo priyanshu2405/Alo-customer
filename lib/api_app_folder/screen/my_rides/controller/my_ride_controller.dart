@@ -401,7 +401,8 @@ class MyRideController extends GetxController {
 
       String endpoint = 'rides/history';
 
-      if ((startDate?.isNotEmpty ?? true) || (endDate?.isNotEmpty ?? true)) {
+      // Only send start_date when a valid date is selected.
+      if (startDate?.isNotEmpty == true) {
         endpoint += '?start_date=$startDate';
       }
 

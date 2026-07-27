@@ -124,6 +124,7 @@ class RideData {
   VehicleType? vehicleType;
   Payment? payment;
   int? isPayment;
+  List<Stop>? stops;
 
   RideData({
     this.id,
@@ -156,6 +157,7 @@ class RideData {
     this.driver,
     this.vehicleType,
     this.payment,this.isPayment,
+    this.stops,
   });
 
   factory RideData.fromJson(Map<String, dynamic> json) => RideData(
@@ -190,6 +192,9 @@ class RideData {
     vehicleType: json["vehicle_type"] == null ? null : VehicleType.fromJson(json["vehicle_type"]),
     payment: json["payment"] == null ? null : Payment.fromJson(json["payment"]),
     isPayment: json["is_payment"],
+    stops: json["stops"] == null
+        ? []
+        : List<Stop>.from(json["stops"].map((x) => Stop.fromJson(x))),
   );
 
   Map<String, dynamic> toJson() => {
@@ -224,7 +229,52 @@ class RideData {
     "vehicle_type": vehicleType?.toJson(),
     "payment": payment?.toJson(),
     "is_payment": isPayment,
+    "stops": stops == null ? [] : List<dynamic>.from(stops!.map((x) => x.toJson())),
   };
+}
+
+class Stop {
+  int? id;
+  int? rideId;
+  int? sequence;
+  String? latitude;
+  String? longitude;
+  String? address;
+  DateTime? createdAt;
+  DateTime? updatedAt;
+
+  Stop({
+    this.id,
+    this.rideId,
+    this.sequence,
+    this.latitude,
+    this.longitude,
+    this.address,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  factory Stop.fromJson(Map<String, dynamic> json) => Stop(
+        id: json["id"],
+        rideId: json["ride_id"],
+        sequence: json["sequence"],
+        latitude: json["latitude"],
+        longitude: json["longitude"],
+        address: json["address"],
+        createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
+        updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "id": id,
+        "ride_id": rideId,
+        "sequence": sequence,
+        "latitude": latitude,
+        "longitude": longitude,
+        "address": address,
+        "created_at": createdAt?.toIso8601String(),
+        "updated_at": updatedAt?.toIso8601String(),
+      };
 }
 
 class VehicleType {
