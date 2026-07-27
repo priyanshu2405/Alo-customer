@@ -242,10 +242,10 @@ class LocationController extends GetxController {
     final url = Uri.parse(
       'https://maps.googleapis.com/maps/api/place/autocomplete/json'
       '?input=$encodedInput'
-      // '&components=country:ca'
-      // '&location=46.5,-66.0'
-      // '&radius=300000'
-      // '&strictbounds=true'
+      '&components=country:ca'
+      '&location=46.5,-66.0'
+      '&radius=300000'
+      '&strictbounds=true'
       '&key=$_apiKey',
     );
 
