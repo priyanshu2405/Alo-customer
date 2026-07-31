@@ -5,8 +5,8 @@ import 'package:alo_ride_app/api_app_folder/screen/packages/package_controller.d
 import 'package:alo_ride_app/api_app_folder/utils/payment_success_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/controller/ride_completed_controller.dart';
+import 'package:alo_ride_app/api_app_folder/services/receipt_service.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 
 
@@ -33,6 +33,10 @@ class StripePaymentService extends GetxController {
         return;
       }
 
+      // Prefilled when the account has an email; OTP-only users type one into
+      // the sheet, and `payment/confirm` reads it back off the charge.
+      final accountEmail = await ReceiptService.resolveAccountEmail();
+
       // Initialize Stripe Payment Sheet
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
@@ -46,6 +50,7 @@ class StripePaymentService extends GetxController {
             phone: CollectionMode.always,
             email: CollectionMode.always,
           ),
+          billingDetails: BillingDetails(email: accountEmail),
         ),
       );
 
@@ -142,14 +147,22 @@ class StripePaymentService extends GetxController {
       final response = await controller.savePaymentDetails(body);
 
       // `payment/confirm` verifies with Stripe server-side, so its response is
-      // the authoritative signal that the payment landed.
+      // the authoritative signal that the payment landed. It also reports which
+      // address Stripe emailed the receipt to.
       if (response['status'] == true || response['success'] == true) {
-        // Check context again before showing snackbar
-        if (context.mounted) {
-          _showSnackBarSafe(context, response['message'] ?? 'Payment successful');
-        }
+        final receipt = ReceiptInfo.fromResponse(response);
 
-        Get.offAll(() => DashboardScreen());
+        // The sheet email is the only address an OTP-only user gave us — keep
+        // it so the next payment does not have to ask again.
+        await ReceiptService.saveEmailToProfileIfMissing(receipt.email);
+
+        Get.offAll(() => PaymentSuccessView(
+          transactionId: txnId,
+          idLabel: 'Transaction ID',
+          message: response['message'] ?? 'Payment successful',
+          receiptEmail: receipt.email,
+          receiptSent: receipt.sent,
+        ));
       } else {
         print("Payment save failed");
         Get.snackbar(
@@ -177,32 +190,6 @@ class StripePaymentService extends GetxController {
       if (Get.isDialogOpen ?? false) {
         Get.back();
       }
-    }
-  }
-
-  /// Safe method to show snackbar with context validation
-  void _showSnackBarSafe(BuildContext context, String message) {
-    try {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              message,
-              style: TextStyle(color: AppColors.white),
-            ),
-            backgroundColor: AppColors.secondary,
-          ),
-        );
-      }
-    } catch (e) {
-      // Fallback to Get.snackbar if context is invalid
-      Get.snackbar(
-        'Info',
-        message,
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
     }
   }
 
@@ -274,6 +261,10 @@ class SubscriptionPaymentService extends GetxController {
         return;
       }
 
+      // Prefilled when the account has an email; OTP-only users type one into
+      // the sheet, and `packages/confirm-payment` reads it back off the charge.
+      final accountEmail = await ReceiptService.resolveAccountEmail();
+
       // Initialize Stripe Payment Sheet
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
@@ -287,6 +278,7 @@ class SubscriptionPaymentService extends GetxController {
             phone: CollectionMode.always,
             email: CollectionMode.always,
           ),
+          billingDetails: BillingDetails(email: accountEmail),
         ),
       );
 
@@ -368,16 +360,18 @@ class SubscriptionPaymentService extends GetxController {
       final response = await controller.savePaymentDetails(paymentIntentId:txnId );
 
       // `packages/confirm-payment` verifies with Stripe server-side, so its
-      // response is the authoritative signal that the payment landed.
+      // response is the authoritative signal that the payment landed. It also
+      // reports which address Stripe emailed the receipt to.
       if (response['status'] == true || response['success'] == true) {
-        // Check context again before showing snackbar
-        if (context.mounted) {
-          _showSnackBarSafe(context, response['message'] ?? 'Payment successful');
-        }
+        final receipt = ReceiptInfo.fromResponse(response);
+
+        await ReceiptService.saveEmailToProfileIfMissing(receipt.email);
 
         Get.offAll(() => PaymentSuccessView(
           transactionId: txnId,
           message: response['message'],
+          receiptEmail: receipt.email,
+          receiptSent: receipt.sent,
         ));
       } else {
         print("Payment save failed");
@@ -406,32 +400,6 @@ class SubscriptionPaymentService extends GetxController {
       if (Get.isDialogOpen ?? false) {
         Get.back();
       }
-    }
-  }
-
-  /// Safe method to show snackbar with context validation
-  void _showSnackBarSafe(BuildContext context, String message) {
-    try {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              message,
-              style: TextStyle(color: AppColors.white),
-            ),
-            backgroundColor: AppColors.secondary,
-          ),
-        );
-      }
-    } catch (e) {
-      // Fallback to Get.snackbar if context is invalid
-      Get.snackbar(
-        'Info',
-        message,
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-      );
     }
   }
 

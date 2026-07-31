@@ -11,6 +11,8 @@ import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/get_ride_detai
 import 'package:alo_ride_app/api_app_folder/screen/ride/controller/ride_completed_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/payment_details_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/rate_tip_dialog.dart';
+import 'package:alo_ride_app/api_app_folder/services/receipt_service.dart';
+import 'package:alo_ride_app/api_app_folder/utils/payment_success_view.dart';
 import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
@@ -497,6 +499,17 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
       return;
     }
 
+    // No payment sheet here, so nothing can supply billing details after the
+    // fact — ask up front when the account has no email, otherwise the backend
+    // has no address to send the receipt to.
+    String? receiptEmail = await ReceiptService.resolveAccountEmail();
+    if (receiptEmail == null) {
+      receiptEmail = await ReceiptService.promptForEmail(
+        title: 'Receipt email',
+        message: 'Your account has no email. Where should we send your receipt?',
+      );
+    }
+
     Get.dialog(
       const Center(
         child: CircularProgressIndicator(color: AppColors.secondary),
@@ -505,24 +518,50 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
     );
 
     try {
-      final ok = await rideCompletedController.payRideWithSavedCard(
+      final response = await rideCompletedController.payRideWithSavedCard(
         rideId: widget.bookingId,
         paymentMethodId: paymentMethodId,
+        receiptEmail: receiptEmail,
       );
 
       if (Get.isDialogOpen ?? false) Get.back();
 
-      if (ok) {
-        Get.snackbar(
-          'Success',
-          'Payment successful',
-          snackPosition: SnackPosition.TOP,
-        );
+      if (response != null) {
+        final receipt = ReceiptInfo.fromResponse(response);
+        await ReceiptService.saveEmailToProfileIfMissing(receipt.email);
+
+        Get.offAll(() => PaymentSuccessView(
+              transactionId: _paymentIntentIdOf(response),
+              idLabel: 'Transaction ID',
+              message: response['message'] ?? 'Payment successful',
+              receiptEmail: receipt.email,
+              receiptSent: receipt.sent,
+            ));
       }
     } catch (e) {
       if (Get.isDialogOpen ?? false) Get.back();
       Get.snackbar('Error', e.toString(), snackPosition: SnackPosition.TOP);
     }
+  }
+
+  /// The saved-card response nests the intent id under `data`, and the key
+  /// name differs between payment shapes.
+  String? _paymentIntentIdOf(Map<String, dynamic> response) {
+    dynamic pick(String key) {
+      if (response[key] != null) return response[key];
+      final data = response['data'];
+      if (data is Map<String, dynamic>) {
+        if (data[key] != null) return data[key];
+        final payment = data['payment'];
+        if (payment is Map<String, dynamic>) return payment[key];
+      }
+      return null;
+    }
+
+    final id = pick('payment_intent_id') ??
+        pick('stripe_payment_intent_id') ??
+        pick('payment_intent');
+    return id?.toString();
   }
 
   void _showPaymentOptions(double totalFare) {

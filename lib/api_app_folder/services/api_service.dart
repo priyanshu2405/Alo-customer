@@ -13,8 +13,6 @@ class ApiService {
   static const String baseUrl1 = 'https://alodrive.ca/api/';
 
 
-  // static const String baseUrl = 'http://192.168.1.21:8078/api/user/';
-  // static const String baseUrl1 = 'http://192.168.1.21:8078/api/';
 
   static const Duration timeoutDuration = Duration(minutes: 2);
 

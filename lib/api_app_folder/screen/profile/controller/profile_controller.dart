@@ -41,6 +41,7 @@ class ProfileController extends GetxController {
       profileData.value = packageModel;
 
       nameController.text = profileData.value.data?.user?.name??"";
+      emailController.text = profileData.value.data?.user?.email??"";
       phoneNumberController.text = profileData.value.data?.user?.mobile??"";
       profileImageUrl.value = profileData.value.data?.user?.profilePhoto??"";
 
@@ -157,7 +158,7 @@ class ProfileController extends GetxController {
   //   }
   // }
 
-  Future<void> editProfile({String? name,bool? nameCheck}) async {
+  Future<void> editProfile({String? name,bool? nameCheck, String? email}) async {
     isEditProfile.value = true;
 
     try {
@@ -171,6 +172,7 @@ class ProfileController extends GetxController {
         endpoint: 'profile',
         fields: {
           "name": userName,
+          if (email != null && email.trim().isNotEmpty) "email": email.trim(),
         },
         file: profileImageFile.value, // 👈 FILE
         fileKey: "profile_photo", // 👈 backend key

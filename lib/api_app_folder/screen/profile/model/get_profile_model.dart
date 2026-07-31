@@ -48,6 +48,9 @@ class User {
   int? id;
   String? name;
   String? mobile;
+  /// Null for users who signed up with mobile + OTP only. Stripe receipts fall
+  /// back to the address typed in the payment sheet when this is missing.
+  String? email;
   String? profilePhoto;
   bool? isProfileComplete;
 
@@ -55,6 +58,7 @@ class User {
     this.id,
     this.name,
     this.mobile,
+    this.email,
     this.profilePhoto,
     this.isProfileComplete,
   });
@@ -63,6 +67,7 @@ class User {
     id: json["id"],
     name: json["name"],
     mobile: json["mobile"],
+    email: json["email"],
     profilePhoto: json["profile_photo"],
     isProfileComplete: json["is_profile_complete"],
   );
@@ -71,6 +76,7 @@ class User {
     "id": id,
     "name": name,
     "mobile": mobile,
+    "email": email,
     "profile_photo": profilePhoto,
     "is_profile_complete": isProfileComplete,
   };

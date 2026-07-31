@@ -1,6 +1,4 @@
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
-import 'package:alo_ride_app/api_app_folder/screen/dashboard/controller/dashboard_conroller.dart';
-import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart' show ApiService;
 import 'package:flutter/material.dart';
@@ -127,15 +125,27 @@ class RideCompletedController extends GetxController {
   /// POST /api/user/rides/{rideId}/pay-with-saved-card
   /// `paymentMethodId` is the backend card row id (from GET /payment-methods),
   /// not the Stripe `pm_xxx`.
-  Future<bool> payRideWithSavedCard({
+  ///
+  /// This runs off_session with no payment sheet, so there are no billing
+  /// details for the backend to fall back to — [receiptEmail] is the only
+  /// address available for users whose account has no email.
+  ///
+  /// Returns the raw response (null on failure) so the caller can read
+  /// `receipt_sent` / `receipt_email` and offer the manual resend.
+  Future<Map<String, dynamic>?> payRideWithSavedCard({
     required int rideId,
     required int paymentMethodId,
+    String? receiptEmail,
   }) async {
     isCreatePaymentIntent.value = true;
     try {
       final response = await ApiService.post(
         endpoint: 'rides/$rideId/pay-with-saved-card',
-        body: {'payment_method_id': paymentMethodId},
+        body: {
+          'payment_method_id': paymentMethodId,
+          if (receiptEmail != null && receiptEmail.trim().isNotEmpty)
+            'receipt_email': receiptEmail.trim(),
+        },
         isShow: true,
       );
       debugPrint('payRideWithSavedCard response: $response');
@@ -144,11 +154,9 @@ class RideCompletedController extends GetxController {
           response['success'] == true || response['status'] == true;
       if (isSuccess) {
         await myRideController.getRideDetails(id: rideId);
-        final controller = Get.put(DashBoardController());
-        controller.changeIndex(1);
-        Get.to(() => DashboardScreen());
+        return response;
       }
-      return isSuccess;
+      return null;
     } catch (e) {
       debugPrint('payRideWithSavedCard error: $e');
       Get.snackbar(
@@ -158,7 +166,7 @@ class RideCompletedController extends GetxController {
         backgroundColor: Colors.red.withOpacity(0.85),
         colorText: Colors.white,
       );
-      return false;
+      return null;
     } finally {
       isCreatePaymentIntent.value = false;
     }

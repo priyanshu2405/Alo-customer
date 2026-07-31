@@ -10,6 +10,7 @@ import 'package:alo_ride_app/api_app_folder/screen/my_rides/view/ride_tracking_s
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/ride_history_model.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
+import 'package:alo_ride_app/api_app_folder/services/receipt_service.dart';
 import 'package:alo_ride_app/core/extensions/date_time_extension.dart';
 import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
@@ -985,6 +986,10 @@ thickness: 2,
                   child: _rideCard(
                     status: "completed",
                     statusColor: AppColors.greenColor,
+                    // Only paid rides have a charge to email a receipt for.
+                    receiptPaymentIntentId: ride.payment?.status == "pending"
+                        ? null
+                        : ride.payment?.stripePaymentIntentId?.toString(),
                     price: ride.payment?.status == "pending" ? "Payment Pending" : "\$${ride.totalFare}",
                     pickup: ride.pickupAddress ?? '',
                     drop: ride.dropAddress ?? '',
@@ -1104,6 +1109,9 @@ thickness: 2,
     required String bookingId,
     String? price,
     List<Stop>? stops,
+    /// When set, the card shows a "Resend receipt" action that calls
+    /// `payment/send-receipt` for this charge.
+    String? receiptPaymentIntentId,
   }) {
     // Prefer the full stops list (multiple drop-offs). Fall back to the single
     // drop_address when the ride has no stops array.
@@ -1171,6 +1179,35 @@ thickness: 2,
                   showDivider: !isLast,
                 );
               }),
+              if (receiptPaymentIntentId != null &&
+                  receiptPaymentIntentId.isNotEmpty) ...[
+                const Gap(4),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    onPressed: () => ReceiptService.promptAndSendReceipt(
+                      paymentIntentId: receiptPaymentIntentId,
+                      title: 'Resend receipt',
+                    ),
+                    icon: const Icon(
+                      Icons.receipt_long_outlined,
+                      size: 16,
+                      color: AppColors.secondary,
+                    ),
+                    label: const AppText(
+                      text: 'Resend receipt',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
