@@ -255,19 +255,31 @@ class _PackagesViewState extends State<PackagesView> {
                                             //     controller.isCreatePaymentIntent.value == true,
                                             text: "Book Now",
                                             onTap: () async {
+                                              final package =
+                                                  controller.packageList[index];
+
+                                              /// Match packages[index].id with
+                                              /// purchased_packages.package_id,
+                                              /// -1 when nothing was purchased.
+                                              final purchaseId = controller
+                                                  .purchaseIdOf(package.id);
+
+                                              debugPrint(
+                                                "Package ID: ${package.id} | Purchase ID: $purchaseId | Name: ${package.packageName}",
+                                              );
+
                                               Get.to(
                                                 () => BookingScreen(
                                                   selectedType: 2,
+                                                  purchaseId : purchaseId,
+                                                  checkPurchase: true,
                                                   vehicleTypeId:
-                                                      controller
-                                                          .packageList[index]
-                                                          .id ??
+                                                  controller
+                                                      .packageList[index]
+                                                      .id ??
                                                       -1,
                                                   vehicleTypeName:
-                                                      controller
-                                                          .packageList[index]
-                                                          .packageName ??
-                                                      "",
+                                                      package.packageName ?? "",
                                                 ),
                                               )?.then((value) async {
                                                 await controller

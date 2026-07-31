@@ -6,8 +6,17 @@ import 'package:get/get.dart';
 
 class PackageController extends GetxController {
   RxList<FlatRatesModel> packageList = <FlatRatesModel>[].obs;
+  RxList<FlatRatesModel> purchasedPackageList = <FlatRatesModel>[].obs;
   RxBool isVehicleTypes = false.obs;
   RxBool isCreatePaymentIntent = false.obs;
+
+  /// package_id -> purchase_id, built once per API response so the lookup
+  /// on tap is O(1) instead of scanning `purchased_packages` every time.
+  final RxMap<int, int> purchaseIdByPackageId = <int, int>{}.obs;
+
+  /// Returns the purchase_id for a package, or -1 when it was never purchased.
+  int purchaseIdOf(int? packageId) =>
+      packageId == null ? -1 : (purchaseIdByPackageId[packageId] ?? -1);
 
   @override
   void onInit() {
@@ -46,13 +55,26 @@ class PackageController extends GetxController {
       );
 
       if (response["success"] == true) {
-        final List list = response["data"]['packages'];
+        final List list = response["data"]['packages'] ?? [];
 
         packageList.assignAll(
           list.map((e) => FlatRatesModel.fromJson(e)).toList(),
         );
 
+        final List purchased = response["data"]['purchased_packages'] ?? [];
+
+        purchasedPackageList.assignAll(
+          purchased.map((e) => FlatRatesModel.fromJson(e)).toList(),
+        );
+
+        purchaseIdByPackageId.assignAll({
+          for (final p in purchasedPackageList)
+            if (p.packageId != null && (p.purchaseId ?? p.id) != null)
+              p.packageId!: (p.purchaseId ?? p.id)!,
+        });
+
         debugPrint("length ==> ${packageList.length}");
+        debugPrint("purchased map ==> $purchaseIdByPackageId");
       }
     } catch (e) {
       print('Error fetching packages: $e');

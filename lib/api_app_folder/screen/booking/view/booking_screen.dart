@@ -18,14 +18,16 @@ import 'package:intl/intl.dart';
 
 class BookingScreen extends StatefulWidget {
   final int vehicleTypeId;
+  final int? purchaseId;
   final int selectedType;
   final String vehicleTypeName;
+  final bool checkPurchase;
 
   const BookingScreen({
     super.key,
     required this.selectedType,
     required this.vehicleTypeId,
-    required this.vehicleTypeName,
+    required this.vehicleTypeName,  this.purchaseId,this.checkPurchase = false,
   });
 
   @override
@@ -190,13 +192,13 @@ class _BookingScreenState extends State<BookingScreen> {
           Divider(color: AppColors.darkTextColor),
           const Gap(8),
           Obx(() => AppText(
-                text: "Fare estimate : \$${bookingController.totalFare?.value}",
+                text: "Fare estimate : \$${bookingController.totalFare.value}",
                 fontSize: 12,
                 color: AppColors.lightBlackColor,
               )),
           const Gap(8),
           Obx(() => AppText(
-            text: "Tax : \$${bookingController.totalTax?.value}",
+            text: "Tax : \$${bookingController.totalTax.value}",
             fontSize: 12,
             color: AppColors.lightBlackColor,
           )),
@@ -244,7 +246,9 @@ class _BookingScreenState extends State<BookingScreen> {
                         if (formKey.currentState!.validate()) {
                           await bookingController.bookApi(
                             context,
-                            vehicleTypeId: widget.vehicleTypeId,
+                            vehicleTypeId: widget.checkPurchase == true
+                                ? (widget.purchaseId ?? -1)
+                                : widget.vehicleTypeId,
                             type: widget.selectedType,
                             flightNumber: flightNumberController.text.trim(),
                             isAirportPickup: isAirportPickup.value,
@@ -253,7 +257,9 @@ class _BookingScreenState extends State<BookingScreen> {
                       } else {
                         await bookingController.bookApi(
                           context,
-                          vehicleTypeId: widget.vehicleTypeId,
+                          vehicleTypeId: widget.checkPurchase == true
+                              ? (widget.purchaseId ?? -1)
+                              : widget.vehicleTypeId,
                           type: widget.selectedType,
                           flightNumber: flightNumberController.text.trim(),
                           isAirportPickup: isAirportPickup.value,

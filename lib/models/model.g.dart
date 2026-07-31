@@ -26,6 +26,7 @@ FlatRatesModel _$FlatRatesModelFromJson(Map<String, dynamic> json) =>
       ridesRemaining: (json['rides_remaining'] as num?)?.toInt(),
       amountPaid: json['amount_paid'],
       purchaseId: (json['purchase_id'] as num?)?.toInt(),
+      packageId: (json['package_id'] as num?)?.toInt(),
       totalRides: (json['total_rides'] as num?)?.toInt(),
       paidAt: json['paid_at'] as String?,
     );
@@ -49,6 +50,7 @@ Map<String, dynamic> _$FlatRatesModelToJson(FlatRatesModel instance) =>
       'is_purchased': instance.isPurchased,
       'rides_remaining': instance.ridesRemaining,
       'purchase_id': instance.purchaseId,
+      'package_id': instance.packageId,
       'total_rides': instance.totalRides,
       'amount_paid': instance.amountPaid,
       'duration_minutes': instance.durationMinutes,

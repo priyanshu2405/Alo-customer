@@ -19,6 +19,7 @@ class FlatRatesModel {
   final int? isPurchased;
   final int? ridesRemaining;
   final int? purchaseId;
+  final int? packageId;
   final int? totalRides;
   final dynamic amountPaid;
   final dynamic durationMinutes;
@@ -41,7 +42,7 @@ class FlatRatesModel {
     this.durationMinutes,
     this.ridesRemaining,
     this.amountPaid,
-    this.purchaseId,this.totalRides,this.paidAt,
+    this.purchaseId,this.packageId,this.totalRides,this.paidAt,
   });
 
   factory FlatRatesModel.fromJson(JsonMap json) =>
