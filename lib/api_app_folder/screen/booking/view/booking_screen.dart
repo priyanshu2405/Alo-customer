@@ -6,6 +6,8 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/booking/controller/booking_controller.dart';
+import 'package:alo_ride_app/api_app_folder/screen/card/controller/card_controller.dart';
+import 'package:alo_ride_app/api_app_folder/screen/card/view/card_list_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/controller/location_controller.dart';
 import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
@@ -35,6 +37,7 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
+  final CardController cardController = Get.put(CardController());
   final LocationController controller = Get.put(LocationController());
   final BookingController bookingController = Get.put(BookingController());
   final LocationController locationController = Get.put(LocationController());
@@ -44,6 +47,7 @@ class _BookingScreenState extends State<BookingScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      cardController.getCards();
       bookingController.dropOffs.clear();
       bookingController.isShowButton.value = false;
       if (controller.currentLatLng.value != null &&
@@ -242,6 +246,20 @@ class _BookingScreenState extends State<BookingScreen> {
                     isLoading: bookingController.isBookRide.value,
                     text: "Book Now",
                     onTap: () async {
+
+                      final cards = cardController.cards;
+
+                      if (cards.isEmpty) {
+                        Get.snackbar(
+                          "No Card",
+                          "No payment card found. Please add a payment card before booking a ride.",
+                          snackPosition: SnackPosition.TOP,
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
+
                       if (isAirportPickup.value == true) {
                         if (formKey.currentState!.validate()) {
                           await bookingController.bookApi(
