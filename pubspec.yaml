@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 14.0.0+14
+version: 15.0.0+15
 
 environment:
   sdk: ^3.10.4
@@ -63,6 +63,14 @@ dependencies:
   socket_io_client: ^3.1.3
   http: ^1.6.0
   flutter_phone_direct_caller: ^2.2.1
+
+dependency_overrides:
+  # 2.6.0 switched from a CocoaPods plugin to Dart native assets, which pulls in
+  # objective_c. Native-asset frameworks are built outside the Xcode pipeline, so
+  # no dSYM is produced and App Store Connect warns "Upload Symbols Failed" for
+  # objective_c.framework. Pinned to the last pod-based release.
+  # Remove once Flutter emits dSYMs for native assets.
+  path_provider_foundation: 2.5.1
 
 dev_dependencies:
   flutter_test:
