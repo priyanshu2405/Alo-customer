@@ -38,6 +38,7 @@
     <application
         android:label="Alo Drive"
         android:name="${applicationName}"
+        android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

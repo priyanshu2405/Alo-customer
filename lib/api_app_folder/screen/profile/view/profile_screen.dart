@@ -5,6 +5,9 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
+import 'package:alo_ride_app/api_app_folder/screen/chat/controller/chat_unread_controller.dart';
+import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_entry_button.dart';
+import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_rooms_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/card/view/card_list_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/profile/controller/profile_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/profile/view/common_profile_data.dart';
@@ -313,6 +316,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 profileController.phoneNumberController.text,
                           ),
                           Gap(50),
+                          Divider(color: Color(0xffD9D9D9)),
+                          Gap(10),
+                          /// 💬 MESSAGES
+                          InkWell(
+                            onTap: () => Get.to(() => const ChatRoomsScreen()),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.chat_bubble_outline,
+                                  color: AppColors.darkGrayColor,
+                                ),
+                                const Gap(28),
+                                const AppText(
+                                  text: "Messages",
+                                  color: AppColors.darkGrayColor,
+                                ),
+                                const Spacer(),
+                                Obx(() {
+                                  final unread =
+                                      ChatUnreadController.instance.total;
+                                  if (unread == 0) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return UnreadDot(count: unread);
+                                }),
+                              ],
+                            ),
+                          ),
+                          Gap(10),
                           Divider(color: Color(0xffD9D9D9)),
                           Gap(10),
                           InkWell(

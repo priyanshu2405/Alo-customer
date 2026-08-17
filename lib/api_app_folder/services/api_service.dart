@@ -9,11 +9,11 @@ import 'package:http/http.dart' as http;
 
 class ApiService {
 
-  static const String baseUrl = 'https://alodrive.ca/api/user/';
-  static const String baseUrl1 = 'https://alodrive.ca/api/';
+  static const String baseUrl = 'http://192.168.1.12:8006/api/user/';
+  static const String baseUrl1 = 'http://192.168.1.12:8006/api/';
 
-  // static const String baseUrl = 'http://192.168.1.12:8051/api/user/';
-  // static const String baseUrl1 = 'http://192.168.1.12:8051/api/';
+  // static const String baseUrl = 'https://alodrive.ca/api/user/';
+  // static const String baseUrl1 = 'https://alodrive.ca/api/';
 
 
 

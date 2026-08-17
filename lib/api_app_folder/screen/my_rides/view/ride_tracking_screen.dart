@@ -6,6 +6,7 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/common_text_field.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
+import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_entry_button.dart';
 import 'package:alo_ride_app/api_app_folder/screen/my_rides/controller/my_ride_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
 import 'package:flutter/material.dart';
@@ -495,6 +496,27 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          /// 💬 Chat with the driver — renders nothing until a
+                          /// driver accepts, so no room means no button.
+                          ChatEntryButton(
+                            rideId: myRideController
+                                .getRideDetailsModel.value.data?.ride?.id,
+                            rideStatus: myRideController
+                                .getRideDetailsModel.value.data?.ride?.status,
+                            driverName:
+                                "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.name ?? ''}",
+                            driverMobile:
+                                "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.mobile ?? ''}",
+                            driverPhoto:
+                                "${myRideController.getRideDetailsModel.value.data?.ride?.driver?.profilePhoto ?? ''}",
+                          ),
+                          if (ChatAvailability.isOpen(
+                            rideId: myRideController
+                                .getRideDetailsModel.value.data?.ride?.id,
+                            status: myRideController
+                                .getRideDetailsModel.value.data?.ride?.status,
+                          ))
+                            const Gap(12),
                           if(myRideController.getRideDetailsModel.value.data?.ride?.status != "pending" && myRideController.getRideDetailsModel.value.data?.ride?.status != "completed")...[
                           Expanded(
                             child: AppButton(
