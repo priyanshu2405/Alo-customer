@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 
+import 'package:alo_ride_app/api_app_folder/screen/chat/service/chat_push_router.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/controller/home_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/view/welcome_dialog.dart';
@@ -73,6 +74,10 @@ class VerifyOtpController extends GetxController {
         if(response["data"]["needs_name"] == false){
           _showWelcomeDialog(context);
         }
+
+        /// A chat push tapped before login is replayed now that there is a
+        /// session and a dashboard to come back to.
+        ChatPushRouter.flushPending();
 
 
       } else {

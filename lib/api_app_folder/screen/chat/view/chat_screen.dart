@@ -3,6 +3,7 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/screen/chat/controller/chat_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/chat/model/chat_models.dart';
+import 'package:alo_ride_app/api_app_folder/screen/chat/service/chat_push_router.dart';
 import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,6 +49,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    // Marks this thread as the one on screen: a push for it shows no banner,
+    // and a tap on it won't stack a second copy running a second poll timer.
+    ChatPushRouter.currentChatRideId = widget.rideId;
+
     // Tagged per ride so opening a different thread never reuses this one's
     // timer, cursor or dedupe set.
     controller = Get.put(
@@ -78,6 +83,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    if (ChatPushRouter.currentChatRideId == widget.rideId) {
+      ChatPushRouter.currentChatRideId = null;
+    }
     _accessWorker.dispose();
     Get.delete<ChatController>(tag: 'chat_${widget.rideId}');
     super.dispose();

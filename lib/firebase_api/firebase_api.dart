@@ -2,9 +2,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:alo_ride_app/api_app_folder/screen/chat/controller/chat_controller.dart';
-import 'package:alo_ride_app/api_app_folder/screen/chat/controller/chat_unread_controller.dart';
-import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_entry_button.dart';
+import 'package:alo_ride_app/api_app_folder/screen/chat/service/chat_push_router.dart';
 import 'package:alo_ride_app/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -70,25 +68,24 @@ class NotificationService {
     // Handle background message taps
     FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessageTap);
 
-    // Handle app launch from terminated state
-    RemoteMessage? initialMessage = await _firebaseMessaging.getInitialMessage();
-    if (initialMessage != null &&
-        handleChatTap(Map<String, dynamic>.from(initialMessage.data))) {
-      // Chat tap from a terminated state — deep-linked, no banner needed.
-    } else if (initialMessage != null) {
+    // Handle app launch from terminated state.
+    //
+    // Deferred to after the first frame on purpose: `initialize()` runs before
+    // `runApp`, so consuming the message here would resolve it against a
+    // navigator that does not exist yet — the tap would silently do nothing.
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final RemoteMessage? initialMessage =
+          await _firebaseMessaging.getInitialMessage();
+      if (initialMessage == null) return;
+
+      debugPrint('Cold start from notification | data=${initialMessage.data}');
+
+      // Chat deep-links into the thread; everything else keeps the previous
+      // behaviour of re-showing the notification.
+      if (handleChatTap(Map<String, dynamic>.from(initialMessage.data))) return;
+
       _showLocalNotification(initialMessage); // optional
-      // _onNotificationTapped(
-      //   NotificationResponse(
-      //     id: initialMessage.hashCode,
-      //     payload: jsonEncode({
-      //       "screen": initialMessage.data['screen'] ?? "home",
-      //       ...initialMessage.data
-      //     }),
-      //     notificationResponseType:
-      //     NotificationResponseType.selectedNotification,
-      //   ),
-      // );
-    }
+    });
   }
 
 
@@ -171,12 +168,7 @@ class NotificationService {
   /// Chat payloads carry `ride_id` like ride pushes do, so anything that keys
   /// off `ride_id` must check this first.
   static bool isChatPayload(Map<String, dynamic> data) =>
-      data['type']?.toString() == 'chat';
-
-  /// `ride_id` / `chat_room_id` arrive as STRINGS in an FCM data payload —
-  /// parsing them as int without a cast throws.
-  static int? chatRideIdOf(Map<String, dynamic> data) =>
-      int.tryParse(data['ride_id']?.toString() ?? '');
+      ChatPushRouter.isChatPayload(data);
 
   /// Tap on a notification drawn by flutter_local_notifications (foreground,
   /// or a cold start from one). Only chat is routed here; every other type
@@ -196,41 +188,22 @@ class NotificationService {
 
   /// Opens the thread for a chat push. Returns false when [data] is not a chat
   /// payload, so callers can fall through to their existing handling.
-  static bool handleChatTap(Map<String, dynamic> data) {
-    if (!isChatPayload(data)) return false;
-
-    final rideId = chatRideIdOf(data);
-    if (rideId == null) {
-      debugPrint('[CHAT] tap without a usable ride_id — ignored');
-      return true;
-    }
-
-    // Post-frame so Get has a live navigator on a cold start.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      openRideChat(rideId: rideId, driverName: data['title']?.toString() ?? '');
-    });
-    return true;
-  }
+  static bool handleChatTap(Map<String, dynamic> data) =>
+      ChatPushRouter.handlePushTap(data);
 
   // Show local notification with custom background color
   static Future<void> _showLocalNotification(RemoteMessage message) async {
     final data = Map<String, dynamic>.from(message.data);
 
-    // A chat message for the thread the rider is already looking at must not
-    // pop a banner over it — just let that screen pull the message in.
-    if (isChatPayload(data)) {
-      final rideId = chatRideIdOf(data);
-      if (rideId != null && ChatController.activeRideId == rideId) {
-        final tag = 'chat_$rideId';
-        if (Get.isRegistered<ChatController>(tag: tag)) {
-          Get.find<ChatController>(tag: tag).pollOnce();
-        }
-        debugPrint('[CHAT] push for the open thread ($rideId) — polling only');
-        return;
-      }
-      if (Get.isRegistered<ChatUnreadController>()) {
-        Get.find<ChatUnreadController>().refreshNow();
-      }
+    // Chat in the foreground gets an in-app banner from the router, not a tray
+    // notification: the push carries a `notification` block, so the OS draws
+    // the tray copy itself whenever the app is not in front.
+    if (ChatPushRouter.handleForegroundMessage(
+      data: data,
+      title: message.notification?.title ?? data['title']?.toString(),
+      body: message.notification?.body ?? data['body']?.toString(),
+    )) {
+      return;
     }
 
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(

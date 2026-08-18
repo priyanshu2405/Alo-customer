@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:alo_ride_app/api_app_folder/screen/chat/service/chat_push_router.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
 import 'package:alo_ride_app/api_app_folder/screen/login/view/login_screen.dart';
 import 'package:alo_ride_app/api_app_folder/services/token_store.dart';
@@ -28,6 +29,10 @@ class SplashController extends GetxController {
 
       if (authController.isAuthenticated) {
        Get.to(()=>DashboardScreen());
+
+        /// Startup routing is done — a chat push that launched the app from a
+        /// terminated state can open now without being discarded.
+        ChatPushRouter.flushPending();
       } else {
         print("User is not authenticated, navigating to login");
         Get.offAll(() => LoginScreen());

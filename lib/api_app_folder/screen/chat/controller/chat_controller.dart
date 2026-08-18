@@ -57,10 +57,6 @@ class ChatController extends GetxController with WidgetsBindingObserver {
   /// latest page instead, which refreshes `is_read` on our own bubbles.
   static const int _fullSyncEveryTicks = 5;
 
-  /// Ride whose chat screen is currently on top, so the FCM handler can skip
-  /// the in-app banner for messages the user is already looking at.
-  static int? activeRideId;
-
   final RxList<ChatMessage> messages = <ChatMessage>[].obs;
   final Rx<ChatAccess> access = ChatAccess.loading.obs;
   final RxBool initialLoading = true.obs;
@@ -96,7 +92,6 @@ class ChatController extends GetxController with WidgetsBindingObserver {
   void onInit() {
     super.onInit();
     WidgetsBinding.instance.addObserver(this);
-    activeRideId = rideId;
 
     scroll.addListener(_onScroll);
     input.addListener(() => hasDraft.value = input.text.trim().isNotEmpty);
@@ -110,7 +105,6 @@ class ChatController extends GetxController with WidgetsBindingObserver {
     // screen is gone and writes into a disposed controller.
     _stopPolling();
     WidgetsBinding.instance.removeObserver(this);
-    if (activeRideId == rideId) activeRideId = null;
     scroll.removeListener(_onScroll);
     scroll.dispose();
     input.dispose();
@@ -121,7 +115,6 @@ class ChatController extends GetxController with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      activeRideId = rideId;
       // Catch up immediately rather than waiting out a full interval.
       _pollNow();
       _startPolling();
