@@ -5,6 +5,7 @@ import 'package:alo_ride_app/api_app_folder/screen/chat/controller/chat_rooms_co
 import 'package:alo_ride_app/api_app_folder/screen/chat/model/chat_models.dart';
 import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_avatar.dart';
 import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_entry_button.dart';
+import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
@@ -75,16 +76,29 @@ class _RoomTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.put(ChatRoomsController());
     final name = room.otherParty?.name.isNotEmpty == true
         ? room.otherParty!.name
         : 'Driver';
 
     return ListTile(
-      onTap: () => openRideChat(
-        rideId: room.rideId,
-        driverName: name,
-        driverMobile: room.otherParty?.mobile ?? '',
-      ),
+      // onTap: () => openRideChat(
+      //   rideId: room.rideId,
+      //   driverName: name,
+      //   driverMobile: room.otherParty?.mobile ?? '',
+      // ),
+      onTap: (){
+        Get.to(
+              () => ChatScreen(
+            rideId: room.rideId,
+            driverName: name,
+            driverMobile: room.otherParty?.mobile ?? '',
+            driverPhoto: '',
+          ),
+        )?.then((value){
+          controller.load();
+        });
+      },
       leading: const ChatAvatar(photo: '', size: 44),
       title: Row(
         children: [

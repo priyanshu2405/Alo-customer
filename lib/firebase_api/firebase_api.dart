@@ -11,6 +11,30 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
+/// Notification channel id, VERSIONED on purpose.
+///
+/// Android freezes a channel's importance and sound the first time it is
+/// created and ignores every later change, so a device that installed an older
+/// build keeps the old (possibly silent) settings forever. Publishing a new id
+/// is the only way to hand out new ones — bump the suffix whenever the sound or
+/// importance changes, and list the old id in [kRetiredChannelIds].
+const String kDefaultChannelId = 'alo_rider_alerts_v2';
+
+/// Channels from earlier builds, deleted on startup so users don't end up with
+/// duplicate entries in Android's notification settings.
+const List<String> kRetiredChannelIds = ['high_importance_channel'];
+
+/// Heads-up over whatever is on screen, with the device's default sound.
+const AndroidNotificationChannel kDefaultChannel = AndroidNotificationChannel(
+  kDefaultChannelId,
+  'Ride & message alerts',
+  description: 'Ride updates and chat messages.',
+  importance: Importance.max,
+  playSound: true,
+  enableVibration: true,
+  showBadge: true,
+);
+
 class NotificationService {
   static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotifications =
@@ -61,6 +85,15 @@ class NotificationService {
       await _box.write(_tokenKey, newToken);
       // await AppPrefService.setFcmToken(fcmToken: newToken);
     });
+
+    // We present our own local notification in the foreground (so it has a
+    // sound and a tap target on both platforms) — iOS must not also present the
+    // incoming push, or it alerts twice.
+    await _firebaseMessaging.setForegroundNotificationPresentationOptions(
+      alert: false,
+      badge: false,
+      sound: false,
+    );
 
     // Handle foreground messages
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
@@ -130,16 +163,17 @@ class NotificationService {
     );
 
     // Create notification channel for Android
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'high_importance_channel',
-      'High Importance Notifications',
-      description: 'This channel is used for important notifications.',
-      importance: Importance.high,
-    );
+    final android = _localNotifications
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    if (android == null) return;
 
-    await _localNotifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+    // Drop superseded channels first, so their frozen settings (and their row
+    // in the system notification settings screen) go away.
+    for (final retired in kRetiredChannelIds) {
+      await android.deleteNotificationChannel(channelId: retired);
+    }
+    await android.createNotificationChannel(kDefaultChannel);
   }
 
   // Handle foreground messages
@@ -195,24 +229,22 @@ class NotificationService {
   static Future<void> _showLocalNotification(RemoteMessage message) async {
     final data = Map<String, dynamic>.from(message.data);
 
-    // Chat in the foreground gets an in-app banner from the router, not a tray
-    // notification: the push carries a `notification` block, so the OS draws
-    // the tray copy itself whenever the app is not in front.
-    if (ChatPushRouter.handleForegroundMessage(
-      data: data,
-      title: message.notification?.title ?? data['title']?.toString(),
-      body: message.notification?.body ?? data['body']?.toString(),
-    )) {
-      return;
-    }
+    // The one case that must stay silent: a chat message for the thread the
+    // rider is already reading. It lands in the open conversation instead.
+    if (ChatPushRouter.suppressAlertFor(data)) return;
 
+    // On Android the sound comes from the CHANNEL; these values only matter on
+    // pre-Oreo devices, but they must agree with the channel or the
+    // notification posts silently there.
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'high_importance_channel',
-      'High Importance Notifications',
-      channelDescription: 'This channel is used for important notifications.',
-      importance: Importance.high,
+      kDefaultChannelId,
+      'Ride & message alerts',
+      channelDescription: 'Ride updates and chat messages.',
+      importance: Importance.max,
       priority: Priority.high,
-      showWhen: false,
+      playSound: true,
+      enableVibration: true,
+      showWhen: true,
       icon: "@mipmap/ic_launcher",
     );
 

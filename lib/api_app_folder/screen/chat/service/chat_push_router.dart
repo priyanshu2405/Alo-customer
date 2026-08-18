@@ -1,10 +1,7 @@
 import 'dart:async';
 
-import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
-import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/screen/chat/controller/chat_controller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/chat/controller/chat_unread_controller.dart';
-import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_avatar.dart';
 import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_entry_button.dart';
 import 'package:alo_ride_app/api_app_folder/services/token_store.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +13,7 @@ import 'package:get/get.dart';
 ///
 ///   terminated / cold start -> FirebaseMessaging.getInitialMessage()
 ///   backgrounded tray tap   -> FirebaseMessaging.onMessageOpenedApp
-///   foreground              -> FirebaseMessaging.onMessage (in-app banner)
+///   foreground              -> FirebaseMessaging.onMessage (local notification)
 ///
 /// Payload contract — `ride_id` is the ONLY id, and it arrives as a STRING:
 ///
@@ -90,36 +87,31 @@ class ChatPushRouter {
     return true;
   }
 
-  /// Handles a FOREGROUND message. Returns true when it was a chat push.
+  /// Whether a FOREGROUND push must be delivered silently — no alert, no sound.
   ///
-  /// Already reading that thread -> no banner at all, just pull the message in.
-  /// Anywhere else in the app -> in-app banner that opens the thread on tap.
-  static bool handleForegroundMessage({
-    required Map<String, dynamic> data,
-    String? title,
-    String? body,
-  }) {
+  /// Only one case qualifies: a chat message for the thread already on screen.
+  /// Alerting there would talk over the conversation the user is reading, so
+  /// the thread just pulls the message in instead.
+  ///
+  /// Everything else (including chat for another ride) returns false and gets
+  /// the normal notification, so the foreground behaves like the tray does.
+  static bool suppressAlertFor(Map<String, dynamic> data) {
     if (!isChatPayload(data)) return false;
 
     final rideId = rideIdOf(data);
-    if (rideId == null) return true;
+    if (rideId == null) return false;
 
     if (currentChatRideId == rideId) {
-      debugPrint('$_tag push for the open thread ($rideId) — polling only');
+      debugPrint('$_tag push for the open thread ($rideId) — silent, polling');
       pollOpenThread(rideId);
       return true;
     }
 
+    // Alerting anyway, but keep the badge honest while we are at it.
     if (Get.isRegistered<ChatUnreadController>()) {
       unawaited(Get.find<ChatUnreadController>().refreshNow());
     }
-
-    showChatBanner(
-      rideId: rideId,
-      title: title?.isNotEmpty == true ? title! : 'New message',
-      body: body ?? '',
-    );
-    return true;
+    return false;
   }
 
   /// Nudges an open thread to fetch immediately instead of waiting out its
@@ -154,51 +146,6 @@ class ChatPushRouter {
     _pendingChatRideId = null;
     debugPrint('$_tag replaying parked tap | ride=$rideId');
     openChat(rideId);
-  }
-
-  /// In-app banner for a foreground chat push.
-  static void showChatBanner({
-    required int rideId,
-    required String title,
-    required String body,
-  }) {
-    Get.snackbar(
-      '',
-      '',
-      titleText: Row(
-        children: [
-          const ChatAvatar(photo: '', size: 32),
-          const SizedBox(width: 10),
-          Expanded(
-            child: AppText(
-              text: title,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppColors.white,
-            ),
-          ),
-        ],
-      ),
-      messageText: Padding(
-        padding: const EdgeInsets.only(left: 42),
-        child: AppText(
-          text: body,
-          fontSize: 12,
-          maxLines: 2,
-          color: AppColors.white,
-        ),
-      ),
-      onTap: (_) {
-        if (Get.isSnackbarOpen) Get.closeCurrentSnackbar();
-        openChat(rideId);
-      },
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.blueColor,
-      margin: const EdgeInsets.all(10),
-      borderRadius: 12,
-      duration: const Duration(seconds: 4),
-      isDismissible: true,
-    );
   }
 
   /// Runs [action] once the navigator is mounted.

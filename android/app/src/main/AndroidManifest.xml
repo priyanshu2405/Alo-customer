@@ -40,6 +40,13 @@
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">
+        <!-- Background/terminated notifications are drawn by FCM itself; without
+             this they land on a low-importance fallback channel and arrive
+             silently, with no heads-up. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="alo_rider_alerts_v2" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
