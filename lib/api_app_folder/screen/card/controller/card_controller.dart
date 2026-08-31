@@ -25,7 +25,7 @@ class CardController extends GetxController {
   void clearCardField() {
     cardDetails.value = null;
     cardFieldResetKey.value++;
-    // cardHolderController.clear();
+    FocusManager.instance.primaryFocus?.unfocus();
   }
 
 
@@ -265,8 +265,16 @@ class CardController extends GetxController {
           cards.insert(0, newCard);
         }
 
-        Get.back(result: true);
-        Get.to(()=>CardListScreen());
+        // Clear Stripe CardField
+        clearCardField();
+
+        // Hide keyboard
+        await SystemChannels.textInput.invokeMethod<void>(
+          'TextInput.hide',
+        );
+
+        // Go to card list and remove current add-card screen
+        Get.off(() => CardListScreen());
       }
     } on StripeException catch (e) {
       Get.snackbar(

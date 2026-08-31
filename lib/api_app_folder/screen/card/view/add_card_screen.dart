@@ -81,29 +81,27 @@ class _AddCardScreenState extends State<AddCardScreen> {
 
                 const _FieldLabel(text: 'Card Details'),
                 const Gap(6),
-                Obx((){
-                  return    Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColors.lightGray),
-                      borderRadius: BorderRadius.circular(8),
+                Container(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.lightGray),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: CardField(
+                    key: ValueKey(controller.cardFieldResetKey.value),
+                    onCardChanged: controller.onCardChanged,
+                    style: const TextStyle(
+                      color: AppColors.black,
+                      fontSize: 15,
                     ),
-                    child: CardField(
-                      key: ValueKey(controller.cardFieldResetKey.value),
-                      onCardChanged: controller.onCardChanged,
-                      style: const TextStyle(
-                        color: AppColors.black,
-                        fontSize: 15,
-                      ),
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: '1234 1234 1234 1234',
-                        hintStyle: TextStyle(color: AppColors.darkTextColor),
-                      ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: '1234 1234 1234 1234',
+                      hintStyle: TextStyle(color: AppColors.darkTextColor),
                     ),
-                  );
-                }),
+                  ),
+                ),
                 const Gap(16),
 
                 Obx(
@@ -182,7 +180,16 @@ class _AddCardScreenState extends State<AddCardScreen> {
             () => AppButton(
               text: 'Save Card',
               isLoading: controller.isSaving.value,
-              onTap: controller.saveCard,
+              onTap: () async {
+                FocusScope.of(context).unfocus();
+
+                await SystemChannels.textInput.invokeMethod<void>(
+                  'TextInput.hide',
+                );
+
+                await Future.delayed(const Duration(milliseconds: 300));
+                controller.saveCard();
+              },
             ),
           ),
         ),
