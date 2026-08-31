@@ -20,6 +20,15 @@ class CardController extends GetxController {
   final RxBool isLoadingCards = false.obs;
   final RxList<Map<String, dynamic>> cards = <Map<String, dynamic>>[].obs;
 
+  final RxInt cardFieldResetKey = 0.obs;
+
+  void clearCardField() {
+    cardDetails.value = null;
+    cardFieldResetKey.value++;
+    // cardHolderController.clear();
+  }
+
+
   @override
   void onInit() {
     super.onInit();

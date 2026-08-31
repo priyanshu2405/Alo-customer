@@ -9,9 +9,24 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 
-class AddCardScreen extends StatelessWidget {
-  AddCardScreen({super.key});
+class AddCardScreen extends StatefulWidget {
+  const AddCardScreen({super.key});
 
+  @override
+  State<AddCardScreen> createState() => _AddCardScreenState();
+}
+
+class _AddCardScreenState extends State<AddCardScreen> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    controller.cardHolderController.text = '';
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.clearCardField();
+    });
+    super.initState();
+  }
   final CardController controller = Get.put(CardController());
 
   @override
@@ -66,26 +81,29 @@ class AddCardScreen extends StatelessWidget {
 
                 const _FieldLabel(text: 'Card Details'),
                 const Gap(6),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.lightGray),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: CardField(
-                    onCardChanged: controller.onCardChanged,
-                    style: const TextStyle(
-                      color: AppColors.black,
-                      fontSize: 15,
+                Obx((){
+                  return    Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: AppColors.lightGray),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      hintText: '1234 1234 1234 1234',
-                      hintStyle: TextStyle(color: AppColors.darkTextColor),
+                    child: CardField(
+                      key: ValueKey(controller.cardFieldResetKey.value),
+                      onCardChanged: controller.onCardChanged,
+                      style: const TextStyle(
+                        color: AppColors.black,
+                        fontSize: 15,
+                      ),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        hintText: '1234 1234 1234 1234',
+                        hintStyle: TextStyle(color: AppColors.darkTextColor),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                }),
                 const Gap(16),
 
                 Obx(
