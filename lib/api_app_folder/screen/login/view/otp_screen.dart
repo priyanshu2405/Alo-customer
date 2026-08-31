@@ -68,153 +68,147 @@ class _OtpScreenState extends State<OtpScreen> {
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom;
 
-    return WillPopScope(
-      onWillPop: () async {
-        SystemNavigator.pop();
-        return false;
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.white,
-        appBar: AppAppBar(showBack: false),
-        body: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Gap(12),
+    return Scaffold(
+      backgroundColor: AppColors.white,
+      appBar: AppAppBar(showBack: false),
+      body: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Gap(12),
 
-                        AppText(
-                          text: "OTP",
-                          fontSize: 16,
-                          color: AppColors.secondary,
-                          fontWeight: FontWeight.w500,
+                      AppText(
+                        text: "OTP",
+                        fontSize: 16,
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      const Gap(5),
+
+                      /// Illustration
+                      Center(
+                        child: AppImage(
+                          image: AppImages.loginLogo,
+                          imageType: ImageType.svgAsset,
+                          height: 210,
+                          fit: BoxFit.contain,
                         ),
-                        const Gap(5),
+                      ),
+                      const Gap(10),
 
-                        /// Illustration
-                        Center(
-                          child: AppImage(
-                            image: AppImages.loginLogo,
-                            imageType: ImageType.svgAsset,
-                            height: 210,
-                            fit: BoxFit.contain,
+                      /// Title
+                      const AppText(
+                        text: "Enter the code",
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textColor,
+                      ),
+
+                      const Gap(8),
+
+                      /// Subtitle
+                      AppText(
+                        text:
+                            "OTP was sent to your registered mobile No\n+${widget.countryCode} ${widget.phoneNumber}",
+                        fontSize: 14,
+                        color: AppColors.darkGrayColor,
+                      ),
+
+                      const Gap(20),
+
+                      /// OTP Fields
+                      Row(
+                        children: List.generate(
+                          4,
+                          (index) => _otpBox(index),
+                        ),
+                      ),
+
+                      const Gap(20),
+
+                      /// Resend
+                      Row(
+                        children: [
+                          const AppText(
+                            text: "Didn't receive the code? ",
+                            fontSize: 14,
                           ),
-                        ),
-                        const Gap(10),
-
-                        /// Title
-                        const AppText(
-                          text: "Enter the code",
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textColor,
-                        ),
-
-                        const Gap(8),
-
-                        /// Subtitle
-                        AppText(
-                          text:
-                              "OTP was sent to your registered mobile No\n+${widget.countryCode} ${widget.phoneNumber}",
-                          fontSize: 14,
-                          color: AppColors.darkGrayColor,
-                        ),
-
-                        const Gap(20),
-
-                        /// OTP Fields
-                        Row(
-                          children: List.generate(
-                            4,
-                            (index) => _otpBox(index),
-                          ),
-                        ),
-
-                        const Gap(20),
-
-                        /// Resend
-                        Row(
-                          children: [
-                            const AppText(
-                              text: "Didn't receive the code? ",
-                              fontSize: 14,
-                            ),
-                            Obx(() {
-                              if (verifyOtpController.isResendLoading.value) {
-                                return const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                      strokeWidth: 2),
-                                );
-                              }
-                              return InkWell(
-                                onTap:
-                                    verifyOtpController.secondsRemaining.value ==
-                                            0
-                                        ? () {
-                                            verifyOtpController.resendOtp(
-                                              countryCode: widget.countryCode,
-                                              mobile: widget.phoneNumber,
-                                            );
-                                            startTimer();
-                                          }
-                                        : null,
-                                child: AppText(
-                                  text: "Resend code",
-                                  fontSize: 14,
-                                  color: verifyOtpController
-                                              .secondsRemaining.value ==
-                                          0
-                                      ? AppColors.secondary
-                                      : Colors.grey,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                          Obx(() {
+                            if (verifyOtpController.isResendLoading.value) {
+                              return const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2),
                               );
-                            }),
-                          ],
-                        ),
+                            }
+                            return InkWell(
+                              onTap:
+                                  verifyOtpController.secondsRemaining.value ==
+                                          0
+                                      ? () {
+                                          verifyOtpController.resendOtp(
+                                            countryCode: widget.countryCode,
+                                            mobile: widget.phoneNumber,
+                                          );
+                                          startTimer();
+                                        }
+                                      : null,
+                              child: AppText(
+                                text: "Resend code",
+                                fontSize: 14,
+                                color: verifyOtpController
+                                            .secondsRemaining.value ==
+                                        0
+                                    ? AppColors.secondary
+                                    : Colors.grey,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
 
-                        const Gap(6),
+                      const Gap(6),
 
-                        /// Timer
-                        Obx(() {
-                          return AppText(
-                            text:
-                                "Time Remaining ${verifyOtpController.secondsRemaining.value}s",
-                            fontSize: 12,
-                          );
-                        }),
+                      /// Timer
+                      Obx(() {
+                        return AppText(
+                          text:
+                              "Time Remaining ${verifyOtpController.secondsRemaining.value}s",
+                          fontSize: 12,
+                        );
+                      }),
 
-                        const Gap(20),
-                      ],
-                    ),
-        ),
-        bottomNavigationBar: Padding(
-          padding: EdgeInsets.fromLTRB(20, 12, 20, bottom + 20),
-          child: Obx(() => AppButton(
-                isLoading: verifyOtpController.isVerifyOtp.value,
-                text: "CONFIRM",
-                onTap: () {
-                  final otp = getOtp();
-                  if (otp.length == 4) {
-                    debugPrint("OTP Entered: $otp");
-                    verifyOtpController.verifyOtp(
-                      context,
-                      countryCode: widget.countryCode,
-                      mobile: widget.phoneNumber,
-                    );
-                  } else {
-                    Get.snackbar(
-                      "Error",
-                      "Please enter valid OTP",
-                      backgroundColor:
-                          AppColors.secondary.withOpacity(0.5),
-                    );
-                  }
-                },
-              )),
-        ),
+                      const Gap(20),
+                    ],
+                  ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(20, 12, 20, bottom + 20),
+        child: Obx(() => AppButton(
+              isLoading: verifyOtpController.isVerifyOtp.value,
+              text: "CONFIRM",
+              onTap: () {
+                final otp = getOtp();
+                if (otp.length == 4) {
+                  debugPrint("OTP Entered: $otp");
+                  verifyOtpController.verifyOtp(
+                    context,
+                    countryCode: widget.countryCode,
+                    mobile: widget.phoneNumber,
+                  );
+                } else {
+                  Get.snackbar(
+                    "Error",
+                    "Please enter valid OTP",
+                    backgroundColor:
+                        AppColors.secondary.withOpacity(0.5),
+                  );
+                }
+              },
+            )),
       ),
     );
   }
