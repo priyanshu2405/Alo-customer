@@ -517,15 +517,15 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
                                 .getRideDetailsModel.value.data?.ride?.status,
                           ))
                             const Gap(12),
-                          if(myRideController.getRideDetailsModel.value.data?.ride?.status != "pending" && myRideController.getRideDetailsModel.value.data?.ride?.status != "completed")...[
-                          Expanded(
-                            child: AppButton(
-                              text: "CALL DRIVER",
-                              onTap: () => AppCallHelper.makeCall("${myRideController.getRideDetailsModel.value.data?.ride?.driver?.mobile}"),
-                            ),
-                          ),
-                          const Gap(12),
-                          ],
+                          // if(myRideController.getRideDetailsModel.value.data?.ride?.status != "pending" && myRideController.getRideDetailsModel.value.data?.ride?.status != "completed")...[
+                          // Expanded(
+                          //   child: AppButton(
+                          //     text: "CALL DRIVER",
+                          //     onTap: () => AppCallHelper.makeCall("${myRideController.getRideDetailsModel.value.data?.ride?.driver?.mobile}"),
+                          //   ),
+                          // ),
+                          // const Gap(12),
+                          // ],
                           if(myRideController.rideStatus.value != "pickup_done" && myRideController.rideStatus.value != "completed")
                           Expanded(
                             child: AppButton(
