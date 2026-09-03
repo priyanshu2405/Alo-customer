@@ -81,29 +81,35 @@ class _RoomTile extends StatelessWidget {
         ? room.otherParty!.name
         : 'Driver';
 
+    final profilePhoto = room.otherParty?.profilePhoto ?? '';
+
     return ListTile(
       // onTap: () => openRideChat(
       //   rideId: room.rideId,
       //   driverName: name,
       //   driverMobile: room.otherParty?.mobile ?? '',
       // ),
-      onTap: (){
+      onTap: () {
         Get.to(
-              () => ChatScreen(
+          () => ChatScreen(
             rideId: room.rideId,
             driverName: name,
             driverMobile: room.otherParty?.mobile ?? '',
-            driverPhoto: '',
+            driverPhoto: profilePhoto,
           ),
-        )?.then((value){
+        )?.then((value) {
           controller.load();
         });
       },
-      leading: const ChatAvatar(photo: '', size: 44),
+      leading: ChatAvatar(photo: profilePhoto, size: 44),
       title: Row(
         children: [
           Expanded(
-            child: AppText(text: name, fontSize: 14, fontWeight: FontWeight.w600),
+            child: AppText(
+              text: name,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           AppText(
             text: _stamp(room.lastMessageAt),

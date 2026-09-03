@@ -64,7 +64,9 @@ class ChatApiService {
   ///   static const String _root = ApiService.baseUrl1;
   static const String _root = 'https://alodrive.ca/api/';
 
-  static String _url(String path) => '$_root$path';
+  static String _url(String path) => '${ApiService.baseUrl1}$path';
+
+  // static String _url(String path) => '$_root$path';
 
   /// GET /api/chat/messages/{ride_id}
   ///

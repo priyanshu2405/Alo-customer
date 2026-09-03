@@ -136,13 +136,15 @@ class ChatParty {
   final int id;
   final String name;
   final String mobile;
+  final String profilePhoto;
 
-  const ChatParty({required this.id, required this.name, required this.mobile});
+  const ChatParty({required this.id, required this.name, required this.mobile, required this.profilePhoto,});
 
   factory ChatParty.fromJson(Map<String, dynamic> json) => ChatParty(
     id: _toInt(json["id"]),
     name: json["name"]?.toString() ?? "",
     mobile: json["mobile"]?.toString() ?? "",
+    profilePhoto: json["profile_photo"]?.toString() ?? "",
   );
 }
 

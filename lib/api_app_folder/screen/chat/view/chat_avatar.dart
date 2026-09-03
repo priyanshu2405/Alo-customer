@@ -9,19 +9,12 @@ class ChatAvatar extends StatelessWidget {
 
   const ChatAvatar({super.key, required this.photo, required this.size});
 
-  static String resolve(String? path) {
-    if (path == null || path.isEmpty || path == 'null') {
-      return "https://i.pravatar.cc/150?img=12";
-    }
-    if (path.startsWith('http')) return path;
-    return "https://deliverymate.volive.me/alodrive/public/$path";
-  }
 
   @override
   Widget build(BuildContext context) {
     return ClipOval(
       child: Image.network(
-        resolve(photo),
+        photo,
         width: size,
         height: size,
         fit: BoxFit.cover,
