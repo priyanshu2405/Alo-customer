@@ -62,7 +62,7 @@ class ChatApiService {
   /// Chat is not on the live host yet — pointed at the local API for testing.
   /// Switch back to [ApiService.baseUrl1] once it ships to alodrive.ca:
   ///   static const String _root = ApiService.baseUrl1;
-  static const String _root = 'https://alodrive.ca/api/';
+  // static const String _root = 'https://alodrive.ca/api/';
 
   static String _url(String path) => '${ApiService.baseUrl1}$path';
 
