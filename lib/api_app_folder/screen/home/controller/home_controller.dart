@@ -1,4 +1,3 @@
-import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/screen/home/model/vehicle_types_model.dart';
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart';
 import 'package:alo_ride_app/models/model.dart';

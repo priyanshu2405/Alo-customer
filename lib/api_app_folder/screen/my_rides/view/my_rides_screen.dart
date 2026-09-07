@@ -12,7 +12,6 @@ import 'package:alo_ride_app/api_app_folder/screen/my_rides/model/ride_history_m
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/ride_completed_screen.dart';
 import 'package:alo_ride_app/api_app_folder/services/receipt_service.dart';
 import 'package:alo_ride_app/core/extensions/date_time_extension.dart';
-import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';

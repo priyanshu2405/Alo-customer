@@ -13,7 +13,6 @@ import 'package:alo_ride_app/api_app_folder/screen/ride/view/payment_details_scr
 import 'package:alo_ride_app/api_app_folder/screen/ride/view/rate_tip_dialog.dart';
 import 'package:alo_ride_app/api_app_folder/services/receipt_service.dart';
 import 'package:alo_ride_app/api_app_folder/utils/payment_success_view.dart';
-import 'package:alo_ride_app/core/utils/responsive_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
