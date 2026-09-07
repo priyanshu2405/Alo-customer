@@ -182,14 +182,14 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      actions: [
-        IconButton(
-          tooltip: 'Call driver',
-          onPressed: _callDriver,
-          icon: const Icon(Icons.call, color: AppColors.greenColor, size: 22),
-        ),
-        const Gap(4),
-      ],
+      // actions: [
+      //   IconButton(
+      //     tooltip: 'Call driver',
+      //     onPressed: _callDriver,
+      //     icon: const Icon(Icons.call, color: AppColors.greenColor, size: 22),
+      //   ),
+      //   const Gap(4),
+      // ],
     );
   }
 

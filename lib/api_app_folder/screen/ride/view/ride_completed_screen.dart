@@ -44,9 +44,17 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
   void initState() {
     super.initState();
       WidgetsBinding.instance.addPostFrameCallback((_) {
+
+        final ride = myRideController.getRideDetailsModel.value.data?.ride;
+        debugPrint("bookingId : ${widget.bookingId}");
+
         myRideController.getRideDetails(id: widget.bookingId).then((value) {
           if(!mounted)return;
-          if (/*widget.isShowDialog == true*/myRideController.getRideDetailsModel.value.data?.ride?.payment?.status != "paid") {
+          if (ride != null &&
+              ride.status?.toLowerCase() != "cancelled" &&
+              ride.payment?.status != "paid")
+          /*if (*//*widget.isShowDialog == true*//*myRideController.getRideDetailsModel.value.data?.ride?.payment?.status != "paid")*/
+          {
             showDialog(
               context: context,
               barrierDismissible: true,
@@ -333,15 +341,23 @@ class _RideCompletedScreenState extends State<RideCompletedScreen> {
               }),
       bottomNavigationBar: Obx(() {
         final data = myRideController.getRideDetailsModel.value.data;
-        if (data != null && data.ride?.payment?.status != "paid") {
+
+        final ride = data?.ride;
+
+        if (ride != null &&
+            ride.status?.toLowerCase() != "cancelled" &&
+            ride.payment?.status != "paid")
+
+          /*if (data != null && data.ride?.payment?.status != "paid") */
+          {
           final totalFare =
-              double.tryParse(data.ride?.totalFare ?? "0") ?? 0.0;
+              double.tryParse(ride.totalFare ?? "0") ?? 0.0;
           return Padding(
             padding: EdgeInsets.fromLTRB(20, 12, 20, bottom + 20),
             child: AppButton(
               text: "PAY NOW",
               onTap: () {
-                debugPrint("finalTotal : ${data.ride?.totalFare}");
+                debugPrint("finalTotal : ${ride.totalFare}");
                 _showPaymentOptions(totalFare);
               },
             ),

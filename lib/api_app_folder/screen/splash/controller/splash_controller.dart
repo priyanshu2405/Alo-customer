@@ -28,18 +28,25 @@ class SplashController extends GetxController {
       await Future.delayed(Duration(seconds: 3));
 
       if (authController.isAuthenticated) {
-       Get.to(()=>DashboardScreen());
-
-        /// Startup routing is done — a chat push that launched the app from a
-        /// terminated state can open now without being discarded.
-        ChatPushRouter.flushPending();
+        // offAll, not to: the splash must leave the stack, otherwise a chat
+        // screen pushed by a notification tap sits above a dead route and
+        // back-navigation lands on the splash again.
+        Get.offAll(() => DashboardScreen());
       } else {
         print("User is not authenticated, navigating to login");
         Get.offAll(() => LoginScreen());
       }
+
+      /// Startup routing is done — a push that launched the app from a
+      /// terminated state can open now without being discarded by the
+      /// `Get.offAll` above. Called on BOTH branches: when logged out the
+      /// router keeps the tap parked until the OTP screen calls back in, so it
+      /// is never silently dropped.
+      ChatPushRouter.flushPending();
     } catch (e) {
       print("Error in checkTokenAndNavigate: $e");
       Get.offAll(() => LoginScreen());
+      ChatPushRouter.flushPending();
     }
   }
 

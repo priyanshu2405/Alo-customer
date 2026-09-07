@@ -15,6 +15,11 @@ import 'package:alo_ride_app/api_app_folder/services/stripe_config_service.dart'
 // import 'package:alo_ride_app/design_folder/screen/splash/view/splash_screen.dart';
 
 /// 🔥 REQUIRED background handler
+///
+/// `@pragma('vm:entry-point')` is mandatory: this runs in a SEPARATE isolate
+/// that Dart spawns from native code, so AOT tree-shaking drops the function in
+/// release builds without it and every background push dies silently.
+@pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

@@ -47,6 +47,12 @@ class ChatPushRouter {
   /// nothing at all.
   static bool _appReady = false;
 
+  /// Safety net for a parked tap. If startup routing never reports ready (an
+  /// early exception, an unexpected launch path), the tap would sit in
+  /// [_pendingChatRideId] forever and the user would see a tap that did
+  /// nothing. Released after this delay instead.
+  static Timer? _readyFallback;
+
   static bool isChatPayload(Map<String, dynamic> data) =>
       data['type']?.toString() == 'chat';
 
@@ -55,6 +61,10 @@ class ChatPushRouter {
   /// `tryParse` + a null check at the call site.
   static int? rideIdOf(Map<String, dynamic> data) =>
       int.tryParse(data['ride_id']?.toString() ?? '');
+
+  /// Exposed so the notification router can gate non-chat routes on a session
+  /// too — pushing any screen over the login flow looks like a dead tap.
+  static bool get isLoggedIn => _isLoggedIn;
 
   static bool get _isLoggedIn {
     if (!Get.isRegistered<AuthController>()) return false;
@@ -80,6 +90,7 @@ class ChatPushRouter {
         '| loggedIn=$_isLoggedIn',
       );
       _pendingChatRideId = rideId;
+      _armReadyFallback();
       return true;
     }
 
@@ -139,13 +150,33 @@ class ChatPushRouter {
   /// Called once the session is restored (splash routing / OTP verified), so a
   /// cold-start tap that arrived too early — or while logged out — still lands.
   static void flushPending() {
+    if (!_appReady) debugPrint('$_tag app ready — chat navigation unblocked');
     _appReady = true;
+    _readyFallback?.cancel();
+    _readyFallback = null;
 
     final rideId = _pendingChatRideId;
     if (rideId == null) return;
+
+    // Still logged out (splash routed to login): keep the tap parked so it
+    // lands after the OTP screen calls back in, rather than being dropped.
+    if (!_isLoggedIn) {
+      debugPrint('$_tag ready but logged out — keeping ride=$rideId parked');
+      return;
+    }
+
     _pendingChatRideId = null;
     debugPrint('$_tag replaying parked tap | ride=$rideId');
     openChat(rideId);
+  }
+
+  /// Releases a parked tap even if nothing ever calls [flushPending].
+  static void _armReadyFallback() {
+    _readyFallback?.cancel();
+    _readyFallback = Timer(const Duration(seconds: 8), () {
+      debugPrint('$_tag ready callback never fired — releasing parked tap');
+      flushPending();
+    });
   }
 
   /// Runs [action] once the navigator is mounted.
