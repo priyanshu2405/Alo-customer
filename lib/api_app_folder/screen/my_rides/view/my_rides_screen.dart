@@ -961,13 +961,17 @@ thickness: 2,
             Gap(10),
             Column(
               children: myRideController.completedRides.map((ride) {
+                final paymentStatus = ride.payment?.status;
+                final isPaymentPending = paymentStatus == "pending";
+                final isPaymentFailed = paymentStatus == "failed";
                 //print(ride.payment?.status);
                 return InkWell(
                   onTap: () {
 
                     Get.to(() => RideCompletedScreen(
                       bookingId: ride.id ?? 0,
-                      isShowDialog: ride.payment?.status == "pending" ? true : false,
+                      // isShowDialog: ride.payment?.status == "pending" ? true : false,
+                      isShowDialog: isPaymentPending || isPaymentFailed,
                     ));
                     /*if (ride.payment?.status == "pending") {
                       Get.to(
@@ -989,7 +993,15 @@ thickness: 2,
                     receiptPaymentIntentId: ride.payment?.status == "pending"
                         ? null
                         : ride.payment?.stripePaymentIntentId?.toString(),
-                    price: ride.payment?.status == "pending" ? "Payment Pending" : "\$${ride.totalFare}",
+
+                    // price: ride.payment?.status == "pending" ? "Payment Pending" : "\$${ride.totalFare}",
+
+                    price: isPaymentPending
+                        ? "Payment Pending"
+                        : isPaymentFailed
+                        ? "Payment Failed"
+                        : "\$${ride.totalFare}",
+
                     pickup: ride.pickupAddress ?? '',
                     drop: ride.dropAddress ?? '',
                     stops: ride.stops,
