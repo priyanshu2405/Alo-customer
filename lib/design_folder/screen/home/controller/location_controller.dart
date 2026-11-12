@@ -22,7 +22,7 @@ class LocationController extends GetxController {
   RxString currentAddress = "Getting location...".obs;
   GoogleMapController? googleController;
 
-  static const String _apiKey = "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs";
+  static const String _apiKey = "AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo";
 
   @override
   void onInit() {

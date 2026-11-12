@@ -36,7 +36,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
   final Set<Polyline> polylines = {};
 
   final PolylinePoints polylinePoints = PolylinePoints(
-    apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
+    apiKey: "AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo",
   );
 
   final List<LatLng> routePoints = [];

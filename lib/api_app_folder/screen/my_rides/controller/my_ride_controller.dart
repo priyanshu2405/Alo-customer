@@ -109,7 +109,7 @@ class MyRideController extends GetxController {
 
   /// polyline helper
   final polylinePoints = PolylinePoints(
-    apiKey: 'AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs',
+    apiKey: 'AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo',
   );
 
   /// animated driver marker id
@@ -531,7 +531,7 @@ class MyRideController extends GetxController {
                   originLng: position?.longitude ?? 0,
                   destLat: driverLocationUpdate?.latitude,
                   destLng: driverLocationUpdate?.longitude,
-                  apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
+                  apiKey: "AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo",
                 );
                 if (result != null) {
                   print("Distance: ${result.distanceText}");
@@ -661,7 +661,7 @@ class MyRideController extends GetxController {
     if (driverLatLng.value == null || pickupLatLng.value == null) return;
 
     final polylinePoints = PolylinePoints(
-      apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
+      apiKey: "AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo",
     );
 
     final result = await polylinePoints.getRouteBetweenCoordinates(
@@ -824,7 +824,7 @@ class MyRideController extends GetxController {
         "?origins=$originLat,$originLng"
         "&destinations=$destLat,$destLng"
         "&mode=$mode"
-        "&key=AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs";
+        "&key=AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo";
 
     final response = await http.get(Uri.parse(url));
     // print("gettingLatlng ${response.body}");

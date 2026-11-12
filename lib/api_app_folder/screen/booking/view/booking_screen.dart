@@ -718,7 +718,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _selectLocation(String placeId, String address, bool isPickup, {int? dropIndex}) async {
-    final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs');
+    final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {

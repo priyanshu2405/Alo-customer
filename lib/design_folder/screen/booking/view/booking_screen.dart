@@ -825,7 +825,7 @@ class _BookingScreenState extends State<BookingScreen> {
       bool isPickup,
       ) async {
     final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs',
+      'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo',
     );
 
     try {
