@@ -1,3 +1,4 @@
+import 'package:alo_ride_app/api_app_folder/constant/key_constants.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_appbar.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_button.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_call_helper.dart';
@@ -718,7 +719,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _selectLocation(String placeId, String address, bool isPickup, {int? dropIndex}) async {
-    final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs');
+    final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$googleMapsApiKey');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {

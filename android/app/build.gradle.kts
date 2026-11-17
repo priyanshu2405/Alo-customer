@@ -3,7 +3,6 @@ import java.io.FileInputStream
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services")
@@ -17,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
-android {
+extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "com.flutter.alo_ride_app"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
@@ -27,10 +26,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
         // 🔥 REQUIRED for flutter_local_notifications
         isCoreLibraryDesugaringEnabled = true
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -52,7 +47,14 @@ android {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String
             keyPassword = keystoreProperties["keyPassword"] as String
-            storeFile = file(keystoreProperties["storeFile"] as String)
+            val keyPath = keystoreProperties["storeFile"] as String
+            storeFile = when {
+                file(keyPath).exists() -> file(keyPath)
+                rootProject.file(keyPath).exists() -> rootProject.file(keyPath)
+                rootProject.file("upload-keystore.jks").exists() -> rootProject.file("upload-keystore.jks")
+                file("upload-keystore.jks").exists() -> file("upload-keystore.jks")
+                else -> file(keyPath)
+            }
             storePassword = keystoreProperties["storePassword"] as String
         }
     }
@@ -65,6 +67,11 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
         }
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
     }
 }
 

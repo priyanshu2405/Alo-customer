@@ -4,6 +4,7 @@ import 'package:alo_ride_app/api_app_folder/res/common/app_call_helper.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_image.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_text.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/common_text_field.dart';
+import 'package:alo_ride_app/api_app_folder/constant/key_constants.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_images.dart';
 import 'package:alo_ride_app/api_app_folder/screen/chat/view/chat_entry_button.dart';
@@ -36,7 +37,7 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
   final Set<Polyline> polylines = {};
 
   final PolylinePoints polylinePoints = PolylinePoints(
-    apiKey: "AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs",
+    apiKey: googleMapsApiKey,
   );
 
   final List<LatLng> routePoints = [];

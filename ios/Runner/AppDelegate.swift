@@ -11,7 +11,7 @@ import GoogleMaps
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
 
-        GMSServices.provideAPIKey("AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs")
+        GMSServices.provideAPIKey("AIzaSyDWTIoANjvo1nKkig_yiCHgxICxWNPvIpc")
 
         // Register local notifications properly
         FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { registry in

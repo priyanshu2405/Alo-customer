@@ -13,6 +13,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:gap/gap.dart';
 import 'package:get/get.dart';
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -824,8 +825,11 @@ class _BookingScreenState extends State<BookingScreen> {
       String address,
       bool isPickup,
       ) async {
+    final apiKey = Platform.isIOS
+        ? 'AIzaSyDWTIoANjvo1nKkig_yiCHgxICxWNPvIpc'
+        : 'AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo';
     final url = Uri.parse(
-      'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=AIzaSyBxaqnRr_zdsjrqNvtMEXXbm8IO2lvzTRs',
+      'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$apiKey',
     );
 
     try {

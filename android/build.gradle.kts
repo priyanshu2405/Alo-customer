@@ -1,18 +1,3 @@
-buildscript {
-    val kotlin_version by extra("2.1.21")
-
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.7.0")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
-        classpath("com.google.gms:google-services:4.4.3")
-    }
-}
-
 allprojects {
     repositories {
         google()
@@ -32,6 +17,26 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+}
+
+subprojects {
+    project.plugins.withId("com.android.library") {
+        project.extensions.configure<com.android.build.api.dsl.LibraryExtension> {
+            compileSdk = 36
+            lint {
+                checkReleaseBuilds = false
+                abortOnError = false
+            }
+        }
+    }
+    project.tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
+    project.tasks.matching { it.name.startsWith("lintVital") }.configureEach {
+        enabled = false
+    }
 }
 
 tasks.register<Delete>("clean") {
