@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' hide log;
 
+import 'package:alo_ride_app/api_app_folder/constant/key_constants.dart';
 import 'package:alo_ride_app/api_app_folder/res/constant/app_colors.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/controller/dashboard_conroller.dart';
 import 'package:alo_ride_app/api_app_folder/screen/dashboard/screen/dashboard_screen.dart';
@@ -109,7 +110,7 @@ class MyRideController extends GetxController {
 
   /// polyline helper
   final polylinePoints = PolylinePoints(
-    apiKey: 'AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo',
+    apiKey: googleMapsApiKey,
   );
 
   /// animated driver marker id
@@ -197,33 +198,78 @@ class MyRideController extends GetxController {
     }
   }
 
+  Future<List<LatLng>> _fetchRoutePoints(LatLng origin, LatLng destination) async {
+    // Try Routes API (New) first
+    try {
+      final url = Uri.parse('https://routes.googleapis.com/directions/v2:computeRoutes');
+      final payload = {
+        'origin': {
+          'location': {
+            'latLng': {'latitude': origin.latitude, 'longitude': origin.longitude}
+          }
+        },
+        'destination': {
+          'location': {
+            'latLng': {'latitude': destination.latitude, 'longitude': destination.longitude}
+          }
+        },
+        'travelMode': 'DRIVE',
+      };
+      final res = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': googleMapsApiKey,
+          'X-Goog-FieldMask': 'routes.polyline.encodedPolyline',
+        },
+        body: jsonEncode(payload),
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        final routes = body['routes'] as List?;
+        if (routes != null && routes.isNotEmpty) {
+          final encoded = routes[0]['polyline']?['encodedPolyline'] as String?;
+          if (encoded != null && encoded.isNotEmpty) {
+            final decoded = PolylinePoints.decodePolyline(encoded);
+            return decoded.map((p) => LatLng(p.latitude, p.longitude)).toList();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Routes API computeRoutes error: $e");
+    }
+
+    // Fallback to legacy PolylinePoints request
+    try {
+      final result = await polylinePoints.getRouteBetweenCoordinates(
+        request: PolylineRequest(
+          origin: PointLatLng(origin.latitude, origin.longitude),
+          destination: PointLatLng(destination.latitude, destination.longitude),
+          mode: TravelMode.driving,
+          avoidFeatures: [AvoidFeature.ferries],
+          alternatives: false,
+        ),
+      );
+      return result.points.map((p) => LatLng(p.latitude, p.longitude)).toList();
+    } catch (e) {
+      debugPrint("Legacy getRouteBetweenCoordinates error: $e");
+      return [];
+    }
+  }
+
   Future<void> _drawRouteDriverToPickup() async {
     if (driverLatLng.value == null || pickupLatLng.value == null) return;
 
     polylines.clear();
     routePoints.clear();
 
-    final result = await polylinePoints.getRouteBetweenCoordinates(
-      request: PolylineRequest(
-        origin: PointLatLng(
-          driverLatLng.value!.latitude,
-          driverLatLng.value!.longitude,
-        ),
-        destination: PointLatLng(
-          pickupLatLng.value?.latitude ?? 0.0,
-          pickupLatLng.value?.longitude ?? 0.0,
-        ),
-        mode: TravelMode.driving,
-        avoidFeatures: [AvoidFeature.ferries],
-        alternatives: true,
-      ),
+    final pts = await _fetchRoutePoints(
+      driverLatLng.value!,
+      pickupLatLng.value!,
     );
 
-    if (result.points.isEmpty) return;
-
-    for (final p in result.points) {
-      routePoints.add(LatLng(p.latitude, p.longitude));
-    }
+    if (pts.isEmpty) return;
+    routePoints.addAll(pts);
 
     polylines.add(
       Polyline(
@@ -283,23 +329,13 @@ class MyRideController extends GetxController {
     polylines.clear();
     routePoints.clear();
 
-    final result = await polylinePoints.getRouteBetweenCoordinates(
-      request: PolylineRequest(
-        origin: PointLatLng(
-          driverLatLng.value!.latitude,
-          driverLatLng.value!.longitude,
-        ),
-        destination: PointLatLng(target.latitude, target.longitude),
-        mode: TravelMode.driving,
-        alternatives: false,
-      ),
+    final pts = await _fetchRoutePoints(
+      driverLatLng.value!,
+      target,
     );
 
-    if (result.points.isEmpty) return;
-
-    for (final p in result.points) {
-      routePoints.add(LatLng(p.latitude, p.longitude));
-    }
+    if (pts.isEmpty) return;
+    routePoints.addAll(pts);
 
     /// ALWAYS same id => only ONE polyline on map
     polylines.add(
@@ -531,7 +567,7 @@ class MyRideController extends GetxController {
                   originLng: position?.longitude ?? 0,
                   destLat: driverLocationUpdate?.latitude,
                   destLng: driverLocationUpdate?.longitude,
-                  apiKey: "AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo",
+                  apiKey: googleMapsApiKey,
                 );
                 if (result != null) {
                   print("Distance: ${result.distanceText}");
@@ -660,26 +696,10 @@ class MyRideController extends GetxController {
     //polylines.clear();
     if (driverLatLng.value == null || pickupLatLng.value == null) return;
 
-    final polylinePoints = PolylinePoints(
-      apiKey: "AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo",
-    );
+    final pts = await _fetchRoutePoints(source, destination);
+    if (pts.isEmpty) return;
 
-    final result = await polylinePoints.getRouteBetweenCoordinates(
-      request: PolylineRequest(
-        origin: PointLatLng(source.latitude, source.longitude),
-        destination: PointLatLng(destination.latitude, destination.longitude),
-        mode: TravelMode.driving,
-        alternatives: false,
-      ),
-    );
-
-    if (result.points.isEmpty) return;
-
-    routePoints.value =
-        result.points.map((e) => LatLng(e.latitude, e.longitude)).toList();
-   /* final routeCoords = result.points
-        .map((p) => LatLng(p.latitude, p.longitude))
-        .toList();*/
+    routePoints.value = pts;
 
     polylines.add(
       Polyline(
@@ -817,29 +837,85 @@ class MyRideController extends GetxController {
     required double destLat,
     required double destLng,
     String mode = "driving",
-  })
-  async {
+  }) async {
+    // Try Routes API (New) first
+    try {
+      final routesUrl = Uri.parse('https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix');
+      final payload = {
+        'origins': [
+          {
+            'waypoint': {
+              'location': {
+                'latLng': {'latitude': originLat, 'longitude': originLng}
+              }
+            }
+          }
+        ],
+        'destinations': [
+          {
+            'waypoint': {
+              'location': {
+                'latLng': {'latitude': destLat, 'longitude': destLng}
+              }
+            }
+          }
+        ],
+        'travelMode': mode.toUpperCase() == 'WALKING' ? 'WALK' : 'DRIVE',
+      };
+
+      final res = await http.post(
+        routesUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': googleMapsApiKey,
+          'X-Goog-FieldMask': 'originIndex,destinationIndex,duration,distanceMeters,status',
+        },
+        body: jsonEncode(payload),
+      );
+
+      if (res.statusCode == 200) {
+        final list = jsonDecode(res.body);
+        if (list is List && list.isNotEmpty) {
+          final item = list[0];
+          final distanceMeters = (item['distanceMeters'] as num?)?.toInt() ?? 0;
+          final durationStr = item['duration'] as String? ?? '0s';
+          final durationSec = int.tryParse(durationStr.replaceAll('s', '')) ?? 0;
+
+          final distKm = (distanceMeters / 1000).toStringAsFixed(1);
+          final mins = (durationSec / 60).round();
+          final durationText = mins >= 60 ? "${mins ~/ 60} hours ${mins % 60} mins" : "$mins mins";
+
+          return RouteDistanceTime(
+            distanceMeters: distanceMeters,
+            distanceText: "$distKm km",
+            durationSeconds: durationSec,
+            durationText: durationText,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Routes API computeRouteMatrix error: $e");
+    }
+
+    // Fallback to legacy Distance Matrix API
     final url =
         "https://maps.googleapis.com/maps/api/distancematrix/json"
         "?origins=$originLat,$originLng"
         "&destinations=$destLat,$destLng"
         "&mode=$mode"
-        "&key=AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo";
+        "&key=$googleMapsApiKey";
 
     final response = await http.get(Uri.parse(url));
-    // print("gettingLatlng ${response.body}");
     if (response.statusCode != 200) {
       throw Exception("Distance Matrix API failed: ${response.statusCode}");
     }
 
     final jsonBody = jsonDecode(response.body);
-
     if (jsonBody["status"] != "OK") {
       throw Exception("API error: ${jsonBody["status"]}");
     }
 
     final element = jsonBody["rows"][0]["elements"][0];
-
     if (element["status"] != "OK") {
       return null;
     }

@@ -1,6 +1,5 @@
 import 'package:alo_ride_app/api_app_folder/services/api_service.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppCallHelper {
@@ -24,7 +23,7 @@ class AppCallHelper {
   }
 
   static Future<void> makeDirectCall(String phoneNumber) async {
-    await FlutterPhoneDirectCaller.callNumber(phoneNumber);
+    await makeCall(phoneNumber);
   }
   /// 🚨 Canada SOS
   // static Future<void> callSOS() async {

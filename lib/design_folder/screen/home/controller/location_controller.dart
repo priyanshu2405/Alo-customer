@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -22,7 +23,9 @@ class LocationController extends GetxController {
   RxString currentAddress = "Getting location...".obs;
   GoogleMapController? googleController;
 
-  static const String _apiKey = "AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo";
+  static String get _apiKey => Platform.isIOS
+      ? 'AIzaSyDWTIoANjvo1nKkig_yiCHgxICxWNPvIpc'
+      : 'AIzaSyBDoZWzDdhnnXe0Kuaz0qcPZT_vsUltoxo';
 
   @override
   void onInit() {

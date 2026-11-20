@@ -848,7 +848,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const Gap(16),
                         AppText(
-                          text: "Search for a location",
+                          text: controller.searchController.text.trim().isEmpty
+                              ? "Search for a location"
+                              : "No locations found",
                           fontSize: 16,
                           color: AppColors.greyColor,
                         ),
