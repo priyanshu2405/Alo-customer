@@ -691,7 +691,22 @@ class _BookingScreenState extends State<BookingScreen> {
             Expanded(
               child: Obx(() {
                 if (!controller.showPredictions.value || controller.predictions.isEmpty) {
-                  return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Icon(Icons.location_on_outlined, size: 64, color: Colors.grey), const Gap(16), const AppText(text: "Search for a location", fontSize: 16, color: AppColors.greyColor)]));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.location_on_outlined, size: 64, color: Colors.grey),
+                        const Gap(16),
+                        AppText(
+                          text: controller.searchController.text.trim().isEmpty
+                              ? "Search for a location"
+                              : "No locations found",
+                          fontSize: 16,
+                          color: AppColors.greyColor,
+                        ),
+                      ],
+                    ),
+                  );
                 }
                 return ListView.separated(
                   itemCount: controller.predictions.length,
@@ -719,22 +734,60 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _selectLocation(String placeId, String address, bool isPickup, {int? dropIndex}) async {
+    // Try Places API (New) first
+    try {
+      final newUrl = Uri.parse('https://places.googleapis.com/v1/places/$placeId');
+      final responseNew = await http.get(
+        newUrl,
+        headers: {
+          'X-Goog-Api-Key': googleMapsApiKey,
+          'X-Goog-FieldMask': 'id,displayName,formattedAddress,location',
+        },
+      );
+      if (responseNew.statusCode == 200) {
+        final body = json.decode(responseNew.body);
+        if (body['location'] != null) {
+          final lat = (body['location']['latitude'] as num).toDouble();
+          final lng = (body['location']['longitude'] as num).toDouble();
+          final position = LatLng(lat, lng);
+          final finalAddress = body['formattedAddress'] ?? body['displayName']?['text'] ?? address;
+          if (isPickup) {
+            bookingController.fromLocation.value = finalAddress;
+            bookingController.fromLatLng.value = position;
+          } else {
+            // dropIndex == null → add a new drop-off; otherwise edit that stop.
+            bookingController.setDropOff(index: dropIndex, latLng: position, address: finalAddress);
+          }
+          controller.setMarker(position);
+          controller.moveCameraTo(position);
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching place details from Places API (New): $e");
+    }
+
+    // Fallback to legacy Place Details API
     final url = Uri.parse('https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$googleMapsApiKey');
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final body = json.decode(response.body);
-        final geometry = body['result']['geometry']['location'];
-        final position = LatLng(geometry['lat'], geometry['lng']);
-        if (isPickup) {
-          bookingController.fromLocation.value = address;
-          bookingController.fromLatLng.value = position;
+        if (body['status'] == 'OK' && body['result'] != null) {
+          final geometry = body['result']['geometry']['location'];
+          final position = LatLng(geometry['lat'], geometry['lng']);
+          if (isPickup) {
+            bookingController.fromLocation.value = address;
+            bookingController.fromLatLng.value = position;
+          } else {
+            // dropIndex == null → add a new drop-off; otherwise edit that stop.
+            bookingController.setDropOff(index: dropIndex, latLng: position, address: address);
+          }
+          controller.setMarker(position);
+          controller.moveCameraTo(position);
         } else {
-          // dropIndex == null → add a new drop-off; otherwise edit that stop.
-          bookingController.setDropOff(index: dropIndex, latLng: position, address: address);
+          debugPrint("Google Place Details API error: ${body['status']} - ${body['error_message']}");
         }
-        controller.setMarker(position);
-        controller.moveCameraTo(position);
       }
     } catch (e) {
       debugPrint("Error fetching place details: $e");

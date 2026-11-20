@@ -228,10 +228,7 @@ class LocationController extends GetxController {
     update();
   }
 
-  /// Get place predictions from Google Places API.
-  /// Restricted to New Brunswick, Canada — uses a circle around NB's
-  /// approximate center with `strictbounds=true` so results outside the
-  /// province (and outside Canada) are filtered out by Google.
+  /// Get place predictions from Google Places API (New), with fallback to legacy.
   Future<void> getPlaces(String input) async {
     if (input.isEmpty) {
       predictions.clear();
@@ -239,14 +236,67 @@ class LocationController extends GetxController {
       return;
     }
 
+    // Try Places API (New) first
+    try {
+      final newUrl = Uri.parse('https://places.googleapis.com/v1/places:autocomplete');
+      final Map<String, dynamic> payload = {'input': input};
+      if (currentLatLng.value != null) {
+        payload['locationBias'] = {
+          'circle': {
+            'center': {
+              'latitude': currentLatLng.value!.latitude,
+              'longitude': currentLatLng.value!.longitude,
+            },
+            'radius': 50000.0,
+          }
+        };
+      }
+
+      final response = await http.post(
+        newUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': _apiKey,
+        },
+        body: json.encode(payload),
+      );
+
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        if (body['suggestions'] != null) {
+          final list = body['suggestions'] as List;
+          predictions.value = list.map((item) {
+            final p = item['placePrediction'] ?? {};
+            final structured = p['structuredFormat'] ?? {};
+            final mainText = structured['mainText']?['text'] ?? p['text']?['text'] ?? '';
+            final secondaryText = structured['secondaryText']?['text'] ?? '';
+            final fullText = p['text']?['text'] ?? mainText;
+            return {
+              'place_id': p['placeId'] ?? '',
+              'description': fullText,
+              'structured_formatting': {
+                'main_text': mainText,
+                'secondary_text': secondaryText,
+              },
+            };
+          }).toList();
+          showPredictions.value = true;
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching from Places API (New): $e");
+    }
+
+    // Fallback to legacy Places API
     final encodedInput = Uri.encodeQueryComponent(input);
+    final locationBias = currentLatLng.value != null
+        ? '&location=${currentLatLng.value!.latitude},${currentLatLng.value!.longitude}&radius=50000'
+        : '';
     final url = Uri.parse(
       'https://maps.googleapis.com/maps/api/place/autocomplete/json'
       '?input=$encodedInput'
-      '&components=country:ca'
-      '&location=46.5,-66.0'
-      '&radius=300000'
-      '&strictbounds=true'
+      '$locationBias'
       '&key=$_apiKey',
     );
 
@@ -254,16 +304,54 @@ class LocationController extends GetxController {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final body = json.decode(response.body);
-        predictions.value = body['predictions'] ?? [];
-        showPredictions.value = true;
+        if (body['status'] == 'OK' || body['status'] == 'ZERO_RESULTS') {
+          predictions.value = body['predictions'] ?? [];
+          showPredictions.value = true;
+        } else {
+          debugPrint("Google Places API error: ${body['status']} - ${body['error_message']}");
+          predictions.value = [];
+          showPredictions.value = true;
+        }
       }
     } catch (e) {
       debugPrint("Error fetching places: $e");
     }
   }
 
-  /// Get place details and update location
+  /// Get place details and update location (Places API New with fallback)
   Future<void> getPlaceDetails(String placeId) async {
+    // Try Places API (New) first
+    try {
+      final newUrl = Uri.parse('https://places.googleapis.com/v1/places/$placeId');
+      final response = await http.get(
+        newUrl,
+        headers: {
+          'X-Goog-Api-Key': _apiKey,
+          'X-Goog-FieldMask': 'id,displayName,formattedAddress,location',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        if (body['location'] != null) {
+          final lat = (body['location']['latitude'] as num).toDouble();
+          final lng = (body['location']['longitude'] as num).toDouble();
+          final position = LatLng(lat, lng);
+          final address = body['formattedAddress'] ?? body['displayName']?['text'] ?? '';
+
+          searchController.text = address;
+          currentAddress.value = address;
+          setMarker(position);
+          moveCameraTo(position);
+          showPredictions.value = false;
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error fetching place details from Places API (New): $e");
+    }
+
+    // Fallback to legacy Place Details API
     final url = Uri.parse(
       'https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&key=$_apiKey',
     );
@@ -272,16 +360,20 @@ class LocationController extends GetxController {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final body = json.decode(response.body);
-        final result = body['result'];
-        final geometry = result['geometry']['location'];
-        final position = LatLng(geometry['lat'], geometry['lng']);
-        final address = result['formatted_address'] ?? '';
+        if (body['status'] == 'OK' && body['result'] != null) {
+          final result = body['result'];
+          final geometry = result['geometry']['location'];
+          final position = LatLng(geometry['lat'], geometry['lng']);
+          final address = result['formatted_address'] ?? '';
 
-        searchController.text = address;
-        currentAddress.value = address;
-        setMarker(position);
-        moveCameraTo(position);
-        showPredictions.value = false;
+          searchController.text = address;
+          currentAddress.value = address;
+          setMarker(position);
+          moveCameraTo(position);
+          showPredictions.value = false;
+        } else {
+          debugPrint("Google Place Details API error: ${body['status']} - ${body['error_message']}");
+        }
       }
     } catch (e) {
       debugPrint("Error fetching place details: $e");

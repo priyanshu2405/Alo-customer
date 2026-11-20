@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:alo_ride_app/api_app_folder/res/common/app_appbar.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_button.dart';
 import 'package:alo_ride_app/api_app_folder/res/common/app_call_helper.dart';
@@ -130,23 +132,64 @@ class _RideTrackingScreenState extends State<RideTrackingScreen> {
       ),
     );
 
-    /// DIRECTIONS API
-    final result = await polylinePoints.getRouteBetweenCoordinates(
-      request: PolylineRequest(
-        origin: PointLatLng(pickup.latitude, pickup.longitude),
-        destination: PointLatLng(drop.latitude, drop.longitude),
-        mode: TravelMode.driving,
-      ),
-    );
+    /// DIRECTIONS / ROUTES API
+    List<LatLng> pts = [];
+    try {
+      final routesUrl = Uri.parse('https://routes.googleapis.com/directions/v2:computeRoutes');
+      final payload = {
+        'origin': {
+          'location': {
+            'latLng': {'latitude': pickup.latitude, 'longitude': pickup.longitude}
+          }
+        },
+        'destination': {
+          'location': {
+            'latLng': {'latitude': drop.latitude, 'longitude': drop.longitude}
+          }
+        },
+        'travelMode': 'DRIVE',
+      };
+      final res = await http.post(
+        routesUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': googleMapsApiKey,
+          'X-Goog-FieldMask': 'routes.polyline.encodedPolyline',
+        },
+        body: jsonEncode(payload),
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        final routes = body['routes'] as List?;
+        if (routes != null && routes.isNotEmpty) {
+          final encoded = routes[0]['polyline']?['encodedPolyline'] as String?;
+          if (encoded != null && encoded.isNotEmpty) {
+            final decoded = PolylinePoints.decodePolyline(encoded);
+            pts = decoded.map((p) => LatLng(p.latitude, p.longitude)).toList();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Routes API computeRoutes error: $e");
+    }
 
-    if (result.points.isEmpty) {
+    if (pts.isEmpty) {
+      final result = await polylinePoints.getRouteBetweenCoordinates(
+        request: PolylineRequest(
+          origin: PointLatLng(pickup.latitude, pickup.longitude),
+          destination: PointLatLng(drop.latitude, drop.longitude),
+          mode: TravelMode.driving,
+        ),
+      );
+      pts = result.points.map((p) => LatLng(p.latitude, p.longitude)).toList();
+    }
+
+    if (pts.isEmpty) {
       debugPrint("❌ No route points received");
       return;
     }
 
-    for (final p in result.points) {
-      routePoints.add(LatLng(p.latitude, p.longitude));
-    }
+    routePoints.addAll(pts);
 
     polylines.add(
       Polyline(
